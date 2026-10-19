@@ -210,7 +210,14 @@ export const projects: Project[] = [
       image('scale-model-showroom', '2', 'Car seen from a high front angle'),
       image('scale-model-showroom', '3', 'Close view of the paint, chrome and clear windows'),
     ],
-    video: video('scale-model-showroom', 'The car turning on a studio turntable.'),
+    tryIt: {
+      title: 'Inspect the paint and glass yourself',
+      steps: [
+        'Zoom in on the bonnet to see the clear-coat reflections change as you rotate.',
+        'Orbit below the roofline to look through the transmissive windows.',
+        'On your phone, tap “View in your space” and place the car on a table at 73 cm display scale.',
+      ],
+    },
     kind: 'concept',
     featured: true,
   },
@@ -241,7 +248,14 @@ export const projects: Project[] = [
       image('interactive-brand-mascot', '2', 'Robot mascot mid-dance'),
       image('interactive-brand-mascot', '3', 'Robot mascot seen from a low angle'),
     ],
-    video: video('interactive-brand-mascot', 'An orbit around the robot mascot in its idle pose.'),
+    tryIt: {
+      title: 'Make the mascot perform',
+      steps: [
+        'Choose Wave, Thumbs Up or Dance under Animation — each gesture plays on loop.',
+        'Rotate to find the best angle for a photo.',
+        'Scan the QR code, open it on your phone and place the mascot next to you in AR.',
+      ],
+    },
     kind: 'concept',
   },
   {
@@ -270,7 +284,14 @@ export const projects: Project[] = [
       image('stem-robotics-lesson', '2', 'Robot shown jumping'),
       image('stem-robotics-lesson', '3', 'Robot seen from above'),
     ],
-    video: video('stem-robotics-lesson', 'A full orbit around the robot so students can see every joint.'),
+    tryIt: {
+      title: 'Try the lesson activity',
+      steps: [
+        'Switch between Walking and Jump and watch which joints move in each clip.',
+        'Use the rotate buttons or arrow keys — the viewer is fully keyboard accessible.',
+        'Place the robot on your desk in AR and walk around it at its real 1.2 m height.',
+      ],
+    },
     kind: 'concept',
   },
   {
@@ -299,7 +320,14 @@ export const projects: Project[] = [
       image('velvet-sofa-product-page', '2', 'Sofa in black seen from one end'),
       image('velvet-sofa-product-page', '3', 'Low view of the sofa in grey, showing the legs'),
     ],
-    video: video('velvet-sofa-product-page', 'The sofa in navy velvet turning a full circle.'),
+    tryIt: {
+      title: 'Swap all five colours live',
+      steps: [
+        'Pick each Finish — Champagne, Navy, Gray, Black and Pale Pink — and see it change without a reload.',
+        'Zoom into the tufted back to check how the velvet catches light.',
+        'On your phone, place the 2.2 m sofa on the floor to judge it at real size.',
+      ],
+    },
     kind: 'concept',
   },
 ];

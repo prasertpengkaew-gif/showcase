@@ -33,7 +33,7 @@ npm run dev        # http://localhost:5173
 | ------------------ | --------------- | --------------------------------------------------------------------------------------------- |
 | `/`                | Home            | Real-time R3F hero (a phone showing an AR placement UI next to an animated robot), featured work, inline 3D/AR demo, services, process, CTA |
 | `/projects`        | Projects        | Filter by Industrial, Product, Education, Marketing, Real Estate, Automotive. The filter is saved in the URL (`?category=real-estate`) |
-| `/projects/:slug`  | Project details | 3D viewer with finish/animation pickers, overview, technologies, image gallery with lightbox, demo video, related projects |
+| `/projects/:slug`  | Project details | 3D viewer with finish/animation pickers, overview, technologies, image gallery with lightbox, demo video **or** a hands-on "Test it yourself" section with a QR code, related projects |
 | `/ar-playground`   | AR Playground   | Pick a chair, robot or car; rotate, zoom, change finish or animation; "View in your space" in AR |
 | `/services`        | Services        | WebAR Development, 3D Visualization, Interactive Experiences, AR Consulting                   |
 | `/about`           | About           | Company introduction, capabilities, principles, 3D asset credits (no invented credentials)    |
@@ -144,9 +144,21 @@ Each project uses `public/images/projects/<slug>/cover.webp` plus `1.webp`, `2.w
 
 All images load lazily, reserve their space so the layout doesn't jump, and show a fallback if a file is missing.
 
-### Videos
+### Videos vs. "Test it yourself"
 
-Put `<slug>.webm` (VP9) and `<slug>.mp4` (H.264) in `public/videos/`. The browser plays the first format it supports. Leave `video` out of a project to hide its video section.
+Each project page ends with **one** of two demo sections:
+
+- **Demo video** (`video` in the project data): 5 of the 9 sample projects have a 5-second turntable video. Put `<slug>.webm` (VP9) and `<slug>.mp4` (H.264) in `public/videos/` and use the `video('<slug>', 'description')` helper. The browser plays the first format it supports.
+- **Test it yourself** (`tryIt`): the other 4 projects (scale model car, brand mascot, STEM robotics, velvet sofa) get a short list of things to try in the live viewer, a button that jumps back to the viewer, and a **QR code** that opens the same page on a phone so the visitor can try AR right away.
+
+```ts
+tryIt: {
+  title: 'Swap all five colours live',
+  steps: ['Pick each Finish…', 'Zoom into the tufted back…', 'On your phone, place the sofa…'],
+},
+```
+
+If a project has a `video`, it is shown and `tryIt` is ignored. QR codes are generated in the browser (the `qrcode` package) from the current page URL. On `localhost` the site warns that a phone can't open that address. Desktop visitors also see a QR code in every viewer's AR notice.
 
 ### Re-rendering the included media
 
@@ -158,7 +170,7 @@ node scripts/render-media.mjs     # needs ffmpeg with libx264 and libvpx-vp9
 node scripts/render-media.mjs --images --only=lounge-chair-configurator
 ```
 
-Camera angles, backgrounds, variants and animation poses for each shot are set at the top of the script.
+Camera angles, backgrounds, variants and animation poses for each shot are set at the top of the script. Projects marked `video: true` there also get a turntable video. Rendering uses software WebGL, so each video takes a few minutes.
 
 ### Adding a project
 

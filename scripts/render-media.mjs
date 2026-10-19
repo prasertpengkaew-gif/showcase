@@ -91,7 +91,7 @@ const projects = [
     ],
   },
   {
-    slug: 'scale-model-showroom', model: 'car', bg: 'graphite', video: true,
+    slug: 'scale-model-showroom', model: 'car', bg: 'graphite',
     shots: [
       { file: 'cover', orbit: '45deg 72deg 1.45m' },
       { file: '1', orbit: '90deg 84deg 1.4m' },
@@ -100,7 +100,7 @@ const projects = [
     ],
   },
   {
-    slug: 'interactive-brand-mascot', model: 'robot', bg: 'blue', video: true,
+    slug: 'interactive-brand-mascot', model: 'robot', bg: 'blue',
     shots: [
       { file: 'cover', orbit: '-20deg 82deg 4.2m', animation: 'Wave', time: 0.6 },
       { file: '1', orbit: '15deg 82deg 4m', animation: 'ThumbsUp', time: 0.9 },
@@ -109,7 +109,7 @@ const projects = [
     ],
   },
   {
-    slug: 'stem-robotics-lesson', model: 'robot', bg: 'teal', video: true,
+    slug: 'stem-robotics-lesson', model: 'robot', bg: 'teal',
     shots: [
       { file: 'cover', orbit: '35deg 80deg 4.2m', animation: 'Idle', time: 1.5 },
       { file: '1', orbit: '90deg 85deg 4.2m', animation: 'Walking', time: 0.3 },
@@ -118,7 +118,7 @@ const projects = [
     ],
   },
   {
-    slug: 'velvet-sofa-product-page', model: 'sofa', bg: 'white', video: true,
+    slug: 'velvet-sofa-product-page', model: 'sofa', bg: 'white',
     shots: [
       { file: 'cover', orbit: '-25deg 76deg 5m', variant: 'Navy' },
       { file: '1', orbit: '0deg 85deg 5m', variant: 'Pale Pink' },

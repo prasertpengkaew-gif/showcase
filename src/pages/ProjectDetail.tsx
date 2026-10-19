@@ -6,6 +6,7 @@ import { categoryToParam } from '../lib/category';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { ModelExplorer } from '../components/ModelExplorer';
 import { Gallery } from '../components/Gallery';
+import { TryItSection } from '../components/TryItSection';
 import { ProjectGrid } from '../components/ProjectGrid';
 import { ButtonLink } from '../components/Button';
 import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, InfoIcon } from '../components/Icons';
@@ -58,7 +59,7 @@ export default function ProjectDetail() {
       </header>
 
       {/* 3D viewer */}
-      <section aria-labelledby="viewer-title" className="bg-surface py-14 sm:py-20">
+      <section id="viewer" aria-labelledby="viewer-title" className="scroll-mt-20 bg-surface py-14 sm:py-20">
         <div className="container-page">
           <h2 id="viewer-title" className="sr-only">
             Interactive 3D model
@@ -186,6 +187,8 @@ export default function ProjectDetail() {
           </div>
         </section>
       )}
+
+      {!project.video && project.tryIt && <TryItSection tryIt={project.tryIt} viewerAnchor="viewer" />}
 
       {/* Related */}
       <section aria-labelledby="related-title" className="py-20 sm:py-24">

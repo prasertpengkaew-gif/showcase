@@ -57,6 +57,12 @@ export interface ProjectVideo {
   description: string;
 }
 
+/** A hands-on checklist shown instead of a video: things the visitor can try in the live viewer. */
+export interface ProjectTryIt {
+  title: string;
+  steps: string[];
+}
+
 export interface Project {
   slug: string;
   title: string;
@@ -73,7 +79,9 @@ export interface Project {
   modelId: ModelId;
   cover: ProjectImage;
   gallery: ProjectImage[];
+  /** Demo video. Projects without one should provide `tryIt` instead. */
   video?: ProjectVideo;
+  tryIt?: ProjectTryIt;
   /**
    * 'concept' marks studio demonstration work built with openly licensed sample assets.
    * Use 'client' only for real, approved case studies.

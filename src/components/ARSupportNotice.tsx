@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { DeviceCapabilities } from '../lib/device';
 import { CheckIcon, CopyIcon, InfoIcon, PhoneIcon } from './Icons';
+import { QRCode } from './QRCode';
 
 interface ARSupportNoticeProps {
   caps: DeviceCapabilities;
@@ -33,7 +34,7 @@ export function ARSupportNotice({ caps, canActivateAR }: ARSupportNoticeProps) {
   } else if (platform === 'desktop') {
     title = 'Open this page on a phone or tablet to use AR';
     body =
-      'On desktop you can rotate and zoom the model in 3D. AR needs an iPhone or iPad with Safari, or an Android device that supports Google Play Services for AR.';
+      'Scan the QR code or copy the link. On desktop you can rotate and zoom the model in 3D; AR needs an iPhone or iPad with Safari, or an Android device that supports Google Play Services for AR.';
     showCopy = true;
   } else if (canActivateAR === null) {
     title = 'Checking AR support…';
@@ -69,6 +70,14 @@ export function ARSupportNotice({ caps, canActivateAR }: ARSupportNoticeProps) {
         <p className="mt-1 leading-relaxed opacity-90">{body}</p>
         {showCopy && <CopyLink />}
       </div>
+      {platform === 'desktop' && secureContext && (
+        <QRCode
+          value={window.location.href.split('#')[0]}
+          size={112}
+          label="QR code that opens this page on your phone"
+          className="hidden shrink-0 sm:block"
+        />
+      )}
     </div>
   );
 }
