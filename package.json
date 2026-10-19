@@ -15,7 +15,8 @@
     "test:e2e": "node tests/e2e.mjs",
     "render:media": "node scripts/render-media.mjs",
     "render:panoramas": "node scripts/render-panoramas.mjs",
-    "make:ar-card": "node scripts/make-ar-card.mjs"
+    "make:ar-card": "node scripts/make-ar-card.mjs",
+    "make:hunt-posters": "node scripts/make-hunt-posters.mjs"
   },
   "engines": {
     "node": ">=20.19"

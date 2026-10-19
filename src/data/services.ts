@@ -20,6 +20,7 @@ export const services: Service[] = [
     includes: [
       'Markerless floor and wall placement',
       'Image tracking for print, packaging and business cards',
+      'Event AR: poster hunts around the venue with stamps and rewards',
       'iOS Quick Look, Android Scene Viewer and WebXR from one codebase',
       'Device detection with clear fallbacks',
       'Analytics hooks for your existing tools',
@@ -80,6 +81,7 @@ export const services: Service[] = [
       'React and Three.js front-end development',
       'Animation and interaction design',
       'Hand-gesture and touch-free controls for kiosks',
+      'Motion games for booths and big screens, with leaderboards',
       'Factory digital twins: 3D line layouts with live machine status',
       'Accessible controls and reduced-motion support',
       'Integration with your CMS or e-commerce platform',

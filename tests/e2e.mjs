@@ -27,6 +27,8 @@ const ROUTES = [
   '/hand-gestures',
   '/try-on',
   '/event-booth',
+  '/ar-hunt',
+  '/motion-game',
   '/virtual-tour',
   '/digital-twin',
   '/demos',
@@ -186,7 +188,7 @@ try {
   // --- Demos hub ---------------------------------------------------------------
   await go(B + '/demos');
   await page.locator('main article').first().waitFor();
-  ok((await page.locator('main article').count()) === 9, 'demos hub lists 9 demos');
+  ok((await page.locator('main article').count()) === 11, 'demos hub lists 11 demos');
   ok((await page.getByRole('link', { name: 'Demos' }).first().getAttribute('aria-current')) === 'page', 'Demos nav item is current');
 
   // --- Print AR --------------------------------------------------------------
@@ -240,6 +242,49 @@ try {
   ok((await boothDl).suggestedFilename().endsWith('.jpg'), 'booth photo downloads as JPEG');
   await page.getByRole('button', { name: 'Take another' }).click();
 
+  // --- AR scavenger hunt --------------------------------------------------------
+  await go(B + '/ar-hunt');
+  await page.locator('a[download^="ar-hunt-poster-"]').first().waitFor();
+  ok((await page.getByRole('img', { name: /Hunt poster, station/ }).count()) === 3, 'hunt shows three posters');
+  ok((await page.locator('a[download^="ar-hunt-poster-"]').count()) === 3, 'hunt posters can be downloaded');
+  ok(await passes(page.getByText('0 / 3').waitFor()), 'hunt starts with no stamps');
+  await page.getByRole('button', { name: 'Start camera' }).click();
+  ok(
+    await passes(page.getByRole('alert').filter({ hasText: /Camera access was blocked|No camera found/ }).waitFor({ timeout: 20000 })),
+    'hunt explains when the camera is unavailable',
+  );
+
+  // --- Motion game -------------------------------------------------------------
+  await go(B + '/motion-game');
+  await page.getByRole('button', { name: 'Play with mouse or touch' }).click();
+  await page.getByRole('button', { name: 'Start round' }).first().click();
+  ok(await passes(page.getByText(/^Time: 2\d$/).waitFor({ timeout: 10000 })), 'motion game round starts and the timer runs');
+  await page.getByRole('button', { name: 'Stop' }).click();
+  ok(await passes(page.getByRole('button', { name: 'Start camera' }).waitFor()), 'motion game can be stopped');
+  ok((await page.getByRole('region', { name: 'Open in your browser' }).count()) === 0, 'no in-app browser notice in a normal browser');
+
+  // --- In-app browsers -----------------------------------------------------------
+  const lineUA = 'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0 Mobile Safari/537.36 Line/14.10.0';
+  const lineCtx = await browser.newContext({ userAgent: lineUA, viewport: { width: 390, height: 844 } });
+  const lp = await lineCtx.newPage();
+  await lp.goto(B + '/face-ar', { waitUntil: 'domcontentloaded' });
+  const notice = lp.getByRole('region', { name: 'Open in your browser' });
+  ok(await passes(notice.waitFor()), 'LINE in-app browser shows the notice');
+  ok((await notice.getByRole('link', { name: /Open in browser/ }).getAttribute('href'))?.includes('openExternalBrowser=1'), 'LINE link opens the external browser');
+  await notice.getByRole('button', { name: 'Close' }).click();
+  ok((await notice.count()) === 0, 'in-app notice can be dismissed');
+  await lineCtx.close();
+  const fbCtx = await browser.newContext({
+    userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 [FBAN/FBIOS;FBAV/480.0]',
+    viewport: { width: 390, height: 844 },
+  });
+  const fp = await fbCtx.newPage();
+  await fp.goto(B + '/', { waitUntil: 'domcontentloaded' });
+  const fbNotice = fp.getByRole('region', { name: 'Open in your browser' });
+  ok(await passes(fbNotice.getByRole('button', { name: 'Copy link' }).waitFor()), 'Facebook on iPhone offers to copy the link');
+  ok((await fbNotice.getByRole('link').count()) === 0, 'no broken "open" link on iOS Facebook');
+  await fbCtx.close();
+
   // --- Digital twin ------------------------------------------------------------
   await go(B + '/digital-twin');
   ok(await passes(page.getByText('Simulated data').first().waitFor()), 'twin labels its data as simulated');
@@ -258,7 +303,11 @@ try {
   // The door may be outside the current view; trigger its (hidden) label directly.
   await page.getByRole('button', { name: 'Go to Creative studio', includeHidden: true }).dispatchEvent('click');
   ok(await passes(page.locator('[aria-label="Interactive 360° panorama: Creative studio"]').waitFor({ timeout: 10000 })), 'door hotspot moves to the next room');
-  await page.getByRole('button', { name: 'Service robot', includeHidden: true }).dispatchEvent('click');
+  // The new room's hotspots mount once its panorama has loaded.
+  await page.getByText('Loading panorama').waitFor({ state: 'hidden', timeout: 60000 }).catch(() => {});
+  const robotSpot = page.getByRole('button', { name: 'Service robot', includeHidden: true });
+  await robotSpot.waitFor({ state: 'attached', timeout: 20000 }).catch(() => {});
+  await robotSpot.dispatchEvent('click');
   ok(await passes(page.getByRole('dialog').getByRole('link', { name: 'Open in 3D & AR' }).waitFor({ timeout: 5000 })), 'info hotspot opens a product card');
   await page.getByRole('button', { name: /Car showroom/ }).last().click();
   ok(await passes(page.locator('[aria-label="Interactive 360° panorama: Car showroom"]').waitFor({ timeout: 10000 })), 'room list switches rooms');

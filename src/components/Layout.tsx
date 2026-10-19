@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
+import { InAppBrowserNotice } from './InAppBrowserNotice';
 import { useT } from '../i18n';
 
 function ScrollManager() {
@@ -46,6 +47,7 @@ export function Layout() {
         <Outlet />
       </main>
       <Footer />
+      <InAppBrowserNotice />
     </>
   );
 }

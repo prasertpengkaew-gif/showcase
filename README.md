@@ -41,13 +41,15 @@ npm run dev        # http://localhost:5173
 | `/projects/:slug`  | Project details | 3D viewer with finish/animation pickers, overview, technologies, image gallery with lightbox, demo video **or** a hands-on "Test it yourself" section with a QR code, related projects |
 | `/ar-playground`   | AR Playground   | Pick a chair, robot or car; rotate, zoom, change finish or animation; "View in your space" in AR |
 | `/vr-showroom`     | VR Showroom     | Real-scale virtual gallery: orbit in 3D on any screen, **Enter VR** on Meta Quest and other WebXR headsets (thumbstick movement) |
-| `/demos`           | Demos hub       | One page linking all nine live demos (with a QR code to open it on a phone) |
+| `/demos`           | Demos hub       | One page linking all eleven live demos, grouped (AR on phones, face & body tracking, events, VR & digital twins) (with a QR code to open it on a phone) |
 | `/print-ar`        | Print AR        | Image tracking: point a phone at the printable sample card and a 3D chair stands up on it (MindAR) |
 | `/try-on`          | Virtual Try-On  | Body tracking (MediaPipe Pose): cap, necklace, watch and a simple 2D T-shirt follow the person; save photo; photo fallback |
 | `/hand-gestures`   | Hand gestures   | Camera hand tracking: 7 gestures (✋👍✌️☝️👎✊🤟) trigger robot animations; photo fallback (MediaPipe Gesture Recognizer) |
 | `/virtual-tour`    | Virtual Tour 360° | 3-room 360° tour with door and info hotspots, drag/zoom, phone motion sensor, VR on headsets |
 | `/digital-twin`   | Digital Twin    | 3D production line (6 machines) with live status, temperature/output charts, event log and table; simulated data until connected to a plant feed |
 | `/event-booth`    | Event AR Photo Booth | Branded event frame (3 themes, editable event name), AR props, smile-to-snap countdown, full-screen kiosk mode, download/share; photo fallback |
+| `/ar-hunt`        | AR Scavenger Hunt | Three printable posters (one MindAR target file); each scan shows a 3D character and collects a stamp; all three unlock a reward code |
+| `/motion-game`    | Motion Game     | 30-second catch game with body tracking (or mouse/touch/arrow keys); hands-free start; top-5 board on the device |
 | `/face-ar`         | Face AR         | Live camera face tracking (468-point mesh, expressions, head tilt), sunglasses/crown effects, save photo, photo upload fallback — all on-device |
 | `/services`        | Services        | WebAR Development, VR Development, Face AR & Face Tracking, 3D Visualization, Interactive Experiences, AR Consulting |
 | `/about`           | About           | Company introduction, capabilities, principles, 3D asset credits (no invented credentials)    |
@@ -215,6 +217,21 @@ For real products, replace the drawn items with your product's photos (PNG with 
 - **Shooting:** the shutter (or holding a smile for 0.7 s, "Smile to snap") starts a 3-2-1 countdown. The camera image is cropped to the shape of the screen before the frame is drawn, so in full screen on a phone or a portrait kiosk the saved photo is exactly what guests saw.
 - **Sharing:** photos are made on the device and are saved only when a guest presses Download or Share (Web Share API, on phones that support sharing files).
 - **Not included (needs a server or hardware, quoted per event):** QR download, instant printing, live photo wall, lead capture with consent, and engagement reports. The page lists these as add-ons.
+
+## AR Scavenger Hunt
+
+`/ar-hunt` tracks three posters (`public/ar-hunt/poster-1…3.png`), compiled together into `public/ar-hunt/hunt.mind` (target index = station order). Each poster shows its own 3D model (robot, fox, sneaker) standing upright in front of it, as for a poster on a wall, and collects a stamp. Progress is kept in `localStorage`; with all three, the guest gets a reward code.
+
+- **Your own posters:** edit `STATIONS` in `scripts/make-hunt-posters.mjs` and run `npm run make:hunt-posters`, then update `STATIONS` in `src/pages/ARHunt.tsx` (models and clips). **Each poster needs its own large, detailed image.** Posters that share a layout are confused with each other by the tracker, so keep shared text small and in a different place on each.
+- **Reward codes are not verified** in the demo (the page says so). Real events need a small server so each code can be claimed once.
+
+## Motion Game
+
+`/motion-game` is a 30-second "catch the stars" game (`src/lib/catchGame.ts`). With the camera, MediaPipe Pose tracks both hands, and raising both hands above the head starts a round, so a booth needs no staff. Without a camera it plays with the mouse, a finger, or the arrow keys. The top-5 board is stored on the device (one kiosk); a shared board across screens needs a server.
+
+## In-app browsers (LINE, Facebook, Instagram, TikTok)
+
+These apps open links in a built-in browser that often blocks the camera, WebXR or AR Quick Look. `InAppBrowserNotice` detects them and offers to open the page in the phone's own browser: LINE supports `?openExternalBrowser=1`, Android uses a Chrome intent link, and iOS shows how to open the page in Safari plus a copy-link button.
 
 ## Digital Twin (factory)
 

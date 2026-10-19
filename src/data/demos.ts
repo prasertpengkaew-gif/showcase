@@ -1,10 +1,16 @@
 import type { ComponentType, SVGProps } from 'react';
-import { CameraIcon, CompassIcon, CubeIcon, FaceIcon, FactoryIcon, HandIcon, HeadsetIcon, ScanIcon, ShirtIcon } from '../components/Icons';
+import { CameraIcon, CompassIcon, FlagIcon, GamepadIcon, CubeIcon, FaceIcon, FactoryIcon, HandIcon, HeadsetIcon, ScanIcon, ShirtIcon } from '../components/Icons';
 
-export type DemoId = 'ar' | 'print' | 'face' | 'tryon' | 'hands' | 'vr' | 'tour' | 'twin' | 'event';
+export type DemoId = 'ar' | 'print' | 'face' | 'tryon' | 'hands' | 'vr' | 'tour' | 'twin' | 'event' | 'hunt' | 'game';
+
+export type DemoGroup = 'phone' | 'camera' | 'event' | 'space';
+export const demoGroups: DemoGroup[] = ['phone', 'camera', 'event', 'space'];
 
 export interface Demo {
   id: DemoId;
+  group: DemoGroup;
+  /** Shown in the short list on the home page. */
+  featured?: boolean;
   to: string;
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   /** Preview image; demos without one show their icon on a dark panel. */
@@ -12,15 +18,17 @@ export interface Demo {
 }
 
 export const demos: Demo[] = [
-  { id: 'ar', to: '/ar-playground', icon: CubeIcon, image: '/images/posters/chair.webp' },
-  { id: 'print', to: '/print-ar', icon: ScanIcon, image: '/ar-card/card.png' },
-  { id: 'face', to: '/face-ar', icon: FaceIcon },
-  { id: 'event', to: '/event-booth', icon: CameraIcon },
-  { id: 'tryon', to: '/try-on', icon: ShirtIcon },
-  { id: 'hands', to: '/hand-gestures', icon: HandIcon },
-  { id: 'vr', to: '/vr-showroom', icon: HeadsetIcon, image: '/images/vr-showroom.webp' },
-  { id: 'tour', to: '/virtual-tour', icon: CompassIcon, image: '/tour/living-thumb.webp' },
-  { id: 'twin', to: '/digital-twin', icon: FactoryIcon, image: '/images/digital-twin.webp' },
+  { id: 'ar', group: 'phone', featured: true, to: '/ar-playground', icon: CubeIcon, image: '/images/posters/chair.webp' },
+  { id: 'print', group: 'phone', featured: true, to: '/print-ar', icon: ScanIcon, image: '/ar-card/card.png' },
+  { id: 'tour', group: 'phone', to: '/virtual-tour', icon: CompassIcon, image: '/tour/living-thumb.webp' },
+  { id: 'face', group: 'camera', featured: true, to: '/face-ar', icon: FaceIcon },
+  { id: 'tryon', group: 'camera', to: '/try-on', icon: ShirtIcon },
+  { id: 'hands', group: 'camera', to: '/hand-gestures', icon: HandIcon },
+  { id: 'event', group: 'event', to: '/event-booth', icon: CameraIcon },
+  { id: 'hunt', group: 'event', featured: true, to: '/ar-hunt', icon: FlagIcon, image: '/images/ar-hunt.webp' },
+  { id: 'game', group: 'event', to: '/motion-game', icon: GamepadIcon, image: '/images/motion-game.webp' },
+  { id: 'vr', group: 'space', featured: true, to: '/vr-showroom', icon: HeadsetIcon, image: '/images/vr-showroom.webp' },
+  { id: 'twin', group: 'space', featured: true, to: '/digital-twin', icon: FactoryIcon, image: '/images/digital-twin.webp' },
 ];
 
 export const demoPaths = ['/demos', ...demos.map((d) => d.to)];

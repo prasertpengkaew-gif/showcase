@@ -103,3 +103,9 @@ export const ShrinkIcon = (p: IconProps) => (
 export const CameraIcon = (p: IconProps) => (
   <svg {...base(p)}><path d="M4 8h3l2-3h6l2 3h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></svg>
 );
+export const FlagIcon = (p: IconProps) => (
+  <svg {...base(p)}><path d="M5 21V4M5 4h11l-2 4 2 4H5" /></svg>
+);
+export const GamepadIcon = (p: IconProps) => (
+  <svg {...base(p)}><rect x="2.5" y="7" width="19" height="11" rx="5.5" /><path d="M7.5 10.5v4M5.5 12.5h4" /><circle cx="15.5" cy="11.5" r="1" /><circle cx="18" cy="14" r="1" /></svg>
+);

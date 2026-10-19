@@ -3,6 +3,7 @@ import type { MindARThree } from '../vendor/mindar/mindar-image-three.prod.js';
 import { PageHeader } from '../components/PageHeader';
 import { Button, ButtonAnchor } from '../components/Button';
 import { QRCode } from '../components/QRCode';
+import { EventIdeas } from '../components/EventIdeas';
 import { LazyImage } from '../components/LazyImage';
 import { AlertIcon, CheckIcon, InfoIcon } from '../components/Icons';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
@@ -234,6 +235,7 @@ export default function PrintAR() {
           </ul>
         </div>
       </section>
+      <EventIdeas id="print-events-title" ideas={t.eventIdeas.printAR} />
     </>
   );
 }

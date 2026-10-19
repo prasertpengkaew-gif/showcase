@@ -38,3 +38,33 @@ export async function detectWebXRAR(): Promise<boolean> {
     return false;
   }
 }
+
+export type InAppBrowser = 'line' | 'facebook' | 'instagram' | 'tiktok' | 'other';
+
+/**
+ * Detects the built-in browsers of chat and social apps. They often block the camera, WebXR
+ * or AR Quick Look, so the site suggests opening the page in the phone's own browser.
+ */
+export function detectInAppBrowser(ua = navigator.userAgent): InAppBrowser | null {
+  if (/\bLine\//i.test(ua)) return 'line';
+  if (/FBAN|FBAV|FB_IAB|FBIOS/i.test(ua)) return 'facebook';
+  if (/Instagram/i.test(ua)) return 'instagram';
+  if (/musical_ly|BytedanceWebview|TikTok/i.test(ua)) return 'tiktok';
+  if (/KAKAOTALK|MicroMessenger|; wv\)/i.test(ua)) return 'other';
+  return null;
+}
+
+/** A link that opens the current page outside the in-app browser, where the platform allows it. */
+export function externalBrowserUrl(app: InAppBrowser, href = window.location.href): string | null {
+  const url = new URL(href);
+  // LINE documents this parameter for opening links in the default browser.
+  if (app === 'line') {
+    url.searchParams.set('openExternalBrowser', '1');
+    return url.toString();
+  }
+  if (detectPlatform() === 'android') {
+    return `intent://${url.host}${url.pathname}${url.search}${url.hash}#Intent;scheme=${url.protocol.replace(':', '')};package=com.android.chrome;end`;
+  }
+  // iOS has no reliable way to leave an in-app browser from a link.
+  return null;
+}

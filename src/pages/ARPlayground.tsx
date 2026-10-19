@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { PageHeader } from '../components/PageHeader';
 import { ModelExplorer } from '../components/ModelExplorer';
 import { LazyImage } from '../components/LazyImage';
+import { EventIdeas } from '../components/EventIdeas';
 import { playgroundModelIds } from '../data/models';
 import type { ModelId } from '../types/project';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
@@ -113,6 +114,7 @@ export default function ARPlayground() {
           </div>
         </div>
       </section>
+      <EventIdeas id="playground-events-title" ideas={t.eventIdeas.playground} />
     </>
   );
 }

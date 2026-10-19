@@ -71,7 +71,7 @@ export default function Home() {
             </ButtonLink>
           </div>
           <ul className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {demos.map((demo) => (
+            {demos.filter((demo) => demo.featured).map((demo) => (
               <li key={demo.id}>
                 <DemoCard demo={demo} />
               </li>

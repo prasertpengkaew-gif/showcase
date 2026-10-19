@@ -1,7 +1,7 @@
 import { PageHeader } from '../components/PageHeader';
 import { DemoCard } from '../components/DemoCard';
 import { QRCode } from '../components/QRCode';
-import { demos } from '../data/demos';
+import { demoGroups, demos } from '../data/demos';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useT } from '../i18n';
 
@@ -17,17 +17,25 @@ export default function Demos() {
           <QRCode value={url} size={104} label={t.arNotice.qrLabel} onDark className="shrink-0" />
         </div>
       </PageHeader>
-      <section aria-label={d.metaTitle} className="py-16 sm:py-20">
-        <div className="container-page">
-          <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {demos.map((demo) => (
-              <li key={demo.id}>
-                <DemoCard demo={demo} headingLevel="h2" />
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
+      {demoGroups.map((group, i) => (
+        <section key={group} aria-labelledby={`demos-${group}`} className={`py-14 sm:py-16 ${i % 2 ? 'bg-surface' : ''}`}>
+          <div className="container-page">
+            <h2 id={`demos-${group}`} className="font-display text-2xl font-bold">
+              {d.groups[group].title}
+            </h2>
+            <p className="mt-2 max-w-2xl text-muted">{d.groups[group].text}</p>
+            <ul className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {demos
+                .filter((demo) => demo.group === group)
+                .map((demo) => (
+                  <li key={demo.id}>
+                    <DemoCard demo={demo} />
+                  </li>
+                ))}
+            </ul>
+          </div>
+        </section>
+      ))}
     </>
   );
 }
