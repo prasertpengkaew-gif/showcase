@@ -185,8 +185,9 @@ export function buildCubeSheet(opts: {
   for (const f of faces) ctx.strokeRect(f.x, f.y, s, s);
   ctx.setLineDash([]);
   ctx.fillStyle = '#64748b';
+  ctx.font = `600 22px ${SANS}`;
+  ctx.fillText(opts.glue, 70, 165);
   ctx.font = `500 22px ${SANS}`;
-  ctx.fillText(opts.glue, 70, H - 40);
   ctx.textAlign = 'right';
   ctx.fillText('TheNerdStudio · AR cube', W - 70, H - 40);
   return canvas;
