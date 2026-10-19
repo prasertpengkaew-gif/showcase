@@ -23,6 +23,10 @@ const ROUTES = [
   '/ar-playground',
   '/vr-showroom',
   '/face-ar',
+  '/print-ar',
+  '/hand-gestures',
+  '/virtual-tour',
+  '/demos',
   '/services',
   '/about',
   '/contact',
@@ -170,6 +174,45 @@ try {
   await page.locator('input[type=file]').setInputFiles(path.join(root, 'public/images/projects/lounge-chair-configurator/cover.webp'));
   ok(await passes(page.getByText('No face was found in that photo').waitFor({ timeout: 60000 })), 'Face AR runs the model on a photo');
   ok(await page.getByRole('button', { name: 'Save photo' }).isDisabled(), 'Save photo is disabled when no face was found');
+
+  // --- Demos hub ---------------------------------------------------------------
+  await go(B + '/demos');
+  await page.locator('main article').first().waitFor();
+  ok((await page.locator('main article').count()) === 6, 'demos hub lists 6 demos');
+  ok((await page.getByRole('link', { name: 'Demos' }).first().getAttribute('aria-current')) === 'page', 'Demos nav item is current');
+
+  // --- Print AR --------------------------------------------------------------
+  await go(B + '/print-ar');
+  ok(await passes(page.getByRole('img', { name: /Sample AR card/ }).waitFor()), 'Print AR shows the sample card');
+  ok((await page.getByRole('link', { name: 'Download card (PNG)' }).getAttribute('download')) !== null, 'card can be downloaded');
+  await page.getByRole('button', { name: 'Start camera' }).click();
+  ok(
+    await passes(page.getByRole('alert').filter({ hasText: /Camera access was blocked|No camera found/ }).waitFor({ timeout: 20000 })),
+    'Print AR explains when the camera is unavailable',
+  );
+
+  // --- Hand gestures -----------------------------------------------------------
+  await go(B + '/hand-gestures');
+  await page.getByRole('button', { name: 'Start camera' }).click();
+  ok(
+    await passes(page.getByRole('alert').filter({ hasText: /Camera access was blocked|No camera found/ }).waitFor({ timeout: 20000 })),
+    'Hand gestures explains when the camera is unavailable',
+  );
+  await page.locator('input[type=file]').setInputFiles(path.join(root, 'public/images/projects/lounge-chair-configurator/cover.webp'));
+  ok(await passes(page.getByText('No hand gesture was recognised').waitFor({ timeout: 90000 })), 'gesture model runs on a photo');
+
+  // --- Virtual tour ------------------------------------------------------------
+  await go(B + '/virtual-tour');
+  const tour = page.locator('[aria-label^="Interactive 360° panorama"]');
+  await tour.scrollIntoViewIfNeeded();
+  ok(await passes(page.getByText('Loading panorama').waitFor({ state: 'hidden', timeout: 60000 })), 'tour panorama loads');
+  // The door may be outside the current view; trigger its (hidden) label directly.
+  await page.getByRole('button', { name: 'Go to Creative studio', includeHidden: true }).dispatchEvent('click');
+  ok(await passes(page.locator('[aria-label="Interactive 360° panorama: Creative studio"]').waitFor({ timeout: 10000 })), 'door hotspot moves to the next room');
+  await page.getByRole('button', { name: 'Service robot', includeHidden: true }).dispatchEvent('click');
+  ok(await passes(page.getByRole('dialog').getByRole('link', { name: 'Open in 3D & AR' }).waitFor({ timeout: 5000 })), 'info hotspot opens a product card');
+  await page.getByRole('button', { name: /Car showroom/ }).last().click();
+  ok(await passes(page.locator('[aria-label="Interactive 360° panorama: Car showroom"]').waitFor({ timeout: 10000 })), 'room list switches rooms');
 
   // --- Language toggle -------------------------------------------------------
   await go(B + '/projects');

@@ -38,9 +38,7 @@ export const siteConfig = {
 export const navLinks = [
   { to: '/', key: 'home' },
   { to: '/projects', key: 'projects' },
-  { to: '/ar-playground', key: 'playground' },
-  { to: '/vr-showroom', key: 'vr' },
-  { to: '/face-ar', key: 'face' },
+  { to: '/demos', key: 'demos' },
   { to: '/services', key: 'services' },
   { to: '/about', key: 'about' },
   { to: '/contact', key: 'contact' },

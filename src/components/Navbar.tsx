@@ -6,6 +6,7 @@ import { ButtonLink } from './Button';
 import { CloseIcon, MenuIcon } from './Icons';
 import { LanguageToggle } from './LanguageToggle';
 import { useT } from '../i18n';
+import { demoPaths } from '../data/demos';
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -14,6 +15,7 @@ export function Navbar() {
   const toggleRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const t = useT();
+  const onDemo = demoPaths.includes(location.pathname);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -70,13 +72,14 @@ export function Navbar() {
       <nav aria-label={t.nav.main} className="container-page flex h-16 items-center justify-between lg:h-[72px]">
         <Logo tone={solid ? 'dark' : 'light'} />
 
-        <ul className="hidden items-center gap-0.5 xl:flex">
+        <ul className="hidden items-center gap-1 lg:flex">
           {navLinks.slice(1).map((link) => (
             <li key={link.to}>
               <NavLink
                 to={link.to}
-                className={({ isActive }) =>
-                  `relative rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
+                className={({ isActive: exact }) => {
+                  const isActive = exact || (link.key === 'demos' && onDemo);
+                  return `relative rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
                     solid
                       ? isActive
                         ? 'text-electric-700'
@@ -84,13 +87,13 @@ export function Navbar() {
                       : isActive
                         ? 'text-white'
                         : 'text-slate-300 hover:text-white'
-                  }`
-                }
+                  }`;
+                }}
               >
-                {({ isActive }) => (
+                {({ isActive: exact }) => (
                   <>
                     {t.nav[link.key]}
-                    {isActive && (
+                    {(exact || (link.key === 'demos' && onDemo)) && (
                       <span
                         aria-hidden
                         className="absolute inset-x-3.5 -bottom-0.5 h-0.5 rounded-full bg-electric-600"
@@ -105,7 +108,7 @@ export function Navbar() {
 
         <div className="flex items-center gap-2">
           <LanguageToggle tone={solid ? 'dark' : 'light'} />
-          <div className="hidden xl:block">
+          <div className="hidden lg:block">
             <ButtonLink to="/contact" variant={solid ? 'primary' : 'outline-light'} size="md">
               {t.nav.cta}
             </ButtonLink>
@@ -114,7 +117,7 @@ export function Navbar() {
         <button
           ref={toggleRef}
           type="button"
-          className={`grid h-11 w-11 place-items-center rounded-full xl:hidden ${
+          className={`grid h-11 w-11 place-items-center rounded-full lg:hidden ${
             solid ? 'text-ink hover:bg-surface' : 'text-white hover:bg-white/10'
           }`}
           aria-expanded={open}
@@ -131,7 +134,7 @@ export function Navbar() {
         id="mobile-menu"
         ref={panelRef}
         hidden={!open}
-        className="fixed inset-x-0 top-16 bottom-0 overflow-y-auto bg-navy-900 lg:top-[72px] xl:hidden"
+        className="fixed inset-x-0 top-16 bottom-0 overflow-y-auto bg-navy-900 lg:hidden"
       >
         <ul className="container-page flex flex-col gap-1 py-6">
           {navLinks.map((link) => (

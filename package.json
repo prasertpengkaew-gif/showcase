@@ -13,7 +13,9 @@
     "validate:models": "node scripts/validate-models.mjs",
     "pretest:e2e": "node scripts/copy-mediapipe.mjs",
     "test:e2e": "node tests/e2e.mjs",
-    "render:media": "node scripts/render-media.mjs"
+    "render:media": "node scripts/render-media.mjs",
+    "render:panoramas": "node scripts/render-panoramas.mjs",
+    "make:ar-card": "node scripts/make-ar-card.mjs"
   },
   "engines": {
     "node": ">=20.19"

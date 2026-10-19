@@ -19,11 +19,12 @@ export const services: Service[] = [
     icon: ScanIcon,
     includes: [
       'Markerless floor and wall placement',
+      'Image tracking for print, packaging and business cards',
       'iOS Quick Look, Android Scene Viewer and WebXR from one codebase',
       'Device detection with clear fallbacks',
       'Analytics hooks for your existing tools',
     ],
-    bestFor: 'Product pages, campaigns, packaging and print-to-AR.',
+    bestFor: 'Product pages, campaigns, packaging, brochures and print-to-AR.',
   },
   {
     id: 'vr-development',
@@ -33,11 +34,12 @@ export const services: Service[] = [
     icon: HeadsetIcon,
     includes: [
       'Virtual showrooms, show units and training spaces',
+      '360° virtual tours from on-site photos or 3D renders',
       'WebXR immersive-vr with thumbstick locomotion and controllers',
       'Real-scale scenes and models optimized for headset frame rates',
       'Interactive 3D fallback for phones and desktop',
     ],
-    bestFor: 'Virtual showrooms, property, training and exhibitions.',
+    bestFor: 'Virtual showrooms, property and hotel tours, training and exhibitions.',
   },
   {
     id: 'face-ar',
@@ -76,6 +78,7 @@ export const services: Service[] = [
     includes: [
       'React and Three.js front-end development',
       'Animation and interaction design',
+      'Hand-gesture and touch-free controls for kiosks',
       'Accessible controls and reduced-motion support',
       'Integration with your CMS or e-commerce platform',
     ],

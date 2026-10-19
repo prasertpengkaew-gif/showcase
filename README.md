@@ -27,6 +27,8 @@ npm run dev        # http://localhost:5173
 | `npm run validate:models` | Check every file in `public/models` with the Khronos glTF Validator |
 | `npm run test:e2e`        | End-to-end + accessibility (axe-core) checks in headless Chromium |
 | `npm run render:media`    | Re-render posters, project images and videos from the GLBs       |
+| `npm run render:panoramas`| Re-render the 360° tour panoramas from the GLBs                  |
+| `npm run make:ar-card`    | Rebuild the printable AR card and its compiled MindAR target     |
 
 ---
 
@@ -39,6 +41,10 @@ npm run dev        # http://localhost:5173
 | `/projects/:slug`  | Project details | 3D viewer with finish/animation pickers, overview, technologies, image gallery with lightbox, demo video **or** a hands-on "Test it yourself" section with a QR code, related projects |
 | `/ar-playground`   | AR Playground   | Pick a chair, robot or car; rotate, zoom, change finish or animation; "View in your space" in AR |
 | `/vr-showroom`     | VR Showroom     | Real-scale virtual gallery: orbit in 3D on any screen, **Enter VR** on Meta Quest and other WebXR headsets (thumbstick movement) |
+| `/demos`           | Demos hub       | One page linking all six live demos (with a QR code to open it on a phone) |
+| `/print-ar`        | Print AR        | Image tracking: point a phone at the printable sample card and a 3D chair stands up on it (MindAR) |
+| `/hand-gestures`   | Hand gestures   | Camera hand tracking: 7 gestures (✋👍✌️☝️👎✊🤟) trigger robot animations; photo fallback (MediaPipe Gesture Recognizer) |
+| `/virtual-tour`    | Virtual Tour 360° | 3-room 360° tour with door and info hotspots, drag/zoom, phone motion sensor, VR on headsets |
 | `/face-ar`         | Face AR         | Live camera face tracking (468-point mesh, expressions, head tilt), sunglasses/crown effects, save photo, photo upload fallback — all on-device |
 | `/services`        | Services        | WebAR Development, VR Development, Face AR & Face Tracking, 3D Visualization, Interactive Experiences, AR Consulting |
 | `/about`           | About           | Company introduction, capabilities, principles, 3D asset credits (no invented credentials)    |
@@ -162,6 +168,37 @@ Files:
 - `public/mediapipe/`: the WebAssembly runtime, copied from `node_modules` by `scripts/copy-mediapipe.mjs`. This runs automatically before `dev`, `build` and `test:e2e`, and the folder is gitignored.
 
 To add your own effect, write a draw function in `src/lib/faceEffects.ts`, add its id to `FaceEffect` and `EFFECTS`, and add its label to `face.effects` in both language files.
+
+---
+
+## Print AR (image tracking)
+
+`/print-ar` uses [MindAR](https://github.com/hiukim/mind-ar-js) (MIT) to track a printed image. The sample card is `public/ar-card/card.png`, and its tracking data is `public/ar-card/card.mind`.
+
+- MindAR is vendored in `src/vendor/mindar/` instead of installed from npm, for two reasons:
+  - The npm package pulls in the native `canvas` module, which often fails to install on hosting platforms.
+  - Its three.js wrapper needed two small patches to work with current three.js. Both are noted at the top of the files.
+- **To use your own artwork** (a poster, package or business card), replace `card.png`, or edit the HTML in `scripts/make-ar-card.mjs`, then run `npm run make:ar-card` to compile a new `card.mind`. Artwork with plenty of detail and contrast tracks best. Flat colour areas and repeating patterns track poorly.
+- **To change what appears on the card**, edit the anchor content in `src/pages/PrintAR.tsx`. One card unit equals the card's width.
+
+## Virtual Tour 360°
+
+`/virtual-tour` displays 2:1 equirectangular panoramas as the scene background, so the same viewer works on desktop (drag + scroll zoom), phones (optional motion sensor; iOS asks permission) and VR headsets.
+
+- **The included rooms are CG renders.** `scripts/render-panoramas.mjs` builds three rooms from the site's GLB models, renders them with a cube camera, and converts them to 4096×2048 JPEGs. The page says clearly that they are renders.
+- **For a real property**, shoot 360° photos (any 360 camera exports 2:1 equirectangular JPEGs), put them in `public/tour/`, and update `src/data/tour.ts`:
+  - each room's image
+  - the direction the visitor faces on arrival
+  - the hotspots: door hotspots link rooms, info hotspots open a product card that links to a project page
+- **Hotspot positions** are 3D points in metres relative to the camera position `EYE`. For photos, estimate them from the direction of the door or object.
+- **Accessibility:** hotspot labels are real HTML buttons that the 3D scene repositions every frame, so they work with a keyboard and a screen reader. A room list below the viewer gives the same navigation without the panorama. In VR, the 3D markers are selected with the controller ray.
+
+## Hand gestures
+
+`/hand-gestures` uses MediaPipe Gesture Recognizer (Apache-2.0; model at `public/models/hand/gesture_recognizer.task`, 8 MB). It shares the WebAssembly runtime with Face AR.
+
+- **How a gesture triggers the robot:** the gesture has to be held for 4 frames at a score of at least 60%. The robot then plays the matching clip, and returns to idle 1.5 s after the hand drops.
+- **Changing the mapping:** edit `GESTURE_ANIMATION` in `src/pages/HandGestures.tsx`.
 
 ---
 
@@ -294,6 +331,8 @@ npm run test:e2e
 - **Media:** gallery lightbox, video loading, and the "Test it yourself" sections with their QR codes
 - **VR Showroom:** the canvas renders, the headset status message, and the disabled Enter VR button
 - **Face AR:** the camera-unavailable message, and the model running on a photo with no face in it
+- **Print AR and hand gestures:** the camera-unavailable messages, the card download, and the gesture model running on a photo
+- **Virtual tour:** the panorama loads, door hotspots, the info card, and the room list
 - **Languages:** the TH/EN toggle, persistence after reload, and Thai copy (axe also scans the Thai pages)
 - **Projects:** category filters and deep links, 404 pages, and every internal link
 - **Contact form:** validation, focus on the error summary, a successful POST and a server error
