@@ -1,4 +1,5 @@
 import { useState, type ImgHTMLAttributes } from 'react';
+import { useT } from '../i18n';
 
 interface LazyImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'loading' | 'onLoad' | 'onError'> {
   src: string;
@@ -25,6 +26,7 @@ export function LazyImage({
   ...rest
 }: LazyImageProps) {
   const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
+  const t = useT();
 
   return (
     <div
@@ -33,7 +35,7 @@ export function LazyImage({
     >
       {status === 'error' ? (
         <div className="absolute inset-0 grid place-items-center p-4 text-center text-sm text-muted">
-          Image unavailable
+          {t.image.unavailable}
         </div>
       ) : (
         <img

@@ -21,6 +21,7 @@ const ROUTES = [
   '/projects/lounge-chair-configurator',
   '/projects/interactive-brand-mascot',
   '/ar-playground',
+  '/vr-showroom',
   '/services',
   '/about',
   '/contact',
@@ -57,6 +58,8 @@ const browser = await chromium.launch({
 });
 const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
 const page = await context.newPage();
+// Don't wait for third-party resources (web fonts) to finish; the app renders without them.
+const go = (url) => page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
 const pageErrors = [];
 page.on('pageerror', (e) => pageErrors.push(e.message));
 page.on('response', (r) => {
@@ -70,7 +73,7 @@ const viewerProp = (prop) => page.evaluate((p) => document.querySelector('model-
 
 try {
   // --- AR Playground ---------------------------------------------------------
-  await page.goto(B + '/ar-playground');
+  await go(B + '/ar-playground');
   await viewer().scrollIntoViewIfNeeded();
   await waitForModel();
   ok(await passes(page.waitForFunction(() => !document.querySelector('[role=toolbar] button')?.disabled)), 'viewer toolbar enables after load');
@@ -105,7 +108,7 @@ try {
     'wildlife-field-lesson': { animations: ['Survey', 'Walk', 'Run'] },
   };
   for (const [slug, expected] of Object.entries(expectations)) {
-    await page.goto(`${B}/projects/${slug}`);
+    await go(`${B}/projects/${slug}`);
     await viewer().scrollIntoViewIfNeeded();
     await waitForModel();
     if (expected.variants) {
@@ -120,7 +123,7 @@ try {
   }
 
   // --- Video and lightbox ----------------------------------------------------
-  await page.goto(B + '/projects/robotic-workcell-preview');
+  await go(B + '/projects/robotic-workcell-preview');
   const video = page.locator('video');
   await video.scrollIntoViewIfNeeded();
   await video.evaluate((el) => {
@@ -137,7 +140,7 @@ try {
 
   // --- "Test it yourself" projects -------------------------------------------
   for (const slug of ['scale-model-showroom', 'interactive-brand-mascot', 'stem-robotics-lesson', 'velvet-sofa-product-page']) {
-    await page.goto(`${B}/projects/${slug}`);
+    await go(`${B}/projects/${slug}`);
     await page.getByText('Test it yourself').waitFor();
     ok((await page.locator('video').count()) === 0, `${slug}: shows "Test it yourself" instead of a video`);
     ok(await passes(page.locator('#try-title ~ * [aria-label^="QR code"] svg, section[aria-labelledby="try-title"] [aria-label^="QR code"] svg').first().waitFor()), `${slug}: QR code rendered`);
@@ -146,9 +149,36 @@ try {
   await page.waitForTimeout(800);
   ok(await page.evaluate(() => Math.abs(document.getElementById('viewer').getBoundingClientRect().top) < 120), '"Go to the 3D viewer" scrolls to the viewer');
 
+  // --- VR Showroom -----------------------------------------------------------
+  await go(B + '/vr-showroom');
+  ok(await passes(page.locator('[aria-label^="Virtual showroom"] canvas').waitFor({ timeout: 20000 })), 'VR showroom renders a 3D canvas');
+  ok(await passes(page.getByText('No VR headset detected').waitFor({ timeout: 10000 })), 'VR status explains no headset is present');
+  ok(await page.getByRole('button', { name: 'Enter VR' }).isDisabled(), '"Enter VR" is disabled without a headset');
+  ok(await passes(page.locator('[aria-label="QR code that opens the VR Showroom"] svg').waitFor()), 'VR page shows a QR code');
+
+  // --- Language toggle -------------------------------------------------------
+  await go(B + '/projects');
+  await page.getByRole('button', { name: 'เปลี่ยนเป็นภาษาไทย' }).click();
+  ok((await page.evaluate(() => document.documentElement.lang)) === 'th', 'language toggle sets <html lang="th">');
+  ok(await passes(page.getByRole('heading', { name: 'ผลงานที่เปิด หมุน และวางได้จริง' }).waitFor({ timeout: 5000 })), 'page text switches to Thai');
+  ok(await passes(page.getByRole('button', { name: /อสังหาริมทรัพย์/ }).waitFor({ timeout: 5000 })), 'category filters are translated');
+  await page.reload();
+  ok((await page.evaluate(() => document.documentElement.lang)) === 'th', 'language choice persists after reload');
+  for (const route of ['/', '/projects/interactive-brand-mascot', '/vr-showroom', '/contact']) {
+    await go(B + route);
+    await page.locator('footer').waitFor();
+    await page.waitForTimeout(800);
+    const { violations } = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze();
+    const serious = violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
+    ok(serious.length === 0, `axe (Thai) ${route}: ${serious.length} serious/critical`);
+    for (const v of serious) console.log(`     [${v.impact}] ${v.id}: ${v.nodes.slice(0, 3).map((n) => n.target.join(' ')).join(' | ')}`);
+  }
+  await page.getByRole('button', { name: 'Switch to English' }).click();
+  ok((await page.evaluate(() => document.documentElement.lang)) === 'en', 'toggle switches back to English');
+
   // --- Projects filter -------------------------------------------------------
   const cards = page.locator('main ul.grid > li');
-  await page.goto(B + '/projects');
+  await go(B + '/projects');
   await cards.first().waitFor();
   ok((await cards.count()) === 9, 'all 9 projects listed');
   await page.getByRole('button', { name: /Real Estate/ }).click();
@@ -156,29 +186,29 @@ try {
   ok(page.url().includes('category=real-estate'), 'filter is saved in the URL');
   ok((await cards.count()) === 1, 'Real Estate filter shows 1 project');
   ok((await page.getByRole('button', { name: /Real Estate/ }).getAttribute('aria-pressed')) === 'true', 'active filter has aria-pressed');
-  await page.goto(B + '/projects?category=education');
+  await go(B + '/projects?category=education');
   await cards.first().waitFor();
   ok((await cards.count()) === 2, 'deep link ?category=education shows 2 projects');
   await cards.first().locator('a').click();
   ok(await passes(page.waitForURL(/\/projects\/[a-z-]+$/)), 'project card opens its detail page');
 
   // --- 404s ------------------------------------------------------------------
-  await page.goto(B + '/projects/does-not-exist');
+  await go(B + '/projects/does-not-exist');
   ok(await passes(page.getByRole('heading', { name: 'Project not found' }).waitFor()), 'unknown project shows not-found');
-  await page.goto(B + '/does-not-exist');
+  await go(B + '/does-not-exist');
   ok(await passes(page.getByRole('heading', { name: 'Page not found' }).waitFor()), 'unknown route shows 404');
 
   // --- Internal links all resolve -------------------------------------------
   const links = new Set();
   for (const route of ROUTES.slice(0, -1)) {
-    await page.goto(B + route);
+    await go(B + route);
     await page.locator('footer').waitFor();
     for (const href of await page.evaluate(() => [...document.querySelectorAll('a[href^="/"]')].map((a) => a.getAttribute('href')))) {
       links.add(href.split('#')[0].split('?')[0]);
     }
   }
   for (const href of links) {
-    await page.goto(B + href);
+    await go(B + href);
     const notFound = await page
       .getByRole('heading', { name: /not found/i })
       .waitFor({ timeout: 1500 })
@@ -187,7 +217,7 @@ try {
   }
 
   // --- Contact form: default email only (mailto) -----------------------------
-  await page.goto(B + '/contact');
+  await go(B + '/contact');
   ok(await passes(page.getByText('How this form works').waitFor()), 'email-only form explains it opens the email app');
   ok(await page.locator('a[href="mailto:thenerdstudio@gmail.com"]').first().isVisible(), 'default contact email is shown');
   await page.getByLabel('Work email').fill('bad');
@@ -218,7 +248,7 @@ try {
     await page.getByLabel('Project type').selectOption('Product');
     await page.getByLabel('Project details').fill('We want a chair configurator with AR on our product pages.');
   };
-  await page.goto(configured.url + '/contact');
+  await go(configured.url + '/contact');
   await page.getByRole('button', { name: 'Send message' }).click();
   ok(await page.getByText(/Please fix these 4 fields/).isVisible(), 'empty submit shows an error summary');
   ok((await page.evaluate(() => document.activeElement?.getAttribute('role'))) === 'alert', 'error summary receives focus');
@@ -234,13 +264,13 @@ try {
 
   // --- Mobile layout ---------------------------------------------------------
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto(B + '/services');
+  await go(B + '/services');
   await page.getByRole('button', { name: 'Open menu' }).click();
   ok(await page.locator('#mobile-menu').isVisible(), 'mobile menu opens');
   await page.keyboard.press('Escape');
   ok(await page.locator('#mobile-menu').isHidden(), 'mobile menu closes on Escape');
   for (const route of ROUTES) {
-    await page.goto(B + route);
+    await go(B + route);
     await page.waitForTimeout(600);
     ok(!(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)), `no horizontal scroll at 390px: ${route}`);
   }
@@ -268,7 +298,7 @@ try {
   // --- Accessibility (axe-core, WCAG 2.2 A/AA) -------------------------------
   await page.setViewportSize({ width: 1280, height: 900 });
   for (const route of ROUTES) {
-    await page.goto(B + route);
+    await go(B + route);
     await page.locator('footer').waitFor();
     await page.waitForTimeout(1000);
     const { violations } = await new AxeBuilder({ page })

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useT } from '../i18n';
 
 interface QRCodeProps {
   value: string;
@@ -23,6 +24,7 @@ const isLocalHost = (url: string) => {
 export function QRCode({ value, size = 152, label, className = '', onDark = false }: QRCodeProps) {
   const [svg, setSvg] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
+  const t = useT();
 
   useEffect(() => {
     let cancelled = false;
@@ -51,13 +53,12 @@ export function QRCode({ value, size = 152, label, className = '', onDark = fals
           className="grid place-items-center rounded-xl bg-white p-2 text-xs text-muted ring-1 ring-line"
           style={{ width: size, height: size }}
         >
-          {failed ? 'QR code unavailable' : 'Generating…'}
+          {failed ? t.qr.unavailable : t.qr.generating}
         </div>
       )}
       {isLocalHost(value) && (
         <figcaption className={`mt-2 max-w-[16rem] text-xs leading-relaxed ${onDark ? 'text-amber-300' : 'text-amber-800'}`}>
-          This is a local development address, so a phone can't open it. Deploy the site or use an HTTPS tunnel
-          (see README) to test on a phone.
+          {t.qr.local}
         </figcaption>
       )}
     </figure>

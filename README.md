@@ -1,10 +1,11 @@
-# TheNerdStudio — AR Portfolio
+# TheNerdStudio — AR & VR Portfolio
 
-A responsive portfolio website for a WebAR / 3D studio, built with **React 19, TypeScript, Vite, Tailwind CSS v4, Three.js, React Three Fiber and Google's `<model-viewer>`**.
+A responsive, bilingual (Thai / English) portfolio website for a WebAR, VR and 3D studio, built with **React 19, TypeScript, Vite, Tailwind CSS v4, Three.js, React Three Fiber, `@react-three/xr` and Google's `<model-viewer>`**.
 
 Everything on the site works for real: every 3D model is a valid glTF file you can rotate, zoom and place in AR, and every image and video was rendered from those models. The contact form never says a message was sent unless something actually delivered it.
 
 > Brand name and default contact email (thenerdstudio@gmail.com) are set in `src/config/site.ts`.
+> A 5-minute client presentation script (Thai) is in [`docs/PITCH-TH.md`](docs/PITCH-TH.md).
 
 ---
 
@@ -37,7 +38,8 @@ npm run dev        # http://localhost:5173
 | `/projects`        | Projects        | Filter by Industrial, Product, Education, Marketing, Real Estate, Automotive. The filter is saved in the URL (`?category=real-estate`) |
 | `/projects/:slug`  | Project details | 3D viewer with finish/animation pickers, overview, technologies, image gallery with lightbox, demo video **or** a hands-on "Test it yourself" section with a QR code, related projects |
 | `/ar-playground`   | AR Playground   | Pick a chair, robot or car; rotate, zoom, change finish or animation; "View in your space" in AR |
-| `/services`        | Services        | WebAR Development, 3D Visualization, Interactive Experiences, AR Consulting                   |
+| `/vr-showroom`     | VR Showroom     | Real-scale virtual gallery: orbit in 3D on any screen, **Enter VR** on Meta Quest and other WebXR headsets (thumbstick movement) |
+| `/services`        | Services        | WebAR Development, VR Development, 3D Visualization, Interactive Experiences, AR Consulting    |
 | `/about`           | About           | Company introduction, capabilities, principles, 3D asset credits (no invented credentials)    |
 | `/contact`         | Contact         | Validated form, contact details from config                                                   |
 | anything else      | 404             | Friendly not-found page                                                                        |
@@ -59,7 +61,8 @@ src/
   pages/             Home, Projects, ProjectDetail, ARPlayground, Services, About, Contact, NotFound
   data/              projects.ts, models.ts, services.ts
   types/             project.ts, model-viewer.d.ts (JSX types for <model-viewer>)
-  config/site.ts     Company name, contact details, social links
+  config/site.ts     Company name, contact details (email, phone, LINE), social links
+  i18n/              en.ts / th.ts interface text, content.th.ts (Thai project/service/model copy), hooks
   hooks/, lib/       Reduced motion, lazy-in-view, device/AR capability detection
   App.tsx, main.tsx, index.css
 ```
@@ -80,6 +83,9 @@ VITE_CONTACT_PHONE=+66 2 123 4567
 VITE_CONTACT_ADDRESS=123 Example Road, Bangkok 10110
 VITE_CONTACT_HOURS=Mon–Fri, 9:00–18:00
 VITE_FORM_ENDPOINT=https://formspree.io/f/yourFormId
+VITE_LINE_URL=https://line.me/R/ti/p/@yourlineid
+VITE_LINE_ID=@yourlineid
+VITE_FACEBOOK_URL=https://www.facebook.com/yourpage
 VITE_LINKEDIN_URL=https://www.linkedin.com/company/yourcompany
 ```
 
@@ -98,6 +104,45 @@ The form validates in the browser (required fields, email format, message length
 | Neither set                   | The form is shown but disabled, with a notice that it isn't connected yet.                      |
 
 The JSON body is `{ name, email, company, projectType, message }`. This works with Formspree, Getform, Basin, a serverless function, or your own API. The endpoint has to accept cross-origin requests from your domain.
+
+---
+
+### LINE and Facebook
+
+With `VITE_LINE_URL` set, the Contact page shows the LINE account and a **Chat on LINE** button, and the footer gets a LINE link. Use your LINE account's add-friend URL (for example `https://line.me/R/ti/p/@yourid`), plus `VITE_LINE_ID` for the ID shown on the page. `VITE_FACEBOOK_URL` adds a Facebook link.
+
+---
+
+## Languages (Thai / English)
+
+The **EN / TH** button in the header switches the language. The choice is saved in the browser, and first-time visitors whose browser language is Thai get Thai automatically. `<html lang>` changes too, so screen readers and fonts behave correctly. Thai text uses Noto Sans Thai.
+
+- Interface text lives in `src/i18n/en.ts` and `src/i18n/th.ts`. TypeScript reports an error if a Thai key is missing.
+- Thai project, service and model copy lives in `src/i18n/content.th.ts`, keyed by project slug, service id and model id. Anything missing falls back to the English text in `src/data/*.ts`.
+- Components read text with `useT()`, and localized data with `useProjects()`, `useServices()` and `useModels()`.
+
+When you add a project, add its Thai copy to `projectsTh` too.
+
+---
+
+## VR Showroom
+
+`/vr-showroom` is a small, real-scale gallery (sofa, chair, robot, car, fox) built with React Three Fiber and `@react-three/xr`:
+
+| Device | Experience |
+| ------ | ---------- |
+| Meta Quest 2 / 3 / 3S / Pro (Meta Quest Browser), other WebXR headsets | **Enter VR** opens an immersive WebXR session. Left thumbstick moves, right thumbstick turns, and controllers are tracked. |
+| Phones, tablets, desktop | Interactive 3D: drag to look around, scroll or pinch to move closer. The Enter VR button is disabled, and the page says why. |
+
+The button is only enabled when the browser reports `immersive-vr` support. The WebXR emulator is turned off, so this check is real.
+
+To test on a Quest:
+
+1. Deploy the site (VR needs HTTPS).
+2. Open the URL in Meta Quest Browser (type it, or open a bookmark synced from your account).
+3. Press **Enter VR**.
+
+Exhibits and their positions are listed in `EXHIBITS` in `src/components/VRScene.tsx`. Any model from `src/data/models.ts` can be added there.
 
 ---
 
@@ -228,6 +273,8 @@ npm run test:e2e
 
 - **Viewers:** model switching, finish and animation pickers (checked against the names inside each GLB), and the toolbar
 - **Media:** gallery lightbox, video loading, and the "Test it yourself" sections with their QR codes
+- **VR Showroom:** the canvas renders, the headset status message, and the disabled Enter VR button
+- **Languages:** the TH/EN toggle, persistence after reload, and Thai copy (axe also scans the Thai pages)
 - **Projects:** category filters and deep links, 404 pages, and every internal link
 - **Contact form:** validation, focus on the error summary, a successful POST and a server error
 - **Layout:** the mobile menu, and no horizontal scrolling at 390 px on any page

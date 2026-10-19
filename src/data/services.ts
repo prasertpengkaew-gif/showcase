@@ -1,5 +1,5 @@
 import type { ComponentType, SVGProps } from 'react';
-import { CompassIcon, CubeIcon, HandIcon, ScanIcon } from '../components/Icons';
+import { CompassIcon, CubeIcon, HandIcon, HeadsetIcon, ScanIcon } from '../components/Icons';
 
 export interface Service {
   id: string;
@@ -24,6 +24,20 @@ export const services: Service[] = [
       'Analytics hooks for your existing tools',
     ],
     bestFor: 'Product pages, campaigns, packaging and print-to-AR.',
+  },
+  {
+    id: 'vr-development',
+    title: 'VR Development',
+    summary:
+      'Walk-around virtual spaces for headsets such as Meta Quest — launched straight from the browser, with a 3D view on every other screen.',
+    icon: HeadsetIcon,
+    includes: [
+      'Virtual showrooms, show units and training spaces',
+      'WebXR immersive-vr with thumbstick locomotion and controllers',
+      'Real-scale scenes and models optimized for headset frame rates',
+      'Interactive 3D fallback for phones and desktop',
+    ],
+    bestFor: 'Virtual showrooms, property, training and exhibitions.',
   },
   {
     id: '3d-visualization',
@@ -57,7 +71,7 @@ export const services: Service[] = [
     id: 'ar-consulting',
     title: 'AR Consulting',
     summary:
-      'Independent advice on where AR and 3D will genuinely help your customers — and where they won’t.',
+      'Independent advice on where AR, VR and 3D will genuinely help your customers — and where they won’t.',
     icon: CompassIcon,
     includes: [
       'Use-case and audience assessment',

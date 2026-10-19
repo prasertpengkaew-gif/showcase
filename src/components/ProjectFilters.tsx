@@ -1,4 +1,5 @@
 import { PROJECT_CATEGORIES, type ProjectCategory } from '../types/project';
+import { useCategoryLabel, useT } from '../i18n';
 
 interface ProjectFiltersProps {
   active: ProjectCategory | null;
@@ -8,18 +9,20 @@ interface ProjectFiltersProps {
 }
 
 export function ProjectFilters({ active, counts, total, onChange }: ProjectFiltersProps) {
+  const t = useT();
+  const categoryLabel = useCategoryLabel();
   const options: { value: ProjectCategory | null; label: string; count: number }[] = [
-    { value: null, label: 'All work', count: total },
-    ...PROJECT_CATEGORIES.map((c) => ({ value: c, label: c, count: counts[c] })),
+    { value: null, label: t.projectsPage.all, count: total },
+    ...PROJECT_CATEGORIES.map((c) => ({ value: c, label: categoryLabel(c), count: counts[c] })),
   ];
 
   return (
-    <div role="group" aria-label="Filter projects by category" className="-mx-5 overflow-x-auto px-5 sm:mx-0 sm:px-0">
+    <div role="group" aria-label={t.projectsPage.filterLabel} className="-mx-5 overflow-x-auto px-5 sm:mx-0 sm:px-0">
       <ul className="flex w-max gap-2 sm:w-auto sm:flex-wrap">
         {options.map((o) => {
           const selected = o.value === active;
           return (
-            <li key={o.label}>
+            <li key={o.value ?? 'all'}>
               <button
                 type="button"
                 aria-pressed={selected}

@@ -2,27 +2,31 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import Home from './pages/Home';
+import { LanguageProvider, useT } from './i18n';
 
 // Home is part of the main bundle for a fast first paint; other pages load on demand.
 const Projects = lazy(() => import('./pages/Projects'));
 const ProjectDetail = lazy(() => import('./pages/ProjectDetail'));
 const ARPlayground = lazy(() => import('./pages/ARPlayground'));
+const VRShowroom = lazy(() => import('./pages/VRShowroom'));
 const Services = lazy(() => import('./pages/Services'));
 const About = lazy(() => import('./pages/About'));
 const Contact = lazy(() => import('./pages/Contact'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 function PageLoading() {
+  const t = useT();
   return (
     <div className="grid min-h-[70vh] place-items-center bg-navy-900" role="status">
       <span className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-electric-500" />
-      <span className="sr-only">Loading page</span>
+      <span className="sr-only">{t.nav.loadingPage}</span>
     </div>
   );
 }
 
 export default function App() {
   return (
+    <LanguageProvider>
     <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
@@ -30,6 +34,7 @@ export default function App() {
           <Route path="projects" element={<Suspense fallback={<PageLoading />}><Projects /></Suspense>} />
           <Route path="projects/:slug" element={<Suspense fallback={<PageLoading />}><ProjectDetail /></Suspense>} />
           <Route path="ar-playground" element={<Suspense fallback={<PageLoading />}><ARPlayground /></Suspense>} />
+          <Route path="vr-showroom" element={<Suspense fallback={<PageLoading />}><VRShowroom /></Suspense>} />
           <Route path="services" element={<Suspense fallback={<PageLoading />}><Services /></Suspense>} />
           <Route path="about" element={<Suspense fallback={<PageLoading />}><About /></Suspense>} />
           <Route path="contact" element={<Suspense fallback={<PageLoading />}><Contact /></Suspense>} />
@@ -37,5 +42,6 @@ export default function App() {
         </Route>
       </Routes>
     </BrowserRouter>
+    </LanguageProvider>
   );
 }

@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
 import { navLinks, siteConfig } from '../config/site';
 import { Logo } from './Logo';
+import { useT } from '../i18n';
 
 export function Footer() {
   const { contact, social } = siteConfig;
+  const t = useT();
   const year = new Date().getFullYear();
 
   return (
@@ -11,16 +13,16 @@ export function Footer() {
       <div className="container-page grid gap-12 py-16 md:grid-cols-[1.4fr_1fr_1fr]">
         <div className="max-w-sm">
           <Logo tone="light" />
-          <p className="mt-5 text-sm leading-relaxed">{siteConfig.description}</p>
+          <p className="mt-5 text-sm leading-relaxed">{t.siteDescription}</p>
         </div>
 
-        <nav aria-label="Footer">
-          <h2 className="text-xs font-semibold tracking-[0.16em] text-slate-400 uppercase">Explore</h2>
+        <nav aria-label={t.footer.explore}>
+          <h2 className="text-xs font-semibold tracking-[0.16em] text-slate-400 uppercase">{t.footer.explore}</h2>
           <ul className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm md:grid-cols-1">
             {navLinks.map((l) => (
               <li key={l.to}>
                 <Link to={l.to} className="hover:text-white">
-                  {l.label}
+                  {t.nav[l.key]}
                 </Link>
               </li>
             ))}
@@ -28,7 +30,7 @@ export function Footer() {
         </nav>
 
         <div>
-          <h2 className="text-xs font-semibold tracking-[0.16em] text-slate-400 uppercase">Get in touch</h2>
+          <h2 className="text-xs font-semibold tracking-[0.16em] text-slate-400 uppercase">{t.footer.touch}</h2>
           <ul className="mt-4 space-y-3 text-sm">
             {contact.email && (
               <li>
@@ -44,16 +46,24 @@ export function Footer() {
                 </a>
               </li>
             )}
+            {contact.line && (
+              <li>
+                <a href={contact.line} target="_blank" rel="noopener noreferrer" className="hover:text-white">
+                  LINE{contact.lineId ? ` ${contact.lineId}` : ''}
+                  <span className="sr-only"> {t.footer.newTab}</span>
+                </a>
+              </li>
+            )}
             <li>
               <Link to="/contact" className="hover:text-white">
-                Contact form
+                {t.footer.form}
               </Link>
             </li>
             {social.map((s) => (
               <li key={s.label}>
                 <a href={s.href} target="_blank" rel="noopener noreferrer" className="hover:text-white">
                   {s.label}
-                  <span className="sr-only"> (opens in a new tab)</span>
+                  <span className="sr-only"> {t.footer.newTab}</span>
                 </a>
               </li>
             ))}
@@ -63,12 +73,12 @@ export function Footer() {
       <div className="border-t border-white/5">
         <div className="container-page flex flex-col gap-2 py-6 text-xs sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © {year} {siteConfig.name}. All rights reserved.
+            © {year} {siteConfig.name}. {t.footer.rights}
           </p>
           <p>
-            3D sample assets are openly licensed —{' '}
+            {t.footer.credits}{' '}
             <Link to="/about#credits" className="underline underline-offset-2 hover:text-white">
-              see credits
+              {t.footer.seeCredits}
             </Link>
             .
           </p>

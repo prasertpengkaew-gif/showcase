@@ -2,12 +2,14 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import type { ProjectImage } from '../types/project';
 import { LazyImage } from './LazyImage';
 import { ArrowLeftIcon, ArrowRightIcon, CloseIcon } from './Icons';
+import { useT } from '../i18n';
 
 /** Image grid with an accessible lightbox (native <dialog>, keyboard arrows, Escape to close). */
 export function Gallery({ images }: { images: ProjectImage[] }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const triggerRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [index, setIndex] = useState<number | null>(null);
+  const t = useT();
 
   const open = (i: number) => {
     setIndex(i);
@@ -54,7 +56,7 @@ export function Gallery({ images }: { images: ProjectImage[] }) {
               type="button"
               onClick={() => open(i)}
               className="group block w-full overflow-hidden rounded-xl"
-              aria-label={`Enlarge image ${i + 1} of ${images.length}: ${img.alt}`}
+              aria-label={t.gallery.enlarge(i + 1, images.length, img.alt)}
             >
               <LazyImage
                 {...img}
@@ -67,7 +69,7 @@ export function Gallery({ images }: { images: ProjectImage[] }) {
 
       <dialog
         ref={dialogRef}
-        aria-label="Image viewer"
+        aria-label={t.gallery.dialog}
         className="m-auto max-h-none max-w-none bg-transparent p-0 backdrop:bg-navy-950/90"
         onClick={(e) => {
           if (e.target === dialogRef.current) close();
@@ -89,13 +91,13 @@ export function Gallery({ images }: { images: ProjectImage[] }) {
               </span>
             </figcaption>
             <div className="absolute top-3 right-3 flex gap-2">
-              <LightboxButton label="Previous image" onClick={() => step(-1)}>
+              <LightboxButton label={t.gallery.prev} onClick={() => step(-1)}>
                 <ArrowLeftIcon />
               </LightboxButton>
-              <LightboxButton label="Next image" onClick={() => step(1)}>
+              <LightboxButton label={t.gallery.next} onClick={() => step(1)}>
                 <ArrowRightIcon />
               </LightboxButton>
-              <LightboxButton label="Close image viewer" onClick={close} autoFocus>
+              <LightboxButton label={t.gallery.close} onClick={close} autoFocus>
                 <CloseIcon />
               </LightboxButton>
             </div>

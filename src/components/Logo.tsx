@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom';
 import { siteConfig } from '../config/site';
+import { useT } from '../i18n';
 
 export function Logo({ tone = 'dark' }: { tone?: 'dark' | 'light' }) {
+  const t = useT();
   const text = tone === 'light' ? 'text-white' : 'text-ink';
   return (
     <Link to="/" className={`flex items-center gap-2.5 font-display text-[17px] font-bold ${text}`}>
@@ -11,7 +13,7 @@ export function Logo({ tone = 'dark' }: { tone?: 'dark' | 'light' }) {
         <circle cx="24.5" cy="24.5" r="1.8" fill="#fff" />
       </svg>
       <span>{siteConfig.name}</span>
-      <span className="sr-only">— home</span>
+      <span className="sr-only">{t.nav.homeSuffix}</span>
     </Link>
   );
 }

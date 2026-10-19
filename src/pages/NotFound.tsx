@@ -1,21 +1,23 @@
 import { ButtonLink } from '../components/Button';
 import { PageHeader } from '../components/PageHeader';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import { useT } from '../i18n';
 
-export default function NotFound({ title = 'Page not found', message }: { title?: string; message?: string }) {
-  useDocumentTitle(title);
+export default function NotFound({ title, message }: { title?: string; message?: string }) {
+  const t = useT().notFound;
+  useDocumentTitle(title ?? t.title);
   return (
     <PageHeader
       eyebrow="404"
-      title={title}
-      description={message ?? "The page you're looking for doesn't exist or has moved."}
+      title={title ?? t.title}
+      description={message ?? t.text}
     >
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
         <ButtonLink to="/" size="lg">
-          Back to home
+          {t.home}
         </ButtonLink>
         <ButtonLink to="/projects" size="lg" variant="outline-light">
-          Browse projects
+          {t.projects}
         </ButtonLink>
       </div>
     </PageHeader>

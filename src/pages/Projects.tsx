@@ -3,13 +3,16 @@ import { useSearchParams } from 'react-router-dom';
 import { PageHeader } from '../components/PageHeader';
 import { ProjectFilters } from '../components/ProjectFilters';
 import { ProjectGrid } from '../components/ProjectGrid';
-import { projects } from '../data/projects';
 import { PROJECT_CATEGORIES, type ProjectCategory } from '../types/project';
 import { categoryToParam, paramToCategory } from '../lib/category';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import { useCategoryLabel, useProjects, useT } from '../i18n';
 
 export default function Projects() {
-  useDocumentTitle('Projects');
+  const t = useT().projectsPage;
+  const projects = useProjects();
+  const categoryLabel = useCategoryLabel();
+  useDocumentTitle(t.metaTitle);
   const [params, setParams] = useSearchParams();
   const active = paramToCategory(params.get('category'));
 
@@ -17,7 +20,7 @@ export default function Projects() {
     const c = Object.fromEntries(PROJECT_CATEGORIES.map((k) => [k, 0])) as Record<ProjectCategory, number>;
     for (const p of projects) c[p.category]++;
     return c;
-  }, []);
+  }, [projects]);
 
   const visible = active ? projects.filter((p) => p.category === active) : projects;
 
@@ -31,19 +34,18 @@ export default function Projects() {
   return (
     <>
       <PageHeader
-        eyebrow="Portfolio"
-        title="Work you can open, rotate and place"
-        description="Every project here has a live 3D viewer and AR mode. These are studio concepts built with openly licensed assets to demonstrate our approach in each industry."
+        eyebrow={t.eyebrow}
+        title={t.title}
+        description={t.description}
       />
       <section aria-labelledby="gallery-title" className="py-16 sm:py-20">
         <div className="container-page">
           <h2 id="gallery-title" className="sr-only">
-            Project gallery
+            {t.galleryTitle}
           </h2>
           <ProjectFilters active={active} counts={counts} total={projects.length} onChange={onChange} />
           <p className="mt-6 text-sm text-muted" aria-live="polite">
-            Showing {visible.length} {visible.length === 1 ? 'project' : 'projects'}
-            {active ? ` in ${active}` : ''}.
+            {t.showing(visible.length, active ? categoryLabel(active) : undefined)}
           </p>
           <div className="mt-8">
             <ProjectGrid projects={visible} priorityCount={3} />

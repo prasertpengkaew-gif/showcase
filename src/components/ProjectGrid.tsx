@@ -1,5 +1,6 @@
 import type { Project } from '../types/project';
 import { ProjectCard } from './ProjectCard';
+import { useT } from '../i18n';
 
 interface ProjectGridProps {
   projects: Project[];
@@ -8,10 +9,11 @@ interface ProjectGridProps {
   emptyMessage?: string;
 }
 
-export function ProjectGrid({ projects, priorityCount = 0, emptyMessage = 'No projects match this filter yet.' }: ProjectGridProps) {
+export function ProjectGrid({ projects, priorityCount = 0, emptyMessage }: ProjectGridProps) {
+  const t = useT();
   if (projects.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-line px-6 py-16 text-center text-muted">{emptyMessage}</div>
+      <div className="rounded-2xl border border-dashed border-line px-6 py-16 text-center text-muted">{emptyMessage ?? t.projectsPage.empty}</div>
     );
   }
   return (

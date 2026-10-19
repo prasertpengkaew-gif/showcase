@@ -79,3 +79,9 @@ export const CopyIcon = (p: IconProps) => (
 export const ExternalIcon = (p: IconProps) => (
   <svg {...base(p)}><path d="M14 4h6v6M20 4l-9 9M18 14v4.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 4 18.5v-11A1.5 1.5 0 0 1 5.5 6H10" /></svg>
 );
+export const HeadsetIcon = (p: IconProps) => (
+  <svg {...base(p)}><path d="M3.5 9.5A2.5 2.5 0 0 1 6 7h12a2.5 2.5 0 0 1 2.5 2.5v5A2.5 2.5 0 0 1 18 17h-3l-1.6-2.1a1.8 1.8 0 0 0-2.8 0L9 17H6a2.5 2.5 0 0 1-2.5-2.5z" /><circle cx="8" cy="12" r="1.3" /><circle cx="16" cy="12" r="1.3" /></svg>
+);
+export const LineIcon = (p: IconProps) => (
+  <svg {...base(p)}><path d="M12 4c4.97 0 9 3.13 9 7 0 3.6-3.56 6.2-8.6 8.6-.6.28-1-.2-.85-.75l.35-1.35C6.94 17.2 3 14.4 3 11c0-3.87 4.03-7 9-7z" /><path d="M7.5 9.5v3h2M11 9.5v3M13 12.5v-3l2.5 3v-3M18 9.5h-1.8v3H18M16.2 11h1.6" strokeWidth={1.4} /></svg>
+);

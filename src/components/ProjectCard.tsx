@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import type { Project } from '../types/project';
 import { LazyImage } from './LazyImage';
 import { ArrowRightIcon } from './Icons';
+import { useCategoryLabel, useT } from '../i18n';
 
 interface ProjectCardProps {
   project: Project;
@@ -11,6 +12,8 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, priority = false, headingLevel: Heading = 'h3' }: ProjectCardProps) {
+  const t = useT();
+  const categoryLabel = useCategoryLabel();
   return (
     <article className="group relative flex w-full flex-col overflow-hidden rounded-2xl border border-line bg-white transition-shadow duration-300 hover:shadow-xl hover:shadow-slate-900/[0.06]">
       <div className="overflow-hidden">
@@ -22,9 +25,9 @@ export function ProjectCard({ project, priority = false, headingLevel: Heading =
       </div>
       <div className="flex flex-1 flex-col p-6">
         <div className="flex items-center gap-2 text-xs font-medium">
-          <span className="rounded-full bg-electric-50 px-2.5 py-1 text-electric-700">{project.category}</span>
+          <span className="rounded-full bg-electric-50 px-2.5 py-1 text-electric-700">{categoryLabel(project.category)}</span>
           {project.kind === 'concept' && (
-            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-slate-600">Studio concept</span>
+            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-slate-600">{t.card.concept}</span>
           )}
         </div>
         <Heading className="mt-4 font-display text-xl font-bold text-ink">
@@ -37,7 +40,7 @@ export function ProjectCard({ project, priority = false, headingLevel: Heading =
           aria-hidden
           className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-electric-700"
         >
-          View project
+          {t.card.view}
           <ArrowRightIcon width={16} height={16} className="motion-safe:transition-transform motion-safe:group-hover:translate-x-0.5" />
         </span>
       </div>

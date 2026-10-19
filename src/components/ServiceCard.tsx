@@ -1,5 +1,6 @@
 import type { Service } from '../data/services';
 import { CheckIcon } from './Icons';
+import { useT } from '../i18n';
 
 interface ServiceCardProps {
   service: Service;
@@ -10,6 +11,7 @@ interface ServiceCardProps {
 
 export function ServiceCard({ service, variant = 'full', index }: ServiceCardProps) {
   const Icon = service.icon;
+  const t = useT();
   return (
     <article
       id={variant === 'full' ? service.id : undefined}
@@ -38,7 +40,7 @@ export function ServiceCard({ service, variant = 'full', index }: ServiceCardPro
             ))}
           </ul>
           <p className="mt-6 text-sm text-muted">
-            <span className="font-semibold text-ink">Best for: </span>
+            <span className="font-semibold text-ink">{t.servicesPage.bestFor} </span>
             {service.bestFor}
           </p>
         </>

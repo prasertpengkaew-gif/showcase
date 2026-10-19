@@ -331,14 +331,3 @@ export const projects: Project[] = [
     kind: 'concept',
   },
 ];
-
-export const getProjectBySlug = (slug: string): Project | undefined =>
-  projects.find((p) => p.slug === slug);
-
-/** Same-category projects first, then others, excluding the current one. */
-export const getRelatedProjects = (project: Project, limit = 3): Project[] => {
-  const others = projects.filter((p) => p.slug !== project.slug);
-  const same = others.filter((p) => p.category === project.category);
-  const rest = others.filter((p) => p.category !== project.category);
-  return [...same, ...rest].slice(0, limit);
-};

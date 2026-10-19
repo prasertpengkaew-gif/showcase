@@ -3,6 +3,8 @@ import { siteConfig } from '../config/site';
 import { PROJECT_CATEGORIES } from '../types/project';
 import { AlertIcon, CheckIcon, InfoIcon } from './Icons';
 import { Button } from './Button';
+import { useCategoryLabel, useT } from '../i18n';
+import type { Dictionary } from '../i18n/en';
 
 interface FormValues {
   name: string;
@@ -15,10 +17,11 @@ interface FormValues {
 }
 
 type FieldName = 'name' | 'email' | 'projectType' | 'message';
-type Errors = Partial<Record<FieldName, string>>;
+type ErrorCode = 'name' | 'nameShort' | 'nameLong' | 'email' | 'emailFormat' | 'type' | 'message' | 'messageShort' | 'messageLong';
+type Errors = Partial<Record<FieldName, ErrorCode>>;
 
 const EMPTY: FormValues = { name: '', email: '', company: '', projectType: '', message: '', website: '' };
-const PROJECT_TYPES = [...PROJECT_CATEGORIES, 'Not sure yet'];
+const OTHER_TYPES = ['VR experience', 'Not sure yet'] as const;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const MESSAGE_MIN = 20;
 const MESSAGE_MAX = 2000;
@@ -26,21 +29,35 @@ const MESSAGE_MAX = 2000;
 function validate(values: FormValues): Errors {
   const errors: Errors = {};
   const name = values.name.trim();
-  if (!name) errors.name = 'Please enter your name.';
-  else if (name.length < 2) errors.name = 'Name must be at least 2 characters.';
-  else if (name.length > 100) errors.name = 'Name must be 100 characters or fewer.';
+  if (!name) errors.name = 'name';
+  else if (name.length < 2) errors.name = 'nameShort';
+  else if (name.length > 100) errors.name = 'nameLong';
 
   const email = values.email.trim();
-  if (!email) errors.email = 'Please enter your email address.';
-  else if (!EMAIL_RE.test(email)) errors.email = 'Enter an email address like name@company.com.';
+  if (!email) errors.email = 'email';
+  else if (!EMAIL_RE.test(email)) errors.email = 'emailFormat';
 
-  if (!values.projectType) errors.projectType = 'Choose the option closest to your project.';
+  if (!values.projectType) errors.projectType = 'type';
 
   const message = values.message.trim();
-  if (!message) errors.message = 'Tell us a little about your project.';
-  else if (message.length < MESSAGE_MIN) errors.message = `Please write at least ${MESSAGE_MIN} characters.`;
-  else if (message.length > MESSAGE_MAX) errors.message = `Please keep it under ${MESSAGE_MAX} characters.`;
+  if (!message) errors.message = 'message';
+  else if (message.length < MESSAGE_MIN) errors.message = 'messageShort';
+  else if (message.length > MESSAGE_MAX) errors.message = 'messageLong';
   return errors;
+}
+
+function errorText(code: ErrorCode, f: Dictionary['form']): string {
+  switch (code) {
+    case 'name': return f.errName;
+    case 'nameShort': return f.errNameShort;
+    case 'nameLong': return f.errNameLong;
+    case 'email': return f.errEmail;
+    case 'emailFormat': return f.errEmailFormat;
+    case 'type': return f.errType;
+    case 'message': return f.errMessage;
+    case 'messageShort': return f.errMessageShort(MESSAGE_MIN);
+    case 'messageLong': return f.errMessageLong(MESSAGE_MAX);
+  }
 }
 
 type Delivery = 'endpoint' | 'mailto' | 'none';
@@ -52,12 +69,8 @@ type SubmitState =
   | { kind: 'failed'; message: string };
 
 const FIELD_ORDER: FieldName[] = ['name', 'email', 'projectType', 'message'];
-const FIELD_LABELS: Record<FieldName, string> = {
-  name: 'Name',
-  email: 'Email',
-  projectType: 'Project type',
-  message: 'Message',
-};
+const fieldLabel = (field: FieldName, f: Dictionary['form']): string =>
+  ({ name: f.name, email: f.email, projectType: f.projectType, message: f.details })[field];
 
 export function ContactForm() {
   const { email: contactEmail, formEndpoint } = siteConfig.contact;
@@ -72,12 +85,16 @@ export function ContactForm() {
   const [summaryFocusKey, setSummaryFocusKey] = useState(0);
   const summaryRef = useRef<HTMLDivElement>(null);
   const formId = useId();
+  const f = useT().form;
+  const categoryLabel = useCategoryLabel();
+  const typeLabel = (type: string) =>
+    type === 'VR experience' ? f.vrType : type === 'Not sure yet' ? f.notSure : categoryLabel(type as (typeof PROJECT_CATEGORIES)[number]);
 
   const set = (field: keyof FormValues, value: string) => {
     const next = { ...values, [field]: value };
     setValues(next);
     // Re-validate live once a field has been visited, so errors clear as soon as they're fixed.
-    if (field in FIELD_LABELS && touched[field as FieldName]) setErrors(validate(next));
+    if (FIELD_ORDER.includes(field as FieldName) && touched[field as FieldName]) setErrors(validate(next));
   };
 
   const blur = (field: FieldName) => {
@@ -131,16 +148,14 @@ export function ContactForm() {
         console.error('Contact form submission failed', err);
         setState({
           kind: 'failed',
-          message: contactEmail
-            ? `Your message wasn't sent. Please try again, or email us directly at ${contactEmail}.`
-            : "Your message wasn't sent. Please check your connection and try again.",
+          message: contactEmail ? f.failedWithEmail(contactEmail) : f.failed,
         });
       }
       return;
     }
 
     if (delivery === 'mailto') {
-      const subject = `Project enquiry: ${payload.projectType} — ${payload.name}`;
+      const subject = f.subject(typeLabel(payload.projectType), payload.name);
       const body = [
         payload.message,
         '',
@@ -148,7 +163,7 @@ export function ContactForm() {
         `Name: ${payload.name}`,
         `Email: ${payload.email}`,
         payload.company ? `Company: ${payload.company}` : '',
-        `Project type: ${payload.projectType}`,
+        `Project type: ${typeLabel(payload.projectType)}`,
       ]
         .filter((line, i, arr) => line !== '' || arr[i - 1] !== '')
         .join('\n');
@@ -160,13 +175,13 @@ export function ContactForm() {
   const errorList = FIELD_ORDER.filter((f) => errors[f] && touched[f]);
   const showSummary = submitAttempted && errorList.length > 0 && state.kind === 'idle';
   const submitLabel =
-    delivery === 'mailto' ? 'Open in my email app' : state.kind === 'sending' ? 'Sending…' : 'Send message';
+    delivery === 'mailto' ? f.openEmail : state.kind === 'sending' ? f.sending : f.send;
 
   return (
     <div>
       {delivery === 'none' && (
-        <Notice tone="warn" title="This form isn't connected yet">
-          Messages can't be delivered until the site owner configures a form endpoint or contact email.
+        <Notice tone="warn" title={f.noneTitle}>
+          {f.noneText}
           {import.meta.env.DEV && (
             <>
               {' '}
@@ -177,21 +192,19 @@ export function ContactForm() {
         </Notice>
       )}
       {delivery === 'mailto' && state.kind === 'idle' && (
-        <Notice tone="info" title="How this form works">
-          Submitting opens your email app with your message ready to send to {contactEmail}. Nothing is sent until you
-          press send there.
+        <Notice tone="info" title={f.mailtoTitle}>
+          {f.mailtoText(contactEmail)}
         </Notice>
       )}
 
       {state.kind === 'sent' && (
-        <Notice tone="success" title="Message sent">
-          Thanks for getting in touch. We've received your message and will reply by email.
+        <Notice tone="success" title={f.sentTitle}>
+          {f.sentText}
         </Notice>
       )}
       {state.kind === 'mail-opened' && (
-        <Notice tone="info" title="Check your email app">
-          We've opened a draft addressed to {contactEmail}. Press send in your email app to deliver it. If nothing
-          opened, email us directly at{' '}
+        <Notice tone="info" title={f.openedTitle}>
+          {f.openedText(contactEmail)}{' '}
           <a className="font-semibold underline" href={`mailto:${contactEmail}`}>
             {contactEmail}
           </a>
@@ -199,7 +212,7 @@ export function ContactForm() {
         </Notice>
       )}
       {state.kind === 'failed' && (
-        <Notice tone="error" title="Something went wrong">
+        <Notice tone="error" title={f.failedTitle}>
           {state.message}
         </Notice>
       )}
@@ -211,12 +224,12 @@ export function ContactForm() {
           role="alert"
           className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900"
         >
-          <p className="font-semibold">Please fix {errorList.length === 1 ? 'this field' : `these ${errorList.length} fields`}:</p>
+          <p className="font-semibold">{errorList.length === 1 ? f.fixOne : f.fixMany(errorList.length)}</p>
           <ul className="mt-2 list-disc space-y-1 pl-5">
-            {errorList.map((f) => (
-              <li key={f}>
-                <a href={`#${formId}-${f}`} className="underline">
-                  {FIELD_LABELS[f]}: {errors[f]}
+            {errorList.map((field) => (
+              <li key={field}>
+                <a href={`#${formId}-${field}`} className="underline">
+                  {fieldLabel(field, f)}: {errorText(errors[field]!, f)}
                 </a>
               </li>
             ))}
@@ -226,9 +239,9 @@ export function ContactForm() {
 
       <form noValidate onSubmit={onSubmit} className="grid gap-5 sm:grid-cols-2" aria-describedby={`${formId}-req`}>
         <p id={`${formId}-req`} className="text-sm text-muted sm:col-span-2">
-          Fields marked <span className="text-red-600">*</span> are required.
+          {f.requiredStart} <span className="text-red-600">*</span> {f.requiredEnd}
         </p>
-        <Field id={`${formId}-name`} label="Name" required error={touched.name ? errors.name : undefined}>
+        <Field id={`${formId}-name`} label={f.name} required error={touched.name && errors.name ? errorText(errors.name, f) : undefined}>
           {(p) => (
             <input
               {...p}
@@ -240,7 +253,7 @@ export function ContactForm() {
             />
           )}
         </Field>
-        <Field id={`${formId}-email`} label="Work email" required error={touched.email ? errors.email : undefined}>
+        <Field id={`${formId}-email`} label={f.email} required error={touched.email && errors.email ? errorText(errors.email, f) : undefined}>
           {(p) => (
             <input
               {...p}
@@ -253,7 +266,7 @@ export function ContactForm() {
             />
           )}
         </Field>
-        <Field id={`${formId}-company`} label="Company" hint="Optional">
+        <Field id={`${formId}-company`} label={f.company} hint={f.optional}>
           {(p) => (
             <input
               {...p}
@@ -266,9 +279,9 @@ export function ContactForm() {
         </Field>
         <Field
           id={`${formId}-projectType`}
-          label="Project type"
+          label={f.projectType}
           required
-          error={touched.projectType ? errors.projectType : undefined}
+          error={touched.projectType && errors.projectType ? errorText(errors.projectType, f) : undefined}
         >
           {(p) => (
             <select
@@ -277,10 +290,10 @@ export function ContactForm() {
               onChange={(e) => set('projectType', e.target.value)}
               onBlur={() => blur('projectType')}
             >
-              <option value="">Select one…</option>
-              {PROJECT_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {t}
+              <option value="">{f.selectOne}</option>
+              {[...PROJECT_CATEGORIES, ...OTHER_TYPES].map((type) => (
+                <option key={type} value={type}>
+                  {typeLabel(type)}
                 </option>
               ))}
             </select>
@@ -289,10 +302,10 @@ export function ContactForm() {
         <div className="sm:col-span-2">
           <Field
             id={`${formId}-message`}
-            label="Project details"
+            label={f.details}
             required
             hint={`${values.message.trim().length}/${MESSAGE_MAX}`}
-            error={touched.message ? errors.message : undefined}
+            error={touched.message && errors.message ? errorText(errors.message, f) : undefined}
           >
             {(p) => (
               <textarea
@@ -301,7 +314,7 @@ export function ContactForm() {
                 value={values.message}
                 onChange={(e) => set('message', e.target.value)}
                 onBlur={() => blur('message')}
-                placeholder="What would you like to build, who is it for, and when do you need it?"
+                placeholder={f.placeholder}
               />
             )}
           </Field>
@@ -310,7 +323,7 @@ export function ContactForm() {
         {/* Honeypot field, hidden from people and assistive technology */}
         <div aria-hidden className="absolute -left-[9999px] h-px w-px overflow-hidden">
           <label>
-            Website
+            {f.honeypot}
             <input
               type="text"
               tabIndex={-1}
@@ -323,7 +336,7 @@ export function ContactForm() {
 
         <div className="flex flex-col gap-3 sm:col-span-2 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs leading-relaxed text-muted">
-            We only use your details to reply to this enquiry.
+            {f.privacy}
           </p>
           <Button type="submit" size="lg" disabled={delivery === 'none' || state.kind === 'sending'}>
             {submitLabel}

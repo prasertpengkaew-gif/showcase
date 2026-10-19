@@ -8,7 +8,13 @@ const ROBOT_SRC = models.robot.src;
 const ACCENT = '#2563EB';
 
 /** Draws the phone's on-screen AR interface into a texture. */
-function useScreenTexture() {
+export interface ScreenText {
+  status: string;
+  label: string;
+  button: string;
+}
+
+function useScreenTexture({ status, label, button }: ScreenText) {
   return useMemo(() => {
     const w = 540;
     const h = 1140;
@@ -64,10 +70,10 @@ function useScreenTexture() {
     };
     pill(w / 2 - 150, 110, 300, 64, 'rgba(11,18,32,0.72)');
     ctx.fillStyle = '#ffffff';
-    ctx.font = '600 26px Inter, system-ui, sans-serif';
+    ctx.font = '600 26px Inter, "Noto Sans Thai", system-ui, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('Surface detected', w / 2 + 14, 143);
+    ctx.fillText(status, w / 2 + 14, 143);
     ctx.fillStyle = '#4ade80';
     ctx.beginPath();
     ctx.arc(w / 2 - 112, 142, 8, 0, Math.PI * 2);
@@ -75,25 +81,25 @@ function useScreenTexture() {
 
     // Size label
     ctx.fillStyle = 'rgba(255,255,255,0.72)';
-    ctx.font = '500 24px Inter, system-ui, sans-serif';
-    ctx.fillText('Service Robot  ·  120 cm', w / 2, 980);
+    ctx.font = '500 24px Inter, "Noto Sans Thai", system-ui, sans-serif';
+    ctx.fillText(label, w / 2, 980);
 
     // Primary action
     pill(70, 1020, w - 140, 76, ACCENT);
     ctx.fillStyle = '#ffffff';
-    ctx.font = '600 28px Inter, system-ui, sans-serif';
-    ctx.fillText('Place in your space', w / 2, 1058);
+    ctx.font = '600 28px Inter, "Noto Sans Thai", system-ui, sans-serif';
+    ctx.fillText(button, w / 2, 1058);
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.anisotropy = 8;
     return texture;
-  }, []);
+  }, [status, label, button]);
 }
 
-function Phone({ animate }: { animate: boolean }) {
+function Phone({ animate, screen: text }: { animate: boolean; screen: ScreenText }) {
   const group = useRef<THREE.Group>(null);
-  const screen = useScreenTexture();
+  const screen = useScreenTexture(text);
 
   useFrame(({ clock }) => {
     if (!animate || !group.current) return;
@@ -247,10 +253,11 @@ function CameraRig() {
 
 export interface HeroSceneProps {
   animate: boolean;
+  screen: ScreenText;
 }
 
 /** Real-time 3D hero: a phone showing an AR placement UI next to the placed model. */
-export default function HeroScene({ animate }: HeroSceneProps) {
+export default function HeroScene({ animate, screen }: HeroSceneProps) {
   return (
     <Canvas
       className="!absolute inset-0"
@@ -273,7 +280,7 @@ export default function HeroScene({ animate }: HeroSceneProps) {
         <FloorGrid />
         <Reticle animate={animate} />
         <Robot animate={animate} />
-        <Phone animate={animate} />
+        <Phone animate={animate} screen={screen} />
         <ContactShadows position={[0, 0.002, 0]} opacity={0.55} scale={6} blur={2.4} far={2} frames={animate ? Infinity : 1} />
       </Suspense>
     </Canvas>

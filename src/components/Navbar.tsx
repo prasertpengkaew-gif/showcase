@@ -4,6 +4,8 @@ import { navLinks } from '../config/site';
 import { Logo } from './Logo';
 import { ButtonLink } from './Button';
 import { CloseIcon, MenuIcon } from './Icons';
+import { LanguageToggle } from './LanguageToggle';
+import { useT } from '../i18n';
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -11,6 +13,7 @@ export function Navbar() {
   const location = useLocation();
   const toggleRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const t = useT();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -64,10 +67,10 @@ export function Navbar() {
         solid ? 'border-b border-line bg-white/90 backdrop-blur-md' : 'border-b border-transparent bg-transparent'
       }`}
     >
-      <nav aria-label="Main" className="container-page flex h-16 items-center justify-between lg:h-[72px]">
+      <nav aria-label={t.nav.main} className="container-page flex h-16 items-center justify-between lg:h-[72px]">
         <Logo tone={solid ? 'dark' : 'light'} />
 
-        <ul className="hidden items-center gap-1 lg:flex">
+        <ul className="hidden items-center gap-0.5 xl:flex">
           {navLinks.slice(1).map((link) => (
             <li key={link.to}>
               <NavLink
@@ -86,7 +89,7 @@ export function Navbar() {
               >
                 {({ isActive }) => (
                   <>
-                    {link.label}
+                    {t.nav[link.key]}
                     {isActive && (
                       <span
                         aria-hidden
@@ -100,32 +103,35 @@ export function Navbar() {
           ))}
         </ul>
 
-        <div className="hidden lg:block">
-          <ButtonLink to="/contact" variant={solid ? 'primary' : 'outline-light'} size="md">
-            Start a project
-          </ButtonLink>
-        </div>
+        <div className="flex items-center gap-2">
+          <LanguageToggle tone={solid ? 'dark' : 'light'} />
+          <div className="hidden xl:block">
+            <ButtonLink to="/contact" variant={solid ? 'primary' : 'outline-light'} size="md">
+              {t.nav.cta}
+            </ButtonLink>
+          </div>
 
         <button
           ref={toggleRef}
           type="button"
-          className={`grid h-11 w-11 place-items-center rounded-full lg:hidden ${
+          className={`grid h-11 w-11 place-items-center rounded-full xl:hidden ${
             solid ? 'text-ink hover:bg-surface' : 'text-white hover:bg-white/10'
           }`}
           aria-expanded={open}
           aria-controls="mobile-menu"
-          aria-label={open ? 'Close menu' : 'Open menu'}
+          aria-label={open ? t.nav.closeMenu : t.nav.openMenu}
           onClick={() => setOpen((o) => !o)}
         >
           {open ? <CloseIcon width={24} height={24} /> : <MenuIcon width={24} height={24} />}
         </button>
+        </div>
       </nav>
 
       <div
         id="mobile-menu"
         ref={panelRef}
         hidden={!open}
-        className="fixed inset-x-0 top-16 bottom-0 overflow-y-auto bg-navy-900 lg:hidden"
+        className="fixed inset-x-0 top-16 bottom-0 overflow-y-auto bg-navy-900 lg:top-[72px] xl:hidden"
       >
         <ul className="container-page flex flex-col gap-1 py-6">
           {navLinks.map((link) => (
@@ -139,7 +145,7 @@ export function Navbar() {
                   }`
                 }
               >
-                {link.label}
+                {t.nav[link.key]}
               </NavLink>
             </li>
           ))}

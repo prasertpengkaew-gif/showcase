@@ -5,14 +5,10 @@ import { ErrorBoundary } from './ErrorBoundary';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { useDeviceCapabilities } from '../hooks/useDeviceCapabilities';
 import { models } from '../data/models';
+import { useT } from '../i18n';
 
 const HeroScene = lazy(() => import('./HeroScene'));
 
-const highlights = [
-  { title: 'No app download', text: 'Experiences open from a link or QR code.' },
-  { title: 'iOS, Android & desktop', text: 'Quick Look, Scene Viewer, WebXR and 3D fallback.' },
-  { title: 'Open standards', text: 'glTF 2.0 assets you own and can reuse.' },
-];
 
 function HeroFallback() {
   return (
@@ -32,6 +28,7 @@ function HeroFallback() {
 export function HeroSection() {
   const reducedMotion = usePrefersReducedMotion();
   const { webgl } = useDeviceCapabilities();
+  const t = useT().hero;
 
   return (
     <section
@@ -49,26 +46,26 @@ export function HeroSection() {
         <div className="animate-fade-up lg:col-start-1 lg:row-start-1 lg:self-end">
           <p className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs font-medium tracking-wide text-slate-300">
             <span className="h-1.5 w-1.5 rounded-full bg-electric-500" aria-hidden />
-            WebAR · 3D visualization · Interactive
+            {t.badge}
           </p>
           <h1
             id="hero-title"
+            data-latin
             className="mt-6 font-display text-[clamp(2.125rem,8.6vw,2.75rem)] leading-[1.04] font-extrabold tracking-[-0.03em] sm:text-6xl lg:text-7xl"
           >
-            Real Experiences.
+            {t.line1}
             <br />
-            <span className="text-electric-400">Real Impact.</span>
+            <span className="text-electric-400">{t.line2}</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-300">
-            We build augmented reality and real-time 3D that people open from a link, place in their own space, and
-            actually use — for products, training, property and brands.
+            {t.lead}
           </p>
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
             <ButtonLink to="/projects" size="lg" icon={<ArrowRightIcon />}>
-              View Our Work
+              {t.viewWork}
             </ButtonLink>
             <ButtonLink to="/ar-playground" size="lg" variant="outline-light" icon={<ScanIcon />}>
-              Try AR Now
+              {t.tryAR}
             </ButtonLink>
           </div>
         </div>
@@ -80,24 +77,23 @@ export function HeroSection() {
                 fallback={
                   <div className="absolute inset-0 grid place-items-center" role="status">
                     <span className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-electric-500" />
-                    <span className="sr-only">Loading 3D scene</span>
+                    <span className="sr-only">{t.loading}</span>
                   </div>
                 }
               >
-                <HeroScene animate={!reducedMotion} />
+                <HeroScene animate={!reducedMotion} screen={{ status: t.screenStatus, label: t.screenLabel, button: t.screenButton }} />
               </Suspense>
             </ErrorBoundary>
           ) : (
             <HeroFallback />
           )}
           <p className="sr-only">
-            Illustration: a smartphone shows an AR placement screen while a life-size service robot stands on the
-            floor beside it.
+            {t.sceneDescription}
           </p>
         </div>
 
         <dl className="grid gap-6 border-t border-white/10 pt-8 sm:grid-cols-3 lg:col-start-1 lg:row-start-2 lg:self-start">
-          {highlights.map((h) => (
+          {t.highlights.map((h) => (
             <div key={h.title}>
               <dt className="text-sm font-semibold text-white">{h.title}</dt>
               <dd className="mt-1.5 text-sm leading-relaxed text-slate-400">{h.text}</dd>

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
+import { useT } from '../i18n';
 
 function ScrollManager() {
   const { pathname, hash } = useLocation();
@@ -30,13 +31,14 @@ function ScrollManager() {
 }
 
 export function Layout() {
+  const t = useT();
   return (
     <>
       <a
         href="#main"
         className="sr-only z-[60] rounded-full bg-electric-600 px-4 py-2 text-sm font-semibold text-white focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
       >
-        Skip to content
+        {t.nav.skip}
       </a>
       <ScrollManager />
       <Navbar />

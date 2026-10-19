@@ -115,4 +115,3 @@ export const models: Record<ModelId, ModelAsset> = {
 /** Models offered in the AR Playground, in display order. */
 export const playgroundModelIds: ModelId[] = ['chair', 'robot', 'car'];
 
-export const getModel = (id: ModelId): ModelAsset => models[id];

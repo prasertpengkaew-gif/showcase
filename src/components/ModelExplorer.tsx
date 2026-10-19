@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { ModelAsset } from '../types/project';
 import { ModelViewer, type ViewerStatus } from './ModelViewer';
 import { OptionChips } from './OptionChips';
+import { useT } from '../i18n';
 
 interface ModelExplorerProps {
   model: ModelAsset;
@@ -16,6 +17,7 @@ export function ModelExplorer({ model, viewerClassName = 'h-[420px] sm:h-[520px]
   const [variant, setVariant] = useState(model.variants?.[0]);
   const [animation, setAnimation] = useState(model.defaultAnimation ?? model.animations?.[0]);
   const [status, setStatus] = useState<ViewerStatus>('idle');
+  const t = useT();
 
   useEffect(() => {
     setVariant(model.variants?.[0]);
@@ -37,7 +39,7 @@ export function ModelExplorer({ model, viewerClassName = 'h-[420px] sm:h-[520px]
         <div className="flex flex-col gap-6 rounded-2xl border border-line bg-white p-5 sm:flex-row sm:flex-wrap sm:gap-x-10">
           {model.variants && variant && (
             <OptionChips
-              legend="Finish"
+              legend={t.viewer.finish}
               options={model.variants}
               value={variant}
               onChange={setVariant}
@@ -47,7 +49,7 @@ export function ModelExplorer({ model, viewerClassName = 'h-[420px] sm:h-[520px]
           )}
           {model.animations && animation && (
             <OptionChips
-              legend="Animation"
+              legend={t.viewer.animation}
               options={model.animations}
               value={animation}
               onChange={setAnimation}

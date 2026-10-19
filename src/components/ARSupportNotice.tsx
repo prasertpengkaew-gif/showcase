@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { DeviceCapabilities } from '../lib/device';
 import { CheckIcon, CopyIcon, InfoIcon, PhoneIcon } from './Icons';
 import { QRCode } from './QRCode';
+import { useT } from '../i18n';
 
 interface ARSupportNoticeProps {
   caps: DeviceCapabilities;
@@ -14,6 +15,7 @@ type Tone = 'ready' | 'info' | 'warn';
 /** Explains, in plain language, whether AR will work on this device and what to do if not. */
 export function ARSupportNotice({ caps, canActivateAR }: ARSupportNoticeProps) {
   const { platform, secureContext } = caps;
+  const n = useT().arNotice;
   let tone: Tone = 'info';
   let title: string;
   let body: string;
@@ -21,38 +23,32 @@ export function ARSupportNotice({ caps, canActivateAR }: ARSupportNoticeProps) {
 
   if (!secureContext) {
     tone = 'warn';
-    title = 'AR needs a secure (HTTPS) connection';
-    body =
-      'Browsers block camera and AR features on insecure pages. The 3D view still works here — open the HTTPS version of this site to use AR.';
+    title = n.insecureTitle;
+    body = n.insecureText;
   } else if (canActivateAR === true) {
     tone = 'ready';
-    title = 'AR is available on this device';
-    body =
-      platform === 'ios'
-        ? 'Tap “View in your space” to open the model in Apple Quick Look, then point your camera at the floor.'
-        : 'Tap “View in your space”, then slowly move your phone so it can detect the floor.';
+    title = n.readyTitle;
+    body = platform === 'ios' ? n.readyIOS : n.readyOther;
   } else if (platform === 'desktop') {
-    title = 'Open this page on a phone or tablet to use AR';
-    body =
-      'Scan the QR code or copy the link. On desktop you can rotate and zoom the model in 3D; AR needs an iPhone or iPad with Safari, or an Android device that supports Google Play Services for AR.';
+    title = n.desktopTitle;
+    body = n.desktopText;
     showCopy = true;
   } else if (canActivateAR === null) {
-    title = 'Checking AR support…';
-    body = 'AR availability is confirmed once the model finishes loading.';
+    title = n.checkingTitle;
+    body = n.checkingText;
   } else if (platform === 'ios') {
     tone = 'warn';
-    title = 'AR Quick Look is not available in this browser';
-    body = 'Open this page in Safari on iOS 12 or later. Some in-app browsers (social apps) block Quick Look.';
+    title = n.iosTitle;
+    body = n.iosText;
     showCopy = true;
   } else if (platform === 'android') {
     tone = 'warn';
-    title = 'AR is not supported on this device or browser';
-    body =
-      'AR on Android needs Chrome and a device certified for Google Play Services for AR (ARCore). You can still explore the model in 3D.';
+    title = n.androidTitle;
+    body = n.androidText;
   } else {
     tone = 'warn';
-    title = 'AR is not supported on this device';
-    body = 'You can still rotate and zoom the model in 3D.';
+    title = n.otherTitle;
+    body = n.otherText;
   }
 
   const styles: Record<Tone, string> = {
@@ -74,7 +70,7 @@ export function ARSupportNotice({ caps, canActivateAR }: ARSupportNoticeProps) {
         <QRCode
           value={window.location.href.split('#')[0]}
           size={112}
-          label="QR code that opens this page on your phone"
+          label={n.qrLabel}
           className="hidden shrink-0 sm:block"
         />
       )}
@@ -83,6 +79,7 @@ export function ARSupportNotice({ caps, canActivateAR }: ARSupportNoticeProps) {
 }
 
 function CopyLink() {
+  const n = useT().arNotice;
   const [state, setState] = useState<'idle' | 'copied' | 'failed'>('idle');
   const url = window.location.href;
 
@@ -105,10 +102,10 @@ function CopyLink() {
         className="inline-flex h-8 items-center gap-1.5 rounded-full bg-white px-3 text-xs font-semibold text-ink ring-1 ring-line hover:ring-slate-300"
       >
         <CopyIcon width={14} height={14} />
-        {state === 'copied' ? 'Link copied' : state === 'failed' ? 'Copy failed — select the link' : 'Copy link'}
+        {state === 'copied' ? n.copied : state === 'failed' ? n.copyFailed : n.copy}
       </button>
       <span className="sr-only" aria-live="polite">
-        {state === 'copied' ? 'Link copied to clipboard' : ''}
+        {state === 'copied' ? n.copiedSr : ''}
       </span>
     </div>
   );
