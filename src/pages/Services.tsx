@@ -33,8 +33,11 @@ export default function Services() {
         title="Four ways we help teams ship 3D and AR"
         description="Engage us for a single model, a full experience, or advice before you commit budget."
       />
-      <section aria-label="Service list" className="py-20 sm:py-24">
+      <section aria-labelledby="service-list-title" className="py-20 sm:py-24">
         <div className="container-page">
+          <h2 id="service-list-title" className="sr-only">
+            Services
+          </h2>
           <ul className="grid gap-6 md:grid-cols-2">
             {services.map((s, i) => (
               <li key={s.id}>

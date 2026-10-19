@@ -45,7 +45,7 @@ export default function ARPlayground() {
 
       <section aria-labelledby="picker-title" className="bg-surface py-12 sm:py-16">
         <div className="container-page">
-          <h2 id="picker-title" className="text-xs font-semibold tracking-[0.14em] text-slate-500 uppercase">
+          <h2 id="picker-title" className="text-xs font-semibold tracking-[0.14em] text-slate-600 uppercase">
             Choose a model
           </h2>
           <fieldset className="mt-4">
@@ -114,7 +114,7 @@ export default function ARPlayground() {
             <div className="mt-8 overflow-hidden rounded-2xl border border-line">
               <table className="w-full text-left text-sm">
                 <caption className="sr-only">Which AR mode each device uses</caption>
-                <thead className="bg-surface text-xs tracking-wide text-slate-500 uppercase">
+                <thead className="bg-surface text-xs tracking-wide text-slate-600 uppercase">
                   <tr>
                     <th scope="col" className="px-5 py-3 font-semibold">Device</th>
                     <th scope="col" className="px-5 py-3 font-semibold">Mode &amp; requirements</th>

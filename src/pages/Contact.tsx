@@ -98,7 +98,7 @@ function Detail({
         <Icon />
       </span>
       <div>
-        <p className="text-xs font-semibold tracking-[0.14em] text-slate-500 uppercase">{label}</p>
+        <p className="text-xs font-semibold tracking-[0.14em] text-slate-600 uppercase">{label}</p>
         <div className="mt-1 text-[15px] text-ink">{children}</div>
       </div>
     </li>

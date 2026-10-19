@@ -8,6 +8,7 @@
 //   node scripts/render-media.mjs            # everything
 //   node scripts/render-media.mjs --images   # stills only
 //   node scripts/render-media.mjs --videos   # videos only
+//   node scripts/render-media.mjs --posters  # model posters only
 //   node scripts/render-media.mjs --only=lounge-chair-configurator
 import { createServer } from 'node:http';
 import { mkdir, readFile, writeFile, rm } from 'node:fs/promises';
@@ -24,8 +25,9 @@ const mvBundle = path.join(root, 'node_modules/@google/model-viewer/dist/model-v
 
 const args = process.argv.slice(2);
 const only = args.find((a) => a.startsWith('--only='))?.slice(7);
+const postersOnly = args.includes('--posters');
 const doImages = !args.includes('--videos');
-const doVideos = !args.includes('--images');
+const doVideos = !args.includes('--images') && !postersOnly;
 
 const W = 1440;
 const H = 960;
@@ -48,9 +50,9 @@ const projects = [
   {
     slug: 'robotic-workcell-preview', model: 'robot', bg: 'studio', video: true,
     shots: [
-      { file: 'cover', orbit: '25deg 80deg 5.2m', animation: 'Idle', time: 0.5 },
-      { file: '1', orbit: '0deg 88deg 3.8m', animation: 'Standing', time: 0.3 },
-      { file: '2', orbit: '40deg 45deg 4.6m', animation: 'Idle', time: 1 },
+      { file: 'cover', orbit: '25deg 82deg 3.0m', animation: 'Idle', time: 0.5, target: 'auto 0.58m auto' },
+      { file: '1', orbit: '0deg 88deg 2.9m', animation: 'Standing', time: 0.3, target: 'auto 0.58m auto' },
+      { file: '2', orbit: '40deg 45deg 3.1m', animation: 'Idle', time: 1 },
       { file: '3', orbit: '-20deg 80deg 2.2m', animation: 'Idle', time: 0.5, fov: '22deg' },
     ],
   },
@@ -93,28 +95,28 @@ const projects = [
   {
     slug: 'scale-model-showroom', model: 'car', bg: 'graphite',
     shots: [
-      { file: 'cover', orbit: '45deg 72deg 1.45m' },
-      { file: '1', orbit: '90deg 84deg 1.4m' },
-      { file: '2', orbit: '-30deg 52deg 1.6m' },
-      { file: '3', orbit: '20deg 72deg 0.75m', fov: '24deg' },
+      { file: 'cover', orbit: '45deg 72deg 0.95m', target: 'auto 0.1m auto' },
+      { file: '1', orbit: '90deg 84deg 0.9m', target: 'auto 0.1m auto' },
+      { file: '2', orbit: '-30deg 52deg 1.05m', target: 'auto 0.09m auto' },
+      { file: '3', orbit: '20deg 72deg 0.6m', fov: '24deg', target: 'auto 0.12m auto' },
     ],
   },
   {
     slug: 'interactive-brand-mascot', model: 'robot', bg: 'blue',
     shots: [
-      { file: 'cover', orbit: '-20deg 82deg 4.2m', animation: 'Wave', time: 0.6 },
-      { file: '1', orbit: '15deg 82deg 4m', animation: 'ThumbsUp', time: 0.9 },
-      { file: '2', orbit: '30deg 78deg 4.2m', animation: 'Dance', time: 1.1 },
-      { file: '3', orbit: '10deg 100deg 3.4m', animation: 'Wave', time: 0.8 },
+      { file: 'cover', orbit: '-20deg 82deg 3.0m', animation: 'Wave', time: 0.6 },
+      { file: '1', orbit: '15deg 82deg 2.9m', animation: 'ThumbsUp', time: 0.9 },
+      { file: '2', orbit: '30deg 78deg 3.0m', animation: 'Dance', time: 1.1 },
+      { file: '3', orbit: '10deg 100deg 2.6m', animation: 'Wave', time: 0.8 },
     ],
   },
   {
     slug: 'stem-robotics-lesson', model: 'robot', bg: 'teal',
     shots: [
-      { file: 'cover', orbit: '35deg 80deg 4.2m', animation: 'Idle', time: 1.5 },
-      { file: '1', orbit: '90deg 85deg 4.2m', animation: 'Walking', time: 0.3 },
-      { file: '2', orbit: '20deg 80deg 4.4m', animation: 'Jump', time: 0.55 },
-      { file: '3', orbit: '0deg 30deg 4.6m', animation: 'Idle', time: 0.5 },
+      { file: 'cover', orbit: '35deg 80deg 3.0m', animation: 'Idle', time: 1.5 },
+      { file: '1', orbit: '90deg 85deg 3.0m', animation: 'Walking', time: 0.3 },
+      { file: '2', orbit: '20deg 80deg 3.1m', animation: 'Jump', time: 0.55 },
+      { file: '3', orbit: '0deg 30deg 3.3m', animation: 'Idle', time: 0.5 },
     ],
   },
   {
@@ -130,8 +132,8 @@ const projects = [
 
 const posters = [
   { model: 'chair', orbit: '35deg 75deg auto' },
-  { model: 'robot', orbit: '20deg 80deg auto', animation: 'Idle', time: 0.5 },
-  { model: 'car', orbit: '45deg 70deg auto' },
+  { model: 'robot', orbit: '20deg 82deg 3m', animation: 'Idle', time: 0.5, target: 'auto 0.58m auto' },
+  { model: 'car', orbit: '45deg 72deg 0.95m', target: 'auto 0.1m auto' },
   { model: 'fox', orbit: '60deg 75deg auto', animation: 'Survey', time: 1.2 },
   { model: 'sofa', orbit: '25deg 75deg auto' },
   { model: 'sneaker', orbit: '-40deg 75deg auto' },
@@ -142,7 +144,7 @@ const html = `<!doctype html><html><head><meta charset="utf-8">
 <script type="module" src="/__mv.js"></script></head>
 <body><model-viewer id="mv" environment-image="neutral" shadow-intensity="1" shadow-softness="0.9" exposure="1" interpolation-decay="1" disable-zoom></model-viewer>
 <script>
-  window.setup = async ({ src, orbit, variant, animation, time, fov }) => {
+  window.setup = async ({ src, orbit, variant, animation, time, fov, target }) => {
     await customElements.whenDefined('model-viewer');
     const mv = document.getElementById('mv');
     if (mv.getAttribute('src') !== src) {
@@ -153,11 +155,18 @@ const html = `<!doctype html><html><head><meta charset="utf-8">
       mv.setAttribute('src', src);
       await loaded;
     }
+    // Allow framing farther out than model-viewer's default zoom-out limit. Limits apply
+    // asynchronously, so wait for the element to update before moving the camera.
+    mv.maxCameraOrbit = 'auto auto 100m';
+    mv.minCameraOrbit = 'auto auto 0.05m';
+    await mv.updateComplete;
     mv.fieldOfView = fov || '30deg';
     mv.cameraOrbit = orbit;
-    mv.cameraTarget = 'auto auto auto';
+    mv.cameraTarget = target || 'auto auto auto';
     mv.variantName = variant || null;
     if (animation) { mv.animationName = animation; mv.play(); await new Promise(r => setTimeout(r, 50)); mv.pause(); mv.currentTime = time || 0; }
+    await mv.updateComplete;
+    for (let i = 0; i < 2; i++) await new Promise(r => requestAnimationFrame(r));
     mv.jumpCameraToGoal();
     await new Promise(r => setTimeout(r, variant ? 700 : 250));
     for (let i = 0; i < 4; i++) await new Promise(r => requestAnimationFrame(r));
@@ -221,7 +230,7 @@ if (doImages) {
       console.log('poster', p.model);
     }
   }
-  for (const p of list) {
+  for (const p of postersOnly ? [] : list) {
     for (const shot of p.shots) {
       await page.evaluate((o) => window.setup(o), { src: `/models/${p.model}.glb`, ...shot });
       const data = await page.evaluate((o) => window.capture(o), { bg: BG[p.bg], type: 'image/webp', quality: 0.82 });

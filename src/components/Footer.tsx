@@ -15,7 +15,7 @@ export function Footer() {
         </div>
 
         <nav aria-label="Footer">
-          <h2 className="text-xs font-semibold tracking-[0.16em] text-slate-500 uppercase">Explore</h2>
+          <h2 className="text-xs font-semibold tracking-[0.16em] text-slate-400 uppercase">Explore</h2>
           <ul className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm md:grid-cols-1">
             {navLinks.map((l) => (
               <li key={l.to}>
@@ -28,7 +28,7 @@ export function Footer() {
         </nav>
 
         <div>
-          <h2 className="text-xs font-semibold tracking-[0.16em] text-slate-500 uppercase">Get in touch</h2>
+          <h2 className="text-xs font-semibold tracking-[0.16em] text-slate-400 uppercase">Get in touch</h2>
           <ul className="mt-4 space-y-3 text-sm">
             {contact.email && (
               <li>

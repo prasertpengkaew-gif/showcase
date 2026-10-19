@@ -47,7 +47,8 @@ export const models: Record<ModelId, ModelAsset> = {
     poster: '/images/posters/car.webp',
     alt: 'Glossy green toy car with clear windows on a red cloth display stand',
     dimensions: '73 × 29 × 74 cm (enlarged display scale)',
-    cameraOrbit: '45deg 70deg auto',
+    cameraOrbit: '45deg 72deg 1.3m',
+    cameraTarget: 'auto 0.1m auto',
     credit: {
       title: 'ToyCar',
       author: 'Guido Odendahl, scene by Eric Chadwick',

@@ -24,6 +24,8 @@ npm run dev        # http://localhost:5173
 | `npm run preview`         | Serve the production build locally                              |
 | `npm run typecheck`       | TypeScript only                                                 |
 | `npm run validate:models` | Check every file in `public/models` with the Khronos glTF Validator |
+| `npm run test:e2e`        | End-to-end + accessibility (axe-core) checks in headless Chromium |
+| `npm run render:media`    | Re-render posters, project images and videos from the GLBs       |
 
 ---
 
@@ -166,8 +168,9 @@ The posters, project images and videos were generated from the GLBs with headles
 
 ```bash
 npx playwright install chromium   # once
-node scripts/render-media.mjs     # needs ffmpeg with libx264 and libvpx-vp9
-node scripts/render-media.mjs --images --only=lounge-chair-configurator
+npm run render:media              # everything; needs ffmpeg with libx264 and libvpx-vp9
+node scripts/render-media.mjs --images --only=lounge-chair-configurator,scale-model-showroom
+node scripts/render-media.mjs --posters
 ```
 
 Camera angles, backgrounds, variants and animation poses for each shot are set at the top of the script. Projects marked `video: true` there also get a turntable video. Rendering uses software WebGL, so each video takes a few minutes.
@@ -213,6 +216,25 @@ Options:
 - `prefers-reduced-motion`: the hero stops animating and renders one still frame, auto-rotate turns off, animations pause, and CSS transitions are removed.
 - Route-level code splitting. three.js, R3F and model-viewer load only when a 3D view is needed. Viewers load when they scroll near the viewport.
 - The hero has fallbacks for no WebGL and for render errors.
+
+## Testing
+
+```bash
+npx playwright install chromium   # once
+npm run test:e2e
+```
+
+`tests/e2e.mjs` starts two Vite dev servers: one with no contact settings, and one with a mocked form endpoint. It then checks:
+
+- **Viewers:** model switching, finish and animation pickers (checked against the names inside each GLB), and the toolbar
+- **Media:** gallery lightbox, video loading, and the "Test it yourself" sections with their QR codes
+- **Projects:** category filters and deep links, 404 pages, and every internal link
+- **Contact form:** validation, focus on the error summary, a successful POST and a server error
+- **Layout:** the mobile menu, and no horizontal scrolling at 390 px on any page
+- **Fallbacks:** reduced motion and no-WebGL
+- **Accessibility:** an axe-core WCAG 2.2 AA scan of every page
+
+It exits non-zero on any failure, so it can run in CI. Each server reads its environment from an empty directory, so your `.env.local` doesn't affect the results.
 
 ## Deployment
 

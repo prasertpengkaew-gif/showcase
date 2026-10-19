@@ -150,7 +150,7 @@ export default function Home() {
               <h2 id="cta-title" className="font-display text-3xl leading-tight font-bold sm:text-4xl">
                 Have a product, space or story that should be seen in 3D?
               </h2>
-              <p className="mt-4 text-lg text-electric-100">
+              <p className="mt-4 text-lg text-white">
                 Tell us what you're working on. We'll tell you honestly whether AR is the right fit.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">

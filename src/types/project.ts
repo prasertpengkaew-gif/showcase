@@ -31,6 +31,8 @@ export interface ModelAsset {
   animations?: string[];
   defaultAnimation?: string;
   cameraOrbit?: string;
+  /** Point the camera orbits around, e.g. 'auto 0.2m auto'. Defaults to the model's centre. */
+  cameraTarget?: string;
   credit: ModelCredit;
 }
 

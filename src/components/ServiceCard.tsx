@@ -20,7 +20,7 @@ export function ServiceCard({ service, variant = 'full', index }: ServiceCardPro
           <Icon width={24} height={24} />
         </span>
         {index !== undefined && (
-          <span className="font-display text-sm font-semibold text-slate-300 tabular-nums" aria-hidden>
+          <span className="font-display text-sm font-semibold text-slate-500 tabular-nums" aria-hidden>
             {String(index + 1).padStart(2, '0')}
           </span>
         )}

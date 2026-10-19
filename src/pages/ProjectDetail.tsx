@@ -163,7 +163,7 @@ export default function ProjectDetail() {
                 See it in motion
               </h2>
               <p className="mt-4 leading-relaxed text-slate-300">{project.video.description}</p>
-              <p className="mt-3 text-sm text-slate-500">5 seconds · no audio</p>
+              <p className="mt-3 text-sm text-slate-400">5 seconds · no audio</p>
             </div>
             <video
               className="aspect-[3/2] w-full rounded-2xl bg-navy-800 object-cover"
@@ -213,7 +213,7 @@ export default function ProjectDetail() {
 function Fact({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="p-5 sm:p-6">
-      <dt className="text-xs font-semibold tracking-[0.14em] text-slate-500 uppercase">{label}</dt>
+      <dt className="text-xs font-semibold tracking-[0.14em] text-slate-600 uppercase">{label}</dt>
       <dd className="mt-2.5 text-[15px] text-ink">{children}</dd>
     </div>
   );

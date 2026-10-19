@@ -17,6 +17,7 @@ interface ModelViewerAttributes extends DetailedHTMLProps<HTMLAttributes<HTMLEle
   'interaction-prompt'?: 'auto' | 'none';
   'touch-action'?: string;
   'camera-orbit'?: string;
+  'camera-target'?: string;
   'min-camera-orbit'?: string;
   'max-camera-orbit'?: string;
   'field-of-view'?: string;

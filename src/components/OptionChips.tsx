@@ -15,7 +15,7 @@ export function OptionChips<T extends string>({ legend, options, value, onChange
   const name = useId();
   return (
     <fieldset disabled={disabled} className="min-w-0">
-      <legend className="text-xs font-semibold tracking-[0.14em] text-slate-500 uppercase">{legend}</legend>
+      <legend className="text-xs font-semibold tracking-[0.14em] text-slate-600 uppercase">{legend}</legend>
       <div className="mt-3 flex flex-wrap gap-2">
         {options.map((option) => (
           <label key={option} className="cursor-pointer has-[:disabled]:cursor-not-allowed">

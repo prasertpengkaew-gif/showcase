@@ -161,7 +161,7 @@ export function ModelViewer({
     const el = viewerRef.current;
     if (!el) return;
     el.cameraOrbit = model.cameraOrbit ?? '0deg 75deg auto';
-    el.cameraTarget = 'auto auto auto';
+    el.cameraTarget = model.cameraTarget ?? 'auto auto auto';
     el.fieldOfView = 'auto';
   };
 
@@ -199,6 +199,7 @@ export function ModelViewer({
             camera-controls=""
             touch-action="pan-y"
             camera-orbit={model.cameraOrbit}
+            {...(model.cameraTarget ? { 'camera-target': model.cameraTarget } : {})}
             shadow-intensity="1"
             shadow-softness="0.9"
             exposure="1"

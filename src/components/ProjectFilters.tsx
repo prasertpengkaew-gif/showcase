@@ -33,7 +33,7 @@ export function ProjectFilters({ active, counts, total, onChange }: ProjectFilte
               >
                 {o.label}
                 <span
-                  className={`rounded-full px-1.5 text-xs tabular-nums ${selected ? 'bg-white/15' : 'bg-slate-100 text-slate-500'}`}
+                  className={`rounded-full px-1.5 text-xs tabular-nums ${selected ? 'bg-white/15' : 'bg-slate-100 text-slate-600'}`}
                 >
                   {o.count}
                 </span>
