@@ -186,14 +186,20 @@ try {
     ok(!notFound, `internal link ${href} resolves`);
   }
 
-  // --- Contact form: not configured -----------------------------------------
+  // --- Contact form: default email only (mailto) -----------------------------
   await page.goto(B + '/contact');
-  ok(await passes(page.getByText("This form isn't connected yet").waitFor()), 'unconfigured form explains it is not connected');
-  ok(await page.getByRole('button', { name: 'Send message' }).isDisabled(), 'submit disabled when no delivery is configured');
+  ok(await passes(page.getByText('How this form works').waitFor()), 'email-only form explains it opens the email app');
+  ok(await page.locator('a[href="mailto:thenerdstudio@gmail.com"]').first().isVisible(), 'default contact email is shown');
   await page.getByLabel('Work email').fill('bad');
   await page.getByLabel('Work email').blur();
   ok(await page.getByText('Enter an email address like').isVisible(), 'email validated on blur');
   ok((await page.getByLabel('Work email').getAttribute('aria-invalid')) === 'true', 'invalid field has aria-invalid');
+  await page.getByLabel('Name').fill('Ada Lovelace');
+  await page.getByLabel('Work email').fill('ada@example.com');
+  await page.getByLabel('Project type').selectOption('Product');
+  await page.getByLabel('Project details').fill('We want a chair configurator with AR on our product pages.');
+  await page.getByRole('button', { name: 'Open in my email app' }).click();
+  ok(await passes(page.getByText('Check your email app').waitFor()), 'mailto submit says nothing is sent until the visitor presses send');
 
   // --- Contact form: endpoint configured (mocked) ---------------------------
   let posted = null;

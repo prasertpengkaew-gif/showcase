@@ -1,10 +1,10 @@
-# Vantage XR — AR Portfolio
+# TheNerdStudio — AR Portfolio
 
 A responsive portfolio website for a WebAR / 3D studio, built with **React 19, TypeScript, Vite, Tailwind CSS v4, Three.js, React Three Fiber and Google's `<model-viewer>`**.
 
 Everything on the site works for real: every 3D model is a valid glTF file you can rotate, zoom and place in AR, and every image and video was rendered from those models. The contact form never says a message was sent unless something actually delivered it.
 
-> "Vantage XR" is a placeholder brand name. Change it in `src/config/site.ts`.
+> Brand name and default contact email (thenerdstudio@gmail.com) are set in `src/config/site.ts`.
 
 ---
 
@@ -75,7 +75,7 @@ cp .env.example .env.local
 ```
 
 ```ini
-VITE_CONTACT_EMAIL=hello@yourcompany.com
+VITE_CONTACT_EMAIL=thenerdstudio@gmail.com
 VITE_CONTACT_PHONE=+66 2 123 4567
 VITE_CONTACT_ADDRESS=123 Example Road, Bangkok 10110
 VITE_CONTACT_HOURS=Mon–Fri, 9:00–18:00
@@ -94,7 +94,7 @@ The form validates in the browser (required fields, email format, message length
 | Configuration                 | What happens on submit                                                                         |
 | ----------------------------- | ----------------------------------------------------------------------------------------------- |
 | `VITE_FORM_ENDPOINT` is set   | Sends a JSON `POST` to that HTTPS URL. Shows "Message sent" only when the server replies `2xx`, and an error message otherwise. |
-| Only `VITE_CONTACT_EMAIL` set | Opens the visitor's email app with the message already written. The page says clearly that nothing is sent until they press send. |
+| Only an email set (default: thenerdstudio@gmail.com) | Opens the visitor's email app with the message already written. The page says clearly that nothing is sent until they press send. |
 | Neither set                   | The form is shown but disabled, with a notice that it isn't connected yet.                      |
 
 The JSON body is `{ name, email, company, projectType, message }`. This works with Formspree, Getform, Basin, a serverless function, or your own API. The endpoint has to accept cross-origin requests from your domain.

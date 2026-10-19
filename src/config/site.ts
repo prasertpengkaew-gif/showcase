@@ -12,12 +12,13 @@ const httpsUrl = (value: string | undefined): string => {
 };
 
 export const siteConfig = {
-  name: 'Vantage XR',
+  name: 'TheNerdStudio',
   tagline: 'WebAR & 3D experience studio',
   description:
     'We design and build augmented reality, real-time 3D and interactive experiences that run in the browser — no app download required.',
   contact: {
-    email: clean(env.VITE_CONTACT_EMAIL),
+    // VITE_CONTACT_EMAIL overrides the default address.
+    email: clean(env.VITE_CONTACT_EMAIL) || 'thenerdstudio@gmail.com',
     phone: clean(env.VITE_CONTACT_PHONE),
     address: clean(env.VITE_CONTACT_ADDRESS),
     hours: clean(env.VITE_CONTACT_HOURS),
