@@ -25,6 +25,7 @@ const ROUTES = [
   '/face-ar',
   '/print-ar',
   '/hand-gestures',
+  '/try-on',
   '/virtual-tour',
   '/demos',
   '/services',
@@ -178,7 +179,7 @@ try {
   // --- Demos hub ---------------------------------------------------------------
   await go(B + '/demos');
   await page.locator('main article').first().waitFor();
-  ok((await page.locator('main article').count()) === 6, 'demos hub lists 6 demos');
+  ok((await page.locator('main article').count()) === 7, 'demos hub lists 7 demos');
   ok((await page.getByRole('link', { name: 'Demos' }).first().getAttribute('aria-current')) === 'page', 'Demos nav item is current');
 
   // --- Print AR --------------------------------------------------------------
@@ -200,6 +201,20 @@ try {
   );
   await page.locator('input[type=file]').setInputFiles(path.join(root, 'public/images/projects/lounge-chair-configurator/cover.webp'));
   ok(await passes(page.getByText('No hand gesture was recognised').waitFor({ timeout: 90000 })), 'gesture model runs on a photo');
+
+  // --- Virtual try-on ----------------------------------------------------------
+  await go(B + '/try-on');
+  await page.getByRole('button', { name: 'Start camera' }).click();
+  ok(
+    await passes(page.getByRole('alert').filter({ hasText: /Camera access was blocked|No camera found/ }).waitFor({ timeout: 20000 })),
+    'Try-on explains when the camera is unavailable',
+  );
+  await page.locator('input[type=file]').setInputFiles(path.join(root, 'public/images/projects/lounge-chair-configurator/cover.webp'));
+  ok(await passes(page.getByText('No person was found in that photo').waitFor({ timeout: 90000 })), 'pose model runs on a photo');
+  ok(await page.getByRole('button', { name: 'Save photo' }).isDisabled(), 'try-on Save photo disabled without a person');
+  ok(await page.getByRole('radio', { name: 'Navy' }).isDisabled(), 'shirt colour is disabled until the T-shirt is selected');
+  await page.locator('label', { hasText: 'T-shirt' }).click();
+  ok(await page.getByRole('radio', { name: 'Navy' }).isEnabled(), 'selecting the T-shirt enables colours');
 
   // --- Virtual tour ------------------------------------------------------------
   await go(B + '/virtual-tour');

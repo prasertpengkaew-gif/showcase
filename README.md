@@ -43,6 +43,7 @@ npm run dev        # http://localhost:5173
 | `/vr-showroom`     | VR Showroom     | Real-scale virtual gallery: orbit in 3D on any screen, **Enter VR** on Meta Quest and other WebXR headsets (thumbstick movement) |
 | `/demos`           | Demos hub       | One page linking all six live demos (with a QR code to open it on a phone) |
 | `/print-ar`        | Print AR        | Image tracking: point a phone at the printable sample card and a 3D chair stands up on it (MindAR) |
+| `/try-on`          | Virtual Try-On  | Body tracking (MediaPipe Pose): cap, necklace, watch and a simple 2D T-shirt follow the person; save photo; photo fallback |
 | `/hand-gestures`   | Hand gestures   | Camera hand tracking: 7 gestures (✋👍✌️☝️👎✊🤟) trigger robot animations; photo fallback (MediaPipe Gesture Recognizer) |
 | `/virtual-tour`    | Virtual Tour 360° | 3-room 360° tour with door and info hotspots, drag/zoom, phone motion sensor, VR on headsets |
 | `/face-ar`         | Face AR         | Live camera face tracking (468-point mesh, expressions, head tilt), sunglasses/crown effects, save photo, photo upload fallback — all on-device |
@@ -193,6 +194,17 @@ To add your own effect, write a draw function in `src/lib/faceEffects.ts`, add i
 - **Hotspot positions** are 3D points in metres relative to the camera position `EYE`. For photos, estimate them from the direction of the door or object.
 - **Accessibility:** hotspot labels are real HTML buttons that the 3D scene repositions every frame, so they work with a keyboard and a screen reader. A room list below the viewer gives the same navigation without the panorama. In VR, the 3D markers are selected with the controller ray.
 
+## Virtual Try-On
+
+`/try-on` uses MediaPipe Pose Landmarker (lite, Apache-2.0; model at `public/models/pose/pose_landmarker_lite.task`, 5.8 MB) to find the head, shoulders, elbows, wrists and hips. Each item is drawn on a 2D canvas from those points (`src/lib/tryOnEffects.ts`):
+
+- **Cap:** sits on the head, using the ears or eyes and the body's "up" direction.
+- **Necklace:** a curve between the shoulders, below the neck.
+- **Watch:** drawn on each wrist along the forearm, only when the wrist is clearly visible.
+- **T-shirt:** a flat shape following the shoulders, elbows and hips. **It is not cloth simulation, and the page says so.**
+
+For real products, replace the drawn items with your product's photos (PNG with transparency) or 3D models, using the same anchor points.
+
 ## Hand gestures
 
 `/hand-gestures` uses MediaPipe Gesture Recognizer (Apache-2.0; model at `public/models/hand/gesture_recognizer.task`, 8 MB). It shares the WebAssembly runtime with Face AR.
@@ -331,7 +343,7 @@ npm run test:e2e
 - **Media:** gallery lightbox, video loading, and the "Test it yourself" sections with their QR codes
 - **VR Showroom:** the canvas renders, the headset status message, and the disabled Enter VR button
 - **Face AR:** the camera-unavailable message, and the model running on a photo with no face in it
-- **Print AR and hand gestures:** the camera-unavailable messages, the card download, and the gesture model running on a photo
+- **Print AR, hand gestures and try-on:** the camera-unavailable messages, the card download, and the gesture and pose models running on a photo
 - **Virtual tour:** the panorama loads, door hotspots, the info card, and the room list
 - **Languages:** the TH/EN toggle, persistence after reload, and Thai copy (axe also scans the Thai pages)
 - **Projects:** category filters and deep links, 404 pages, and every internal link

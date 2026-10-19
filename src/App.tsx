@@ -14,6 +14,7 @@ const PrintAR = lazy(() => import('./pages/PrintAR'));
 const VirtualTour = lazy(() => import('./pages/VirtualTour'));
 const HandGestures = lazy(() => import('./pages/HandGestures'));
 const Demos = lazy(() => import('./pages/Demos'));
+const TryOn = lazy(() => import('./pages/TryOn'));
 const Services = lazy(() => import('./pages/Services'));
 const About = lazy(() => import('./pages/About'));
 const Contact = lazy(() => import('./pages/Contact'));
@@ -45,6 +46,7 @@ export default function App() {
           <Route path="virtual-tour" element={<Suspense fallback={<PageLoading />}><VirtualTour /></Suspense>} />
           <Route path="hand-gestures" element={<Suspense fallback={<PageLoading />}><HandGestures /></Suspense>} />
           <Route path="demos" element={<Suspense fallback={<PageLoading />}><Demos /></Suspense>} />
+          <Route path="try-on" element={<Suspense fallback={<PageLoading />}><TryOn /></Suspense>} />
           <Route path="services" element={<Suspense fallback={<PageLoading />}><Services /></Suspense>} />
           <Route path="about" element={<Suspense fallback={<PageLoading />}><About /></Suspense>} />
           <Route path="contact" element={<Suspense fallback={<PageLoading />}><Contact /></Suspense>} />

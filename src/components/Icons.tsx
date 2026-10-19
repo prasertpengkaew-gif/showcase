@@ -88,3 +88,6 @@ export const LineIcon = (p: IconProps) => (
 export const FaceIcon = (p: IconProps) => (
   <svg {...base(p)}><path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16" /><circle cx="9.5" cy="10.5" r=".6" fill="currentColor" /><circle cx="14.5" cy="10.5" r=".6" fill="currentColor" /><path d="M9.5 14.5a3.5 3.5 0 0 0 5 0" /></svg>
 );
+export const ShirtIcon = (p: IconProps) => (
+  <svg {...base(p)}><path d="M9 4 4 6.5 2.5 11l3 1.2V20h13v-7.8l3-1.2L20 6.5 15 4a3 3 0 0 1-6 0z" /></svg>
+);

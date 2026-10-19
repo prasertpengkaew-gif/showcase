@@ -50,6 +50,7 @@ export const services: Service[] = [
     includes: [
       'Face detection and 468-point face mesh tracking',
       'Virtual try-on for glasses, make-up, hats and jewellery',
+      'Body-tracked try-on for caps, necklaces, watches and simple apparel',
       'Branded filters and photo booths for events and social',
       'Expression input (smile, blink) for kiosks and games',
     ],
