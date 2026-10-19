@@ -109,3 +109,9 @@ export const FlagIcon = (p: IconProps) => (
 export const GamepadIcon = (p: IconProps) => (
   <svg {...base(p)}><rect x="2.5" y="7" width="19" height="11" rx="5.5" /><path d="M7.5 10.5v4M5.5 12.5h4" /><circle cx="15.5" cy="11.5" r="1" /><circle cx="18" cy="14" r="1" /></svg>
 );
+export const FlaskIcon = (p: IconProps) => (
+  <svg {...base(p)}><path d="M9 3h6M10 3v6l-5.2 9a2 2 0 0 0 1.7 3h11a2 2 0 0 0 1.7-3L14 9V3" /><path d="M7.5 14h9" /></svg>
+);
+export const TagIcon = (p: IconProps) => (
+  <svg {...base(p)}><path d="M3 12V4h8l10 10-8 8z" /><circle cx="7.5" cy="8.5" r="1.3" /></svg>
+);

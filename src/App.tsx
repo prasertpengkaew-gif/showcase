@@ -18,6 +18,9 @@ const TryOn = lazy(() => import('./pages/TryOn'));
 const EventBooth = lazy(() => import('./pages/EventBooth'));
 const ARHunt = lazy(() => import('./pages/ARHunt'));
 const MotionGame = lazy(() => import('./pages/MotionGame'));
+const MarkerChem = lazy(() => import('./pages/MarkerChem'));
+const ARCube = lazy(() => import('./pages/ARCube'));
+const MachineTags = lazy(() => import('./pages/MachineTags'));
 const DigitalTwin = lazy(() => import('./pages/DigitalTwin'));
 const Services = lazy(() => import('./pages/Services'));
 const About = lazy(() => import('./pages/About'));
@@ -53,6 +56,9 @@ export default function App() {
           <Route path="try-on" element={<Suspense fallback={<PageLoading />}><TryOn /></Suspense>} />
           <Route path="event-booth" element={<Suspense fallback={<PageLoading />}><EventBooth /></Suspense>} />
           <Route path="ar-hunt" element={<Suspense fallback={<PageLoading />}><ARHunt /></Suspense>} />
+          <Route path="marker-chem" element={<Suspense fallback={<PageLoading />}><MarkerChem /></Suspense>} />
+          <Route path="ar-cube" element={<Suspense fallback={<PageLoading />}><ARCube /></Suspense>} />
+          <Route path="machine-tags" element={<Suspense fallback={<PageLoading />}><MachineTags /></Suspense>} />
           <Route path="motion-game" element={<Suspense fallback={<PageLoading />}><MotionGame /></Suspense>} />
           <Route path="digital-twin" element={<Suspense fallback={<PageLoading />}><DigitalTwin /></Suspense>} />
           <Route path="services" element={<Suspense fallback={<PageLoading />}><Services /></Suspense>} />

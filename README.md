@@ -41,7 +41,7 @@ npm run dev        # http://localhost:5173
 | `/projects/:slug`  | Project details | 3D viewer with finish/animation pickers, overview, technologies, image gallery with lightbox, demo video **or** a hands-on "Test it yourself" section with a QR code, related projects |
 | `/ar-playground`   | AR Playground   | Pick a chair, robot or car; rotate, zoom, change finish or animation; "View in your space" in AR |
 | `/vr-showroom`     | VR Showroom     | Real-scale virtual gallery: orbit in 3D on any screen, **Enter VR** on Meta Quest and other WebXR headsets (thumbstick movement) |
-| `/demos`           | Demos hub       | One page linking all eleven live demos, grouped (AR on phones, face & body tracking, events, VR & digital twins) (with a QR code to open it on a phone) |
+| `/demos`           | Demos hub       | One page linking all fourteen live demos, grouped (AR on phones, AR with markers, face & body tracking, events, VR & digital twins) (with a QR code to open it on a phone) |
 | `/print-ar`        | Print AR        | Image tracking: point a phone at the printable sample card and a 3D chair stands up on it (MindAR) |
 | `/try-on`          | Virtual Try-On  | Body tracking (MediaPipe Pose): cap, necklace, watch and a simple 2D T-shirt follow the person; save photo; photo fallback |
 | `/hand-gestures`   | Hand gestures   | Camera hand tracking: 7 gestures (✋👍✌️☝️👎✊🤟) trigger robot animations; photo fallback (MediaPipe Gesture Recognizer) |
@@ -50,6 +50,9 @@ npm run dev        # http://localhost:5173
 | `/event-booth`    | Event AR Photo Booth | Branded event frame (3 themes, editable event name), AR props, smile-to-snap countdown, full-screen kiosk mode, download/share; photo fallback |
 | `/ar-hunt`        | AR Scavenger Hunt | Three printable posters (one MindAR target file); each scan shows a 3D character and collects a stamp; all three unlock a reward code |
 | `/motion-game`    | Motion Game     | 30-second catch game with body tracking (or mouse/touch/arrow keys); hands-free start; top-5 board on the device |
+| `/marker-chem`    | Marker Cards: Chemistry | Eight atom cards (ArUco markers); 3D atoms sit on the cards and bond into molecules (H₂O, CO₂, CH₄, NH₃ …) when cards are slid together |
+| `/ar-cube`        | AR Cube         | Printable paper cube with six markers; a 3D product follows the cube from any side |
+| `/machine-tags`   | Machine Tags    | Marker stickers on machines show live status, readings and service steps (simulated data until connected) |
 | `/face-ar`         | Face AR         | Live camera face tracking (468-point mesh, expressions, head tilt), sunglasses/crown effects, save photo, photo upload fallback — all on-device |
 | `/services`        | Services        | WebAR Development, VR Development, Face AR & Face Tracking, 3D Visualization, Interactive Experiences, AR Consulting |
 | `/about`           | About           | Company introduction, capabilities, principles, 3D asset credits (no invented credentials)    |
@@ -217,6 +220,18 @@ For real products, replace the drawn items with your product's photos (PNG with 
 - **Shooting:** the shutter (or holding a smile for 0.7 s, "Smile to snap") starts a 3-2-1 countdown. The camera image is cropped to the shape of the screen before the frame is drawn, so in full screen on a phone or a portrait kiosk the saved photo is exactly what guests saw.
 - **Sharing:** photos are made on the device and are saved only when a guest presses Download or Share (Web Share API, on phones that support sharing files).
 - **Not included (needs a server or hardware, quoted per event):** QR download, instant printing, live photo wall, lead capture with consent, and engagement reports. The page lists these as add-ons.
+
+## Marker AR (chemistry cards, AR cube, machine tags)
+
+These three demos track printed square **fiducial markers** (ArUco, `ARUCO_MIP_36h12`, 250 ids) instead of photos. They are steadier than image tracking, tell hundreds of markers apart, and several can work together.
+
+- **Tracking** (`src/lib/markers.ts`): `src/vendor/aruco` (js-aruco2, MIT; ES-module copy with only the MIP 36h12 dictionary) finds the markers; we compute each marker's 3D pose from its four corners with a homography, assuming a typical camera (focal length 0.85 × the longer image side), and smooth it. Positions are in units of the marker's edge length. `useMarkerCamera` composites video + three.js + a 2D overlay into one canvas, so full screen and "Save photo" work.
+- **Printing:** each page has a *Download printable sheet* button (`src/lib/markerSheet.ts`): A4 portrait cards for the chemistry cards and machine stickers, an A4 landscape cut-and-fold net for the cube. Print at 100% on matte paper and keep the white border around each marker. The page also shows the markers on screen so you can test without a printer.
+- **Chemistry cards** (`src/data/molecules.ts`, `src/lib/chemMatch.ts`): cards within 2.3 marker edges join a group; the group's elements are matched to a molecule and bonds are assigned so they are as short as possible. Add molecules by adding an entry (and a name in the dictionaries). Each card needs its own marker id, even for the same element.
+- **AR cube** (`src/data/cube.ts`, `src/lib/cubePose.ts`): every face's pose is converted to the cube's centre pose and the visible faces are blended (more weight to big, face-on markers), so tracking continues as the cube turns. Replace the products by editing `CUBE_MODELS`.
+- **Machine tags** (`src/data/tags.ts`): marker id → machine id. The overlay uses the same data source as the Digital Twin (simulator, or `VITE_TWIN_WS_URL`). Service steps shown on a warning or fault are demo text in the dictionaries; a real project takes them from your maintenance manuals.
+- **Camera:** markers are tracked in the un-mirrored camera image (a mirrored image can't be read), on the rear camera of phones.
+- **Honest limits:** the printed size sets the reading distance (about 5 cm cards read at roughly 0.5–1 m); markers hidden by a hand, glare or strong tilt are lost.
 
 ## AR Scavenger Hunt
 

@@ -21,6 +21,7 @@ export const services: Service[] = [
       'Markerless floor and wall placement',
       'Image tracking for print, packaging and business cards',
       'Event AR: poster hunts around the venue with stamps and rewards',
+      'Marker AR: printed cubes, cards and machine stickers that track steadily and work together',
       'iOS Quick Look, Android Scene Viewer and WebXR from one codebase',
       'Device detection with clear fallbacks',
       'Analytics hooks for your existing tools',

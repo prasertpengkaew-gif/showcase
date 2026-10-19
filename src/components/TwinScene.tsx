@@ -2,14 +2,7 @@ import { useMemo, useRef, type ReactElement, type RefObject } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { ContactShadows, Environment, Lightformer, OrbitControls, RoundedBox } from '@react-three/drei';
 import * as THREE from 'three';
-import { MACHINES, type MachineKind, type MachineReading, type MachineSpec, type MachineStatus } from '../lib/twin';
-
-export const STATUS_COLOR: Record<MachineStatus, string> = {
-  running: '#0ca30c',
-  idle: '#94a3b8',
-  warning: '#fab219',
-  fault: '#d03b3b',
-};
+import { MACHINES, STATUS_COLOR, type MachineKind, type MachineReading, type MachineSpec, type MachineStatus } from '../lib/twin';
 
 const LABEL_HEIGHT = 2.7;
 const BELT = { from: -7.4, to: 8.2, z: 0, y: 0.78, width: 0.9 };

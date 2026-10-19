@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { createServer } from 'vite';
 import { chromium, devices } from 'playwright';
 import { AxeBuilder } from '@axe-core/playwright';
+import { AR } from '../src/vendor/aruco/aruco.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const MOCK_ENDPOINT = 'https://forms.example.test/submit';
@@ -29,6 +30,9 @@ const ROUTES = [
   '/event-booth',
   '/ar-hunt',
   '/motion-game',
+  '/marker-chem',
+  '/ar-cube',
+  '/machine-tags',
   '/virtual-tour',
   '/digital-twin',
   '/demos',
@@ -37,6 +41,51 @@ const ROUTES = [
   '/contact',
   '/does-not-exist',
 ];
+
+const markerDict = new AR.Dictionary('ARUCO_MIP_36h12');
+
+/**
+ * Replaces the camera with a canvas stream that draws real markers, so the whole tracking
+ * pipeline runs without a physical camera. Each marker: { id, cx, cy, edge (px), angle (deg) }.
+ */
+async function fakeMarkerCamera(page, markers) {
+  await page.addInitScript(
+    ({ codes, size, markers }) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1280;
+      canvas.height = 720;
+      const ctx = canvas.getContext('2d');
+      let n = 0;
+      const draw = () => {
+        n++;
+        ctx.fillStyle = n % 2 ? '#8a8a80' : '#8b8b81'; // changes every frame so the stream keeps producing frames
+        ctx.fillRect(0, 0, 1280, 720);
+        for (const m of markers) {
+          const cell = m.edge / (size + 2);
+          ctx.save();
+          ctx.translate(m.cx, m.cy);
+          ctx.rotate((m.angle * Math.PI) / 180);
+          const total = (size + 4) * cell;
+          ctx.fillStyle = '#fff';
+          ctx.fillRect(-total / 2, -total / 2, total, total);
+          ctx.fillStyle = '#000';
+          ctx.fillRect(-m.edge / 2, -m.edge / 2, m.edge, m.edge);
+          ctx.fillStyle = '#fff';
+          const bits = codes[m.id];
+          for (let r = 0; r < size; r++)
+            for (let c = 0; c < size; c++)
+              if (bits[r * size + c] === '1') ctx.fillRect(-m.edge / 2 + (c + 1) * cell - 0.3, -m.edge / 2 + (r + 1) * cell - 0.3, cell + 0.6, cell + 0.6);
+          ctx.restore();
+        }
+      };
+      draw();
+      setInterval(draw, 33);
+      const stream = canvas.captureStream(30);
+      navigator.mediaDevices.getUserMedia = async () => stream;
+    },
+    { codes: markerDict.codeList, size: markerDict.markSize - 2, markers },
+  );
+}
 
 let failures = 0;
 const ok = (cond, msg) => {
@@ -188,7 +237,7 @@ try {
   // --- Demos hub ---------------------------------------------------------------
   await go(B + '/demos');
   await page.locator('main article').first().waitFor();
-  ok((await page.locator('main article').count()) === 11, 'demos hub lists 11 demos');
+  ok((await page.locator('main article').count()) === 14, 'demos hub lists 14 demos');
   ok((await page.getByRole('link', { name: 'Demos' }).first().getAttribute('aria-current')) === 'page', 'Demos nav item is current');
 
   // --- Print AR --------------------------------------------------------------
@@ -262,6 +311,56 @@ try {
   await page.getByRole('button', { name: 'Stop' }).click();
   ok(await passes(page.getByRole('button', { name: 'Start camera' }).waitFor()), 'motion game can be stopped');
   ok((await page.getByRole('region', { name: 'Open in your browser' }).count()) === 0, 'no in-app browser notice in a normal browser');
+
+  // --- Marker AR (camera replaced by a canvas that draws real markers) ----------
+  const markerCtx = await browser.newContext({ viewport: { width: 1280, height: 900 }, acceptDownloads: true });
+  const chemPage = await markerCtx.newPage();
+  // H, H and O cards touching, slightly tilted: a water molecule.
+  await fakeMarkerCamera(chemPage, [
+    { id: 4, cx: 640, cy: 420, edge: 170, angle: 8 },
+    { id: 0, cx: 430, cy: 250, edge: 170, angle: -10 },
+    { id: 1, cx: 850, cy: 250, edge: 170, angle: 15 },
+  ]);
+  await chemPage.goto(B + '/marker-chem', { waitUntil: 'domcontentloaded' });
+  await chemPage.getByRole('button', { name: 'Start camera' }).click();
+  ok(await passes(chemPage.getByText('Water', { exact: true }).waitFor({ timeout: 60000 })), 'chemistry cards: H + H + O is recognised as water');
+  ok((await chemPage.getByText('H₂O').count()) > 0, 'chemistry cards: the formula is shown');
+  const chemDl = chemPage.waitForEvent('download');
+  await chemPage.getByRole('button', { name: 'Download printable sheet' }).click();
+  ok((await chemDl).suggestedFilename().endsWith('.png'), 'chemistry cards: printable sheet downloads');
+  await markerCtx.close();
+
+  const cubeCtx = await browser.newContext({ viewport: { width: 1280, height: 900 }, acceptDownloads: true });
+  const cubePage = await cubeCtx.newPage();
+  await fakeMarkerCamera(cubePage, [{ id: 21, cx: 640, cy: 360, edge: 220, angle: 20 }]); // the cube's right face
+  await cubePage.goto(B + '/ar-cube', { waitUntil: 'domcontentloaded' });
+  await cubePage.getByRole('button', { name: 'Start camera' }).click();
+  ok(await passes(cubePage.getByText('Right visible').waitFor({ timeout: 60000 })), 'AR cube: a single face is tracked');
+  ok((await cubePage.getByText('Front not visible').count()) === 1, 'AR cube: other faces are reported as not visible');
+  const cubeDl = cubePage.waitForEvent('download');
+  await cubePage.getByRole('button', { name: 'Download printable sheet' }).click();
+  ok((await cubeDl).suggestedFilename().endsWith('.png'), 'AR cube: printable net downloads');
+  await cubeCtx.close();
+
+  const tagCtx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const tagPage = await tagCtx.newPage();
+  await fakeMarkerCamera(tagPage, [{ id: 33, cx: 640, cy: 420, edge: 200, angle: -6 }]); // sticker on the press
+  await tagPage.goto(B + '/machine-tags', { waitUntil: 'domcontentloaded' });
+  ok(await passes(tagPage.getByText('Simulated data').first().waitFor()), 'machine tags: data is labelled as simulated');
+  await tagPage.getByRole('button', { name: 'Start camera' }).click();
+  ok(await passes(tagPage.getByRole('listitem').filter({ hasText: 'PRS-01' }).first().waitFor({ timeout: 60000 })), 'machine tags: the sticker is matched to its machine');
+  await tagPage.getByRole('button', { name: 'Trigger a fault (demo)' }).click();
+  ok(await passes(tagPage.getByRole('heading', { name: 'Service steps' }).waitFor({ timeout: 10000 })), 'machine tags: a fault shows service steps');
+  await tagCtx.close();
+
+  for (const route of ['/marker-chem', '/ar-cube', '/machine-tags']) {
+    await go(B + route);
+    await page.getByRole('button', { name: 'Start camera' }).click();
+    ok(
+      await passes(page.getByRole('alert').filter({ hasText: /Camera access was blocked|No camera found/ }).waitFor({ timeout: 20000 })),
+      `${route} explains when the camera is unavailable`,
+    );
+  }
 
   // --- In-app browsers -----------------------------------------------------------
   const lineUA = 'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0 Mobile Safari/537.36 Line/14.10.0';

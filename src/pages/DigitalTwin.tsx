@@ -7,12 +7,11 @@ import { AlertIcon, CheckIcon, InfoIcon, PauseIcon } from '../components/Icons';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { useDeviceCapabilities } from '../hooks/useDeviceCapabilities';
-import { createTwinSource, MACHINES, type MachineReading, type MachineStatus, type SourceState } from '../lib/twin';
+import { createTwinSource, MACHINES, STATUS_COLOR, type MachineReading, type MachineStatus, type SourceState } from '../lib/twin';
 import { useLanguage, useT } from '../i18n';
 
 const TwinScene = lazy(() => import('../components/TwinScene'));
 const HISTORY = 60;
-const STATUS_COLOR: Record<MachineStatus, string> = { running: '#0ca30c', idle: '#94a3b8', warning: '#fab219', fault: '#d03b3b' };
 const STATUS_ICON: Record<MachineStatus, ComponentType<SVGProps<SVGSVGElement>>> = {
   running: CheckIcon,
   idle: PauseIcon,

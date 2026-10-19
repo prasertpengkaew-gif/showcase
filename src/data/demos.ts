@@ -1,10 +1,10 @@
 import type { ComponentType, SVGProps } from 'react';
-import { CameraIcon, CompassIcon, FlagIcon, GamepadIcon, CubeIcon, FaceIcon, FactoryIcon, HandIcon, HeadsetIcon, ScanIcon, ShirtIcon } from '../components/Icons';
+import { CameraIcon, CompassIcon, FlagIcon, FlaskIcon, GamepadIcon, TagIcon, CubeIcon, FaceIcon, FactoryIcon, HandIcon, HeadsetIcon, ScanIcon, ShirtIcon } from '../components/Icons';
 
-export type DemoId = 'ar' | 'print' | 'face' | 'tryon' | 'hands' | 'vr' | 'tour' | 'twin' | 'event' | 'hunt' | 'game';
+export type DemoId = 'ar' | 'print' | 'face' | 'tryon' | 'hands' | 'vr' | 'tour' | 'twin' | 'event' | 'hunt' | 'game' | 'chem' | 'cube' | 'tags';
 
-export type DemoGroup = 'phone' | 'camera' | 'event' | 'space';
-export const demoGroups: DemoGroup[] = ['phone', 'camera', 'event', 'space'];
+export type DemoGroup = 'phone' | 'marker' | 'camera' | 'event' | 'space';
+export const demoGroups: DemoGroup[] = ['phone', 'marker', 'camera', 'event', 'space'];
 
 export interface Demo {
   id: DemoId;
@@ -21,6 +21,9 @@ export const demos: Demo[] = [
   { id: 'ar', group: 'phone', featured: true, to: '/ar-playground', icon: CubeIcon, image: '/images/posters/chair.webp' },
   { id: 'print', group: 'phone', featured: true, to: '/print-ar', icon: ScanIcon, image: '/ar-card/card.png' },
   { id: 'tour', group: 'phone', to: '/virtual-tour', icon: CompassIcon, image: '/tour/living-thumb.webp' },
+  { id: 'chem', group: 'marker', to: '/marker-chem', icon: FlaskIcon, image: '/images/marker-chem.webp' },
+  { id: 'cube', group: 'marker', to: '/ar-cube', icon: CubeIcon, image: '/images/ar-cube.webp' },
+  { id: 'tags', group: 'marker', to: '/machine-tags', icon: TagIcon, image: '/images/machine-tags.webp' },
   { id: 'face', group: 'camera', featured: true, to: '/face-ar', icon: FaceIcon },
   { id: 'tryon', group: 'camera', to: '/try-on', icon: ShirtIcon },
   { id: 'hands', group: 'camera', to: '/hand-gestures', icon: HandIcon },

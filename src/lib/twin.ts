@@ -8,6 +8,13 @@
  * `status` is one of: running | idle | warning | fault. Unknown ids are ignored.
  */
 export type MachineStatus = 'running' | 'idle' | 'warning' | 'fault';
+/** Status colours (always shown with an icon and a label, never on their own). */
+export const STATUS_COLOR: Record<MachineStatus, string> = {
+  running: '#0ca30c',
+  idle: '#94a3b8',
+  warning: '#fab219',
+  fault: '#d03b3b',
+};
 export type MachineKind = 'cnc' | 'robot' | 'press' | 'qc' | 'pack';
 
 export interface MachineSpec {
@@ -43,6 +50,8 @@ export interface TwinSource {
   subscribe(onSnapshot: (s: TwinSnapshot) => void, onState?: (s: SourceState) => void): () => void;
   /** Clears a fault (simulator only; a live plant would expose its own command). */
   reset(id: string): void;
+  /** Makes a machine fault, to demonstrate alarms (simulator only). */
+  injectFault?(id: string): void;
 }
 
 export const MACHINES: MachineSpec[] = [
@@ -142,6 +151,14 @@ export class SimulatedSource implements TwinSource {
         this.timer = undefined;
       }
     };
+  }
+
+  injectFault(id: string) {
+    const r = this.machines.get(id);
+    if (!r) return;
+    r.status = 'fault';
+    r.faultTimer = 0;
+    this.step();
   }
 
   reset(id: string) {
