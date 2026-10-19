@@ -109,6 +109,39 @@
   animation: fade-up 0.7s var(--ease-out-soft) both;
 }
 
+/* Photo booth countdown digit and camera flash (reduced motion makes both instant). */
+@keyframes countdown-pop {
+  from {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0.85;
+    transform: scale(0.92);
+  }
+}
+
+.animate-countdown {
+  animation: countdown-pop 1s var(--ease-out-soft) both;
+}
+
+@keyframes flash {
+  from {
+    opacity: 0.9;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.animate-flash {
+  animation: flash 0.35s ease-out forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

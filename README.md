@@ -41,12 +41,13 @@ npm run dev        # http://localhost:5173
 | `/projects/:slug`  | Project details | 3D viewer with finish/animation pickers, overview, technologies, image gallery with lightbox, demo video **or** a hands-on "Test it yourself" section with a QR code, related projects |
 | `/ar-playground`   | AR Playground   | Pick a chair, robot or car; rotate, zoom, change finish or animation; "View in your space" in AR |
 | `/vr-showroom`     | VR Showroom     | Real-scale virtual gallery: orbit in 3D on any screen, **Enter VR** on Meta Quest and other WebXR headsets (thumbstick movement) |
-| `/demos`           | Demos hub       | One page linking all eight live demos (with a QR code to open it on a phone) |
+| `/demos`           | Demos hub       | One page linking all nine live demos (with a QR code to open it on a phone) |
 | `/print-ar`        | Print AR        | Image tracking: point a phone at the printable sample card and a 3D chair stands up on it (MindAR) |
 | `/try-on`          | Virtual Try-On  | Body tracking (MediaPipe Pose): cap, necklace, watch and a simple 2D T-shirt follow the person; save photo; photo fallback |
 | `/hand-gestures`   | Hand gestures   | Camera hand tracking: 7 gestures (✋👍✌️☝️👎✊🤟) trigger robot animations; photo fallback (MediaPipe Gesture Recognizer) |
 | `/virtual-tour`    | Virtual Tour 360° | 3-room 360° tour with door and info hotspots, drag/zoom, phone motion sensor, VR on headsets |
 | `/digital-twin`   | Digital Twin    | 3D production line (6 machines) with live status, temperature/output charts, event log and table; simulated data until connected to a plant feed |
+| `/event-booth`    | Event AR Photo Booth | Branded event frame (3 themes, editable event name), AR props, smile-to-snap countdown, full-screen kiosk mode, download/share; photo fallback |
 | `/face-ar`         | Face AR         | Live camera face tracking (468-point mesh, expressions, head tilt), sunglasses/crown effects, save photo, photo upload fallback — all on-device |
 | `/services`        | Services        | WebAR Development, VR Development, Face AR & Face Tracking, 3D Visualization, Interactive Experiences, AR Consulting |
 | `/about`           | About           | Company introduction, capabilities, principles, 3D asset credits (no invented credentials)    |
@@ -205,6 +206,15 @@ To add your own effect, write a draw function in `src/lib/faceEffects.ts`, add i
 - **T-shirt:** a flat shape following the shoulders, elbows and hips. **It is not cloth simulation, and the page says so.**
 
 For real products, replace the drawn items with your product's photos (PNG with transparency) or 3D models, using the same anchor points.
+
+## Event AR Photo Booth
+
+`/event-booth` turns the face tracker into a photo booth for events. It shares the Face AR model and runtime.
+
+- **Frame:** `src/lib/eventFrames.ts` draws three themes (launch night, gala/wedding, festival) with the event name and a second line typed in on the page. For a client, replace or add a theme drawn from their artwork (or draw a transparent PNG over the photo).
+- **Shooting:** the shutter (or holding a smile for 0.7 s, "Smile to snap") starts a 3-2-1 countdown. The camera image is cropped to the shape of the screen before the frame is drawn, so in full screen on a phone or a portrait kiosk the saved photo is exactly what guests saw.
+- **Sharing:** photos are made on the device and are saved only when a guest presses Download or Share (Web Share API, on phones that support sharing files).
+- **Not included (needs a server or hardware, quoted per event):** QR download, instant printing, live photo wall, lead capture with consent, and engagement reports. The page lists these as add-ons.
 
 ## Digital Twin (factory)
 

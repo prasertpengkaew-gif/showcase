@@ -19,7 +19,7 @@ export default function Demos() {
       </PageHeader>
       <section aria-label={d.metaTitle} className="py-16 sm:py-20">
         <div className="container-page">
-          <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {demos.map((demo) => (
               <li key={demo.id}>
                 <DemoCard demo={demo} headingLevel="h2" />

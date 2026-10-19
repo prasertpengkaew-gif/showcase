@@ -26,6 +26,7 @@ const ROUTES = [
   '/print-ar',
   '/hand-gestures',
   '/try-on',
+  '/event-booth',
   '/virtual-tour',
   '/digital-twin',
   '/demos',
@@ -185,7 +186,7 @@ try {
   // --- Demos hub ---------------------------------------------------------------
   await go(B + '/demos');
   await page.locator('main article').first().waitFor();
-  ok((await page.locator('main article').count()) === 8, 'demos hub lists 8 demos');
+  ok((await page.locator('main article').count()) === 9, 'demos hub lists 9 demos');
   ok((await page.getByRole('link', { name: 'Demos' }).first().getAttribute('aria-current')) === 'page', 'Demos nav item is current');
 
   // --- Print AR --------------------------------------------------------------
@@ -224,6 +225,20 @@ try {
   ok(await page.getByRole('radio', { name: 'Navy' }).isDisabled(), 'shirt colour is disabled until the T-shirt is selected');
   await page.locator('label', { hasText: 'T-shirt' }).click();
   ok(await page.getByRole('radio', { name: 'Navy' }).isEnabled(), 'selecting the T-shirt enables colours');
+
+  // --- Event photo booth -------------------------------------------------------
+  await go(B + '/event-booth');
+  ok(await page.getByRole('button', { name: 'Take photo' }).isDisabled(), 'booth shutter disabled before the camera starts');
+  await page.locator('input[type=file]').setInputFiles(path.join(root, 'public/images/projects/lounge-chair-configurator/cover.webp'));
+  await page.getByRole('button', { name: 'Take photo' }).and(page.locator(':enabled')).first().waitFor({ timeout: 90000 });
+  await page.getByLabel('Event name').fill('Acme Expo');
+  await page.getByRole('button', { name: 'Take photo' }).first().click();
+  ok(await passes(page.getByRole('img', { name: /Acme Expo frame/ }).waitFor({ timeout: 15000 })), 'booth takes a framed photo');
+  ok((await page.getByText('Photos taken (this session)').locator('..').textContent())?.includes('1'), 'booth counts photos');
+  const boothDl = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download' }).click();
+  ok((await boothDl).suggestedFilename().endsWith('.jpg'), 'booth photo downloads as JPEG');
+  await page.getByRole('button', { name: 'Take another' }).click();
 
   // --- Digital twin ------------------------------------------------------------
   await go(B + '/digital-twin');

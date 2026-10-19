@@ -9,7 +9,7 @@ interface CameraStageProps {
   children: (isFull: boolean) => ReactNode;
   /** Extra controls shown along the bottom only in full screen (effect chips etc.). */
   fullscreenControls?: ReactNode;
-  /** Shutter button in full screen; omitted when nothing can be saved yet. */
+  /** Shutter button in full screen; omitted when nothing can be captured yet. */
   onCapture?: () => void;
   captureLabel: string;
   /** Full screen is offered only once there is something to show (camera running or a photo). */
@@ -49,14 +49,14 @@ export function CameraStage({ label, children, fullscreenControls, onCapture, ca
           <span className={isFull ? '' : 'sr-only sm:not-sr-only'}>{isFull ? s.exitFullscreen : s.fullscreen}</span>
         </button>
       )}
-      {isFull && (
-        <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center gap-4 bg-gradient-to-t from-black/70 to-transparent px-4 pt-10 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
-          {fullscreenControls && <div className="flex max-w-full gap-2 overflow-x-auto">{fullscreenControls}</div>}
+      {isFull && (fullscreenControls || onCapture) && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col items-center gap-4 bg-gradient-to-t from-black/70 to-transparent px-4 pt-10 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+          {fullscreenControls && <div className="pointer-events-auto flex max-w-full gap-2 overflow-x-auto">{fullscreenControls}</div>}
           {onCapture && (
             <button
               type="button"
               onClick={onCapture}
-              className="grid h-16 w-16 place-items-center rounded-full border-4 border-white/90 bg-white/20 text-white hover:bg-white/30"
+              className="pointer-events-auto grid h-16 w-16 place-items-center rounded-full border-4 border-white/90 bg-white/20 text-white hover:bg-white/30"
             >
               <CameraIcon width={26} height={26} />
               <span className="sr-only">{captureLabel}</span>

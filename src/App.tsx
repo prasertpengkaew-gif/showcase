@@ -15,6 +15,7 @@ const VirtualTour = lazy(() => import('./pages/VirtualTour'));
 const HandGestures = lazy(() => import('./pages/HandGestures'));
 const Demos = lazy(() => import('./pages/Demos'));
 const TryOn = lazy(() => import('./pages/TryOn'));
+const EventBooth = lazy(() => import('./pages/EventBooth'));
 const DigitalTwin = lazy(() => import('./pages/DigitalTwin'));
 const Services = lazy(() => import('./pages/Services'));
 const About = lazy(() => import('./pages/About'));
@@ -48,6 +49,7 @@ export default function App() {
           <Route path="hand-gestures" element={<Suspense fallback={<PageLoading />}><HandGestures /></Suspense>} />
           <Route path="demos" element={<Suspense fallback={<PageLoading />}><Demos /></Suspense>} />
           <Route path="try-on" element={<Suspense fallback={<PageLoading />}><TryOn /></Suspense>} />
+          <Route path="event-booth" element={<Suspense fallback={<PageLoading />}><EventBooth /></Suspense>} />
           <Route path="digital-twin" element={<Suspense fallback={<PageLoading />}><DigitalTwin /></Suspense>} />
           <Route path="services" element={<Suspense fallback={<PageLoading />}><Services /></Suspense>} />
           <Route path="about" element={<Suspense fallback={<PageLoading />}><About /></Suspense>} />
