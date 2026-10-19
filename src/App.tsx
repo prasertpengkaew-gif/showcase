@@ -9,6 +9,7 @@ const Projects = lazy(() => import('./pages/Projects'));
 const ProjectDetail = lazy(() => import('./pages/ProjectDetail'));
 const ARPlayground = lazy(() => import('./pages/ARPlayground'));
 const VRShowroom = lazy(() => import('./pages/VRShowroom'));
+const FaceAR = lazy(() => import('./pages/FaceAR'));
 const Services = lazy(() => import('./pages/Services'));
 const About = lazy(() => import('./pages/About'));
 const Contact = lazy(() => import('./pages/Contact'));
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="projects/:slug" element={<Suspense fallback={<PageLoading />}><ProjectDetail /></Suspense>} />
           <Route path="ar-playground" element={<Suspense fallback={<PageLoading />}><ARPlayground /></Suspense>} />
           <Route path="vr-showroom" element={<Suspense fallback={<PageLoading />}><VRShowroom /></Suspense>} />
+          <Route path="face-ar" element={<Suspense fallback={<PageLoading />}><FaceAR /></Suspense>} />
           <Route path="services" element={<Suspense fallback={<PageLoading />}><Services /></Suspense>} />
           <Route path="about" element={<Suspense fallback={<PageLoading />}><About /></Suspense>} />
           <Route path="contact" element={<Suspense fallback={<PageLoading />}><Contact /></Suspense>} />

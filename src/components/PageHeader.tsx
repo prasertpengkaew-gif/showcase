@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { breakable } from './Breakable';
 
 interface PageHeaderProps {
   eyebrow: string;
@@ -21,7 +22,7 @@ export function PageHeader({ eyebrow, title, description, children }: PageHeader
       />
       <div className="container-page relative">
         <p className="eyebrow text-electric-400">{eyebrow}</p>
-        <h1 className="mt-4 max-w-3xl font-display text-4xl leading-[1.08] font-bold sm:text-5xl lg:text-6xl">{title}</h1>
+        <h1 className="mt-4 max-w-3xl font-display text-4xl leading-[1.08] font-bold sm:text-5xl lg:text-6xl">{breakable(title)}</h1>
         {description && <p className="mt-5 max-w-2xl text-lg leading-relaxed text-slate-300">{description}</p>}
         {children}
       </div>

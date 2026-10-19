@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { breakable } from './Breakable';
 
 interface SectionHeadingProps {
   eyebrow?: string;
@@ -30,7 +31,7 @@ export function SectionHeading({
           Heading === 'h1' ? 'text-4xl sm:text-5xl' : 'text-3xl sm:text-4xl'
         } leading-[1.1] ${dark ? 'text-white' : 'text-ink'}`}
       >
-        {title}
+        {breakable(title)}
       </Heading>
       {description && (
         <p className={`mt-4 text-base leading-relaxed sm:text-lg ${dark ? 'text-slate-300' : 'text-muted'}`}>

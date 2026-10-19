@@ -22,6 +22,7 @@ const ROUTES = [
   '/projects/interactive-brand-mascot',
   '/ar-playground',
   '/vr-showroom',
+  '/face-ar',
   '/services',
   '/about',
   '/contact',
@@ -155,6 +156,20 @@ try {
   ok(await passes(page.getByText('No VR headset detected').waitFor({ timeout: 10000 })), 'VR status explains no headset is present');
   ok(await page.getByRole('button', { name: 'Enter VR' }).isDisabled(), '"Enter VR" is disabled without a headset');
   ok(await passes(page.locator('[aria-label="QR code that opens the VR Showroom"] svg').waitFor()), 'VR page shows a QR code');
+
+  // --- Face AR ---------------------------------------------------------------
+  await go(B + '/face-ar');
+  ok(await passes(page.getByText('Camera is off').waitFor()), 'Face AR starts with the camera off');
+  // Headless Chromium has no camera permission: the page must explain, not fail silently.
+  await page.getByRole('button', { name: 'Start camera' }).click();
+  ok(
+    await passes(page.getByRole('alert').filter({ hasText: /Camera access was blocked|No camera found/ }).waitFor({ timeout: 20000 })),
+    'Face AR explains when the camera is unavailable',
+  );
+  // A photo without a face runs the real model and reports "no face".
+  await page.locator('input[type=file]').setInputFiles(path.join(root, 'public/images/projects/lounge-chair-configurator/cover.webp'));
+  ok(await passes(page.getByText('No face was found in that photo').waitFor({ timeout: 60000 })), 'Face AR runs the model on a photo');
+  ok(await page.getByRole('button', { name: 'Save photo' }).isDisabled(), 'Save photo is disabled when no face was found');
 
   // --- Language toggle -------------------------------------------------------
   await go(B + '/projects');

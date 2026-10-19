@@ -1,5 +1,5 @@
 import type { ComponentType, SVGProps } from 'react';
-import { CompassIcon, CubeIcon, HandIcon, HeadsetIcon, ScanIcon } from '../components/Icons';
+import { CompassIcon, CubeIcon, FaceIcon, HandIcon, HeadsetIcon, ScanIcon } from '../components/Icons';
 
 export interface Service {
   id: string;
@@ -38,6 +38,20 @@ export const services: Service[] = [
       'Interactive 3D fallback for phones and desktop',
     ],
     bestFor: 'Virtual showrooms, property, training and exhibitions.',
+  },
+  {
+    id: 'face-ar',
+    title: 'Face AR & Face Tracking',
+    summary:
+      'Camera effects and virtual try-on that follow the face in real time, running privately on the visitor’s device.',
+    icon: FaceIcon,
+    includes: [
+      'Face detection and 468-point face mesh tracking',
+      'Virtual try-on for glasses, make-up, hats and jewellery',
+      'Branded filters and photo booths for events and social',
+      'Expression input (smile, blink) for kiosks and games',
+    ],
+    bestFor: 'Eyewear and beauty retail, brand activations and interactive kiosks.',
   },
   {
     id: '3d-visualization',

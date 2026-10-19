@@ -1,14 +1,17 @@
 {
-  "name": "vantage-xr-portfolio",
+  "name": "thenerdstudio-portfolio",
   "private": true,
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/copy-mediapipe.mjs",
     "dev": "vite",
+    "prebuild": "node scripts/copy-mediapipe.mjs",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "validate:models": "node scripts/validate-models.mjs",
+    "pretest:e2e": "node scripts/copy-mediapipe.mjs",
     "test:e2e": "node tests/e2e.mjs",
     "render:media": "node scripts/render-media.mjs"
   },
@@ -17,6 +20,7 @@
   },
   "dependencies": {
     "@google/model-viewer": "^4.4.0",
+    "@mediapipe/tasks-vision": "^1.1.1",
     "@react-three/drei": "^10.7.9",
     "@react-three/fiber": "^9.8.2",
     "@react-three/xr": "^6.6.32",

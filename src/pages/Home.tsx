@@ -6,7 +6,8 @@ import { ServiceCard } from '../components/ServiceCard';
 import { ButtonLink } from '../components/Button';
 import { ModelViewer } from '../components/ModelViewer';
 import { LazyImage } from '../components/LazyImage';
-import { ArrowRightIcon, HeadsetIcon } from '../components/Icons';
+import { ArrowRightIcon, CheckIcon, HeadsetIcon } from '../components/Icons';
+import { FaceGlyph } from '../components/FaceGlyph';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useModels, useProjects, useServices, useT } from '../i18n';
 
@@ -89,11 +90,37 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Face AR teaser */}
+      <section aria-labelledby="face-title" className="pb-24 sm:pb-32">
+        <div className="container-page grid items-center gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
+          <div>
+            <SectionHeading id="face-title" eyebrow={h.faceEyebrow} title={h.faceTitle} description={h.faceText} />
+            <ul className="mt-8 space-y-3 text-[15px] text-slate-700">
+              {h.facePoints.map((point) => (
+                <li key={point} className="flex gap-3">
+                  <CheckIcon className="mt-0.5 shrink-0 text-electric-600" width={18} height={18} />
+                  {point}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-10">
+              <ButtonLink to="/face-ar" icon={<ArrowRightIcon width={16} height={16} />}>
+                {h.openFace}
+              </ButtonLink>
+            </div>
+          </div>
+          <div aria-hidden className="relative grid aspect-[3/2] place-items-center overflow-hidden rounded-2xl bg-navy-900">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(50%_60%_at_50%_45%,rgba(37,99,235,0.35),transparent_70%)]" />
+            <FaceGlyph size={220} className="relative" />
+          </div>
+        </div>
+      </section>
+
       {/* Services */}
       <section aria-labelledby="services-title" className="bg-surface py-24 sm:py-32">
         <div className="container-page">
           <SectionHeading id="services-title" eyebrow={h.servicesEyebrow} title={h.servicesTitle} align="center" />
-          <ul className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          <ul className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {services.map((s, i) => (
               <li key={s.id}>
                 <Link to={`/services#${s.id}`} className="group block h-full rounded-2xl">

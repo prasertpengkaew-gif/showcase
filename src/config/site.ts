@@ -40,6 +40,7 @@ export const navLinks = [
   { to: '/projects', key: 'projects' },
   { to: '/ar-playground', key: 'playground' },
   { to: '/vr-showroom', key: 'vr' },
+  { to: '/face-ar', key: 'face' },
   { to: '/services', key: 'services' },
   { to: '/about', key: 'about' },
   { to: '/contact', key: 'contact' },

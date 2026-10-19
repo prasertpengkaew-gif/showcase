@@ -1,6 +1,6 @@
 # TheNerdStudio — AR & VR Portfolio
 
-A responsive, bilingual (Thai / English) portfolio website for a WebAR, VR and 3D studio, built with **React 19, TypeScript, Vite, Tailwind CSS v4, Three.js, React Three Fiber, `@react-three/xr` and Google's `<model-viewer>`**.
+A responsive, bilingual (Thai / English) portfolio website for a WebAR, VR, Face AR and 3D studio, built with **React 19, TypeScript, Vite, Tailwind CSS v4, Three.js, React Three Fiber, `@react-three/xr`, Google's `<model-viewer>` and MediaPipe Face Landmarker**.
 
 Everything on the site works for real: every 3D model is a valid glTF file you can rotate, zoom and place in AR, and every image and video was rendered from those models. The contact form never says a message was sent unless something actually delivered it.
 
@@ -39,7 +39,8 @@ npm run dev        # http://localhost:5173
 | `/projects/:slug`  | Project details | 3D viewer with finish/animation pickers, overview, technologies, image gallery with lightbox, demo video **or** a hands-on "Test it yourself" section with a QR code, related projects |
 | `/ar-playground`   | AR Playground   | Pick a chair, robot or car; rotate, zoom, change finish or animation; "View in your space" in AR |
 | `/vr-showroom`     | VR Showroom     | Real-scale virtual gallery: orbit in 3D on any screen, **Enter VR** on Meta Quest and other WebXR headsets (thumbstick movement) |
-| `/services`        | Services        | WebAR Development, VR Development, 3D Visualization, Interactive Experiences, AR Consulting    |
+| `/face-ar`         | Face AR         | Live camera face tracking (468-point mesh, expressions, head tilt), sunglasses/crown effects, save photo, photo upload fallback — all on-device |
+| `/services`        | Services        | WebAR Development, VR Development, Face AR & Face Tracking, 3D Visualization, Interactive Experiences, AR Consulting |
 | `/about`           | About           | Company introduction, capabilities, principles, 3D asset credits (no invented credentials)    |
 | `/contact`         | Contact         | Validated form, contact details from config                                                   |
 | anything else      | 404             | Friendly not-found page                                                                        |
@@ -143,6 +144,24 @@ To test on a Quest:
 3. Press **Enter VR**.
 
 Exhibits and their positions are listed in `EXHIBITS` in `src/components/VRScene.tsx`. Any model from `src/data/models.ts` can be added there.
+
+---
+
+## Face AR
+
+`/face-ar` uses [MediaPipe Face Landmarker](https://ai.google.dev/edge/mediapipe/solutions/vision/face_landmarker) (Apache-2.0) in WebAssembly. Everything runs in the visitor's browser: no image or video is uploaded, and the page says so.
+
+- **Camera:** starts only when the visitor presses **Start camera**, and stops on **Stop camera** or when they leave the page. If the camera is blocked, missing or the page isn't on HTTPS, the page explains why and offers **Use a photo instead**.
+- **Effects:** a face mesh with tracking brackets, sunglasses and a crown, drawn on a 2D canvas from the face landmarks (`src/lib/faceEffects.ts`). **Save photo** downloads a PNG of what's on screen.
+- **Live readings:** number of faces, smile, eye blinks, mouth open, head tilt and frame rate, all from the model's blendshapes.
+- **What it doesn't do:** it doesn't identify people. It finds face landmarks and expressions only.
+
+Files:
+
+- `public/models/face/face_landmarker.task`: the face model (3.7 MB), committed with the site.
+- `public/mediapipe/`: the WebAssembly runtime, copied from `node_modules` by `scripts/copy-mediapipe.mjs`. This runs automatically before `dev`, `build` and `test:e2e`, and the folder is gitignored.
+
+To add your own effect, write a draw function in `src/lib/faceEffects.ts`, add its id to `FaceEffect` and `EFFECTS`, and add its label to `face.effects` in both language files.
 
 ---
 
@@ -274,6 +293,7 @@ npm run test:e2e
 - **Viewers:** model switching, finish and animation pickers (checked against the names inside each GLB), and the toolbar
 - **Media:** gallery lightbox, video loading, and the "Test it yourself" sections with their QR codes
 - **VR Showroom:** the canvas renders, the headset status message, and the disabled Enter VR button
+- **Face AR:** the camera-unavailable message, and the model running on a photo with no face in it
 - **Languages:** the TH/EN toggle, persistence after reload, and Thai copy (axe also scans the Thai pages)
 - **Projects:** category filters and deep links, 404 pages, and every internal link
 - **Contact form:** validation, focus on the error summary, a successful POST and a server error

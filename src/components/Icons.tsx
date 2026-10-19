@@ -85,3 +85,6 @@ export const HeadsetIcon = (p: IconProps) => (
 export const LineIcon = (p: IconProps) => (
   <svg {...base(p)}><path d="M12 4c4.97 0 9 3.13 9 7 0 3.6-3.56 6.2-8.6 8.6-.6.28-1-.2-.85-.75l.35-1.35C6.94 17.2 3 14.4 3 11c0-3.87 4.03-7 9-7z" /><path d="M7.5 9.5v3h2M11 9.5v3M13 12.5v-3l2.5 3v-3M18 9.5h-1.8v3H18M16.2 11h1.6" strokeWidth={1.4} /></svg>
 );
+export const FaceIcon = (p: IconProps) => (
+  <svg {...base(p)}><path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16" /><circle cx="9.5" cy="10.5" r=".6" fill="currentColor" /><circle cx="14.5" cy="10.5" r=".6" fill="currentColor" /><path d="M9.5 14.5a3.5 3.5 0 0 0 5 0" /></svg>
+);
