@@ -28,7 +28,7 @@ function niceTicks(lo: number, hi: number, count = 4) {
   const s = nice * step;
   const start = Math.floor(lo / s) * s;
   const ticks: number[] = [];
-  for (let v = start; v <= hi + s * 0.5; v += s) ticks.push(Math.round(v * 1000) / 1000);
+  for (let v = start; ticks.length < 2 || ticks[ticks.length - 1] < hi; v += s) ticks.push(Math.round(v * 1000) / 1000);
   return ticks;
 }
 
