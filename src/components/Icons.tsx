@@ -94,3 +94,12 @@ export const ShirtIcon = (p: IconProps) => (
 export const FactoryIcon = (p: IconProps) => (
   <svg {...base(p)}><path d="M3 20V10l5 3V10l5 3V10l5 3V4h3v16z" /><path d="M7 17h2M12 17h2M17 17h2" /></svg>
 );
+export const ExpandIcon = (p: IconProps) => (
+  <svg {...base(p)}><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
+);
+export const ShrinkIcon = (p: IconProps) => (
+  <svg {...base(p)}><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" /></svg>
+);
+export const CameraIcon = (p: IconProps) => (
+  <svg {...base(p)}><path d="M4 8h3l2-3h6l2 3h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></svg>
+);

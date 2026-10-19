@@ -176,6 +176,11 @@ try {
   await page.locator('input[type=file]').setInputFiles(path.join(root, 'public/images/projects/lounge-chair-configurator/cover.webp'));
   ok(await passes(page.getByText('No face was found in that photo').waitFor({ timeout: 60000 })), 'Face AR runs the model on a photo');
   ok(await page.getByRole('button', { name: 'Save photo' }).isDisabled(), 'Save photo is disabled when no face was found');
+  await page.getByRole('button', { name: 'Full screen' }).click();
+  ok(await passes(page.getByRole('button', { name: 'Exit full screen' }).waitFor()), 'Face AR enters full screen');
+  ok((await page.getByRole('button', { name: 'Sunglasses' }).count()) === 1, 'full screen shows effect controls');
+  await page.getByRole('button', { name: 'Exit full screen' }).click();
+  ok(await passes(page.getByRole('button', { name: 'Full screen' }).waitFor()), 'Face AR leaves full screen');
 
   // --- Demos hub ---------------------------------------------------------------
   await go(B + '/demos');
@@ -213,6 +218,9 @@ try {
   await page.locator('input[type=file]').setInputFiles(path.join(root, 'public/images/projects/lounge-chair-configurator/cover.webp'));
   ok(await passes(page.getByText('No person was found in that photo').waitFor({ timeout: 90000 })), 'pose model runs on a photo');
   ok(await page.getByRole('button', { name: 'Save photo' }).isDisabled(), 'try-on Save photo disabled without a person');
+  await page.getByRole('button', { name: 'Full screen' }).click();
+  ok(await passes(page.getByRole('button', { name: 'Exit full screen' }).waitFor()), 'Try-on enters full screen');
+  await page.getByRole('button', { name: 'Exit full screen' }).click();
   ok(await page.getByRole('radio', { name: 'Navy' }).isDisabled(), 'shirt colour is disabled until the T-shirt is selected');
   await page.locator('label', { hasText: 'T-shirt' }).click();
   ok(await page.getByRole('radio', { name: 'Navy' }).isEnabled(), 'selecting the T-shirt enables colours');

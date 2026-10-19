@@ -3,6 +3,7 @@ import type { FaceLandmarker, FaceLandmarkerResult } from '@mediapipe/tasks-visi
 import { PageHeader } from '../components/PageHeader';
 import { Button, buttonClasses } from '../components/Button';
 import { OptionChips } from '../components/OptionChips';
+import { CameraStage, StageChip } from '../components/CameraStage';
 import { AlertIcon, CheckIcon, InfoIcon } from '../components/Icons';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { drawFaces, headRoll, type FaceEffect, type MeshConnections } from '../lib/faceEffects';
@@ -281,51 +282,67 @@ export default function FaceAR() {
             <h2 id="face-stage-title" className="sr-only">
               {f.stageLabel}
             </h2>
-            <div
-              role="region"
-              aria-label={f.stageLabel}
-              className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-line bg-navy-900 sm:aspect-video"
+            <CameraStage
+              label={f.stageLabel}
+              available={showCanvas}
+              captureLabel={f.takePhoto}
+              onCapture={showCanvas && metrics.faces > 0 ? savePhoto : undefined}
+              fullscreenControls={EFFECTS.map((e) => (
+                <StageChip key={e} active={effect === e} onClick={() => setEffect(e)}>
+                  {f.effects[e]}
+                </StageChip>
+              ))}
             >
-              <video ref={videoRef} className="hidden" playsInline muted />
-              <canvas
-                ref={canvasRef}
-                className={`absolute inset-0 h-full w-full object-contain ${showCanvas ? '' : 'invisible'}`}
-                aria-hidden
-              />
-              {!showCanvas && (
-                <div className="absolute inset-0 grid place-items-center p-6 text-center text-white" role="status">
-                  {busy ? (
-                    <div>
-                      <span className="mx-auto block h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-electric-500" />
-                      <p className="mt-4 text-sm text-slate-300">
-                        {status === 'starting-camera' ? f.startingCamera : f.loadingModel}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="max-w-sm">
-                      <FaceGlyph />
-                      <p className="mt-5 font-display text-lg font-bold">{f.idleTitle}</p>
-                      <p className="mt-2 text-sm leading-relaxed text-slate-300">{f.idleText}</p>
+              {(isFull) => (
+                <>
+                  <video ref={videoRef} className="hidden" playsInline muted />
+                  <canvas
+                    ref={canvasRef}
+                    className={`absolute inset-0 h-full w-full ${isFull && live ? 'object-cover' : 'object-contain'} ${showCanvas ? '' : 'invisible'}`}
+                    aria-hidden
+                  />
+                  {!showCanvas && (
+                    <div className="absolute inset-0 grid place-items-center p-6 text-center text-white" role="status">
+                      {busy ? (
+                        <div>
+                          <span className="mx-auto block h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-electric-500" />
+                          <p className="mt-4 text-sm text-slate-300">
+                            {status === 'starting-camera' ? f.startingCamera : f.loadingModel}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="max-w-sm">
+                          <FaceGlyph />
+                          <p className="mt-5 font-display text-lg font-bold">{f.idleTitle}</p>
+                          <p className="mt-2 text-sm leading-relaxed text-slate-300">{f.idleText}</p>
+                        </div>
+                      )}
                     </div>
                   )}
-                </div>
+                  {busy && showCanvas && (
+                    <p className="absolute top-4 left-4 rounded-full bg-navy-900/85 px-3 py-1.5 text-xs text-white" role="status">
+                      {f.loadingModel}
+                    </p>
+                  )}
+                  {live && metrics.faces === 0 && (
+                    <p
+                      role="status"
+                      className={`absolute inset-x-4 ${isFull ? 'top-16' : 'bottom-4'} rounded-xl bg-navy-900/85 px-4 py-3 text-center text-sm text-white`}
+                    >
+                      {f.noFace}
+                    </p>
+                  )}
+                  {status === 'photo' && photoNoFace && (
+                    <p
+                      role="status"
+                      className={`absolute inset-x-4 ${isFull ? 'top-16' : 'bottom-4'} rounded-xl bg-navy-900/85 px-4 py-3 text-center text-sm text-white`}
+                    >
+                      {f.photoNoFace}
+                    </p>
+                  )}
+                </>
               )}
-              {busy && showCanvas && (
-                <p className="absolute top-4 left-4 rounded-full bg-navy-900/85 px-3 py-1.5 text-xs text-white" role="status">
-                  {f.loadingModel}
-                </p>
-              )}
-              {live && metrics.faces === 0 && (
-                <p className="absolute inset-x-4 bottom-4 rounded-xl bg-navy-900/85 px-4 py-3 text-center text-sm text-white" role="status">
-                  {f.noFace}
-                </p>
-              )}
-              {status === 'photo' && photoNoFace && (
-                <p className="absolute inset-x-4 bottom-4 rounded-xl bg-navy-900/85 px-4 py-3 text-center text-sm text-white" role="status">
-                  {f.photoNoFace}
-                </p>
-              )}
-            </div>
+            </CameraStage>
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
               {live ? (

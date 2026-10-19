@@ -723,6 +723,8 @@ export const en = {
     projects: 'Browse projects',
   },
 
+  stage: { fullscreen: 'Full screen', exitFullscreen: 'Exit full screen' },
+
   image: {
     unavailable: 'Image unavailable',
   },

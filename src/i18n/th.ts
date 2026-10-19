@@ -715,6 +715,8 @@ export const th: Dictionary = {
     projects: 'ดูผลงาน',
   },
 
+  stage: { fullscreen: 'เต็มจอ', exitFullscreen: 'ออกจากเต็มจอ' },
+
   image: {
     unavailable: 'ไม่สามารถแสดงภาพ',
   },
