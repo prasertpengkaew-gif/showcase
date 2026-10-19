@@ -10,7 +10,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createServer } from 'vite';
-import { chromium } from 'playwright';
+import { chromium, devices } from 'playwright';
 import { AxeBuilder } from '@axe-core/playwright';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -358,6 +358,22 @@ try {
     await page.waitForTimeout(600);
     ok(!(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)), `no horizontal scroll at 390px: ${route}`);
   }
+
+  // --- AR on phones -----------------------------------------------------------
+  // Regression: `ar=""` was set as a property (false) by React 19, so AR never activated.
+  // (iOS Quick Look needs real Safari's <a rel="ar"> support, so it can't be emulated here.)
+  for (const [name, device] of [['Android', 'Pixel 7']]) {
+    const phone = await browser.newContext({ ...devices[device] });
+    const pp = await phone.newPage();
+    await pp.goto(B + '/ar-playground', { waitUntil: 'domcontentloaded' });
+    ok(await passes(pp.getByText('AR is available on this device').waitFor({ timeout: 60000 })), `${name}: AR is offered`);
+    await phone.close();
+  }
+  const anim = await browser.newPage();
+  await anim.goto(B + '/projects/interactive-brand-mascot', { waitUntil: 'domcontentloaded' });
+  await anim.waitForFunction(() => document.querySelector('model-viewer')?.loaded, null, { timeout: 45000 });
+  ok(await anim.locator('model-viewer').evaluate((e) => e.autoplay === true), 'animated model autoplays');
+  await anim.close();
 
   // --- Reduced motion --------------------------------------------------------
   const reduced = await browser.newContext({ reducedMotion: 'reduce' });

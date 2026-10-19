@@ -109,9 +109,21 @@ export function ModelViewer({
       const p = (e as CustomEvent<{ totalProgress: number }>).detail.totalProgress;
       setProgress(p);
     };
+    // model-viewer decides AR support asynchronously (WebXR's isSessionSupported can resolve after
+    // the model loads) and fires no event when it does, so keep checking briefly before saying no.
+    let arPoll: number | undefined;
     const onLoad = () => {
       updateStatus('loaded');
-      setCanAR(el.canActivateAR);
+      window.clearInterval(arPoll);
+      if (el.canActivateAR) return setCanAR(true);
+      setCanAR(null);
+      const started = Date.now();
+      arPoll = window.setInterval(() => {
+        if (el.canActivateAR || Date.now() - started > 6000) {
+          window.clearInterval(arPoll);
+          setCanAR(el.canActivateAR);
+        }
+      }, 250);
     };
     const onError = (e: Event) => {
       const detail = (e as CustomEvent<{ type?: string }>).detail;
@@ -128,6 +140,7 @@ export function ModelViewer({
     el.addEventListener('ar-status', onARStatus);
     if (el.loaded) onLoad();
     return () => {
+      window.clearInterval(arPoll);
       el.removeEventListener('progress', onProgress);
       el.removeEventListener('load', onLoad);
       el.removeEventListener('error', onError);
@@ -205,9 +218,11 @@ export function ModelViewer({
             {...(rotating ? { 'auto-rotate': '', 'auto-rotate-delay': 1500, 'rotation-per-second': '18deg' } : {})}
             {...(variant ? { 'variant-name': variant } : {})}
             {...(animation ? { 'animation-name': animation, 'animation-crossfade-duration': 400 } : {})}
-            {...(animation && !reducedMotion ? { autoplay: '' } : {})}
+            // `ar` and `autoplay` match model-viewer properties, so React 19 sets them as properties:
+            // they must be real booleans (an empty string reads as false).
+            {...(animation && !reducedMotion ? { autoplay: true } : {})}
             {...(ar
-              ? { ar: '', 'ar-modes': 'webxr scene-viewer quick-look', 'ar-scale': 'auto', 'ar-placement': 'floor' }
+              ? { ar: true, 'ar-modes': 'webxr scene-viewer quick-look', 'ar-scale': 'auto', 'ar-placement': 'floor' }
               : {})}
           >
             {ar && (

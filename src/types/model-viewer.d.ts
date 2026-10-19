@@ -6,7 +6,7 @@ interface ModelViewerAttributes extends DetailedHTMLProps<HTMLAttributes<HTMLEle
   'ios-src'?: string;
   poster?: string;
   alt?: string;
-  ar?: string;
+  ar?: boolean;
   'ar-modes'?: string;
   'ar-scale'?: 'auto' | 'fixed';
   'ar-placement'?: 'floor' | 'wall';
@@ -29,7 +29,7 @@ interface ModelViewerAttributes extends DetailedHTMLProps<HTMLAttributes<HTMLEle
   'variant-name'?: string;
   'animation-name'?: string;
   'animation-crossfade-duration'?: number | string;
-  autoplay?: string;
+  autoplay?: boolean;
   loading?: 'auto' | 'lazy' | 'eager';
   reveal?: 'auto' | 'manual';
   'interpolation-decay'?: number | string;
