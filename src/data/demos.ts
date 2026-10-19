@@ -1,7 +1,7 @@
 import type { ComponentType, SVGProps } from 'react';
-import { CompassIcon, CubeIcon, FaceIcon, HandIcon, HeadsetIcon, ScanIcon, ShirtIcon } from '../components/Icons';
+import { CompassIcon, CubeIcon, FaceIcon, FactoryIcon, HandIcon, HeadsetIcon, ScanIcon, ShirtIcon } from '../components/Icons';
 
-export type DemoId = 'ar' | 'print' | 'face' | 'tryon' | 'hands' | 'vr' | 'tour';
+export type DemoId = 'ar' | 'print' | 'face' | 'tryon' | 'hands' | 'vr' | 'tour' | 'twin';
 
 export interface Demo {
   id: DemoId;
@@ -19,6 +19,7 @@ export const demos: Demo[] = [
   { id: 'hands', to: '/hand-gestures', icon: HandIcon },
   { id: 'vr', to: '/vr-showroom', icon: HeadsetIcon, image: '/images/vr-showroom.webp' },
   { id: 'tour', to: '/virtual-tour', icon: CompassIcon, image: '/tour/living-thumb.webp' },
+  { id: 'twin', to: '/digital-twin', icon: FactoryIcon, image: '/images/digital-twin.webp' },
 ];
 
 export const demoPaths = ['/demos', ...demos.map((d) => d.to)];

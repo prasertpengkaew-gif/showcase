@@ -80,10 +80,11 @@ export const services: Service[] = [
       'React and Three.js front-end development',
       'Animation and interaction design',
       'Hand-gesture and touch-free controls for kiosks',
+      'Factory digital twins: 3D line layouts with live machine status',
       'Accessible controls and reduced-motion support',
       'Integration with your CMS or e-commerce platform',
     ],
-    bestFor: 'Training, education, trade shows and brand storytelling.',
+    bestFor: 'Training, education, trade shows, factory monitoring and brand storytelling.',
   },
   {
     id: 'ar-consulting',

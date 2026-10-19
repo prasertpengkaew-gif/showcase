@@ -27,6 +27,7 @@ const ROUTES = [
   '/hand-gestures',
   '/try-on',
   '/virtual-tour',
+  '/digital-twin',
   '/demos',
   '/services',
   '/about',
@@ -179,7 +180,7 @@ try {
   // --- Demos hub ---------------------------------------------------------------
   await go(B + '/demos');
   await page.locator('main article').first().waitFor();
-  ok((await page.locator('main article').count()) === 7, 'demos hub lists 7 demos');
+  ok((await page.locator('main article').count()) === 8, 'demos hub lists 8 demos');
   ok((await page.getByRole('link', { name: 'Demos' }).first().getAttribute('aria-current')) === 'page', 'Demos nav item is current');
 
   // --- Print AR --------------------------------------------------------------
@@ -215,6 +216,16 @@ try {
   ok(await page.getByRole('radio', { name: 'Navy' }).isDisabled(), 'shirt colour is disabled until the T-shirt is selected');
   await page.locator('label', { hasText: 'T-shirt' }).click();
   ok(await page.getByRole('radio', { name: 'Navy' }).isEnabled(), 'selecting the T-shirt enables colours');
+
+  // --- Digital twin ------------------------------------------------------------
+  await go(B + '/digital-twin');
+  ok(await passes(page.getByText('Simulated data').first().waitFor()), 'twin labels its data as simulated');
+  ok(await passes(page.getByText('Line output').first().waitFor()), 'twin shows KPI tiles');
+  const twinRows = page.locator('table tbody tr');
+  await twinRows.first().waitFor();
+  ok((await twinRows.count()) === 6, 'twin table lists 6 machines');
+  await page.getByRole('button', { name: 'Inspect PCK-01' }).click();
+  ok(await passes(page.getByRole('heading', { name: 'PCK-01 temperature, last 60 s' }).waitFor()), 'Inspect selects a machine');
 
   // --- Virtual tour ------------------------------------------------------------
   await go(B + '/virtual-tour');

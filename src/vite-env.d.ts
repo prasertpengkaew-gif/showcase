@@ -10,6 +10,7 @@ interface ImportMetaEnv {
   readonly VITE_LINE_ID?: string;
   readonly VITE_FACEBOOK_URL?: string;
   readonly VITE_LINKEDIN_URL?: string;
+  readonly VITE_TWIN_WS_URL?: string;
   readonly VITE_INSTAGRAM_URL?: string;
   readonly VITE_GITHUB_URL?: string;
 }

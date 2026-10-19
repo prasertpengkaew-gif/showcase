@@ -91,3 +91,6 @@ export const FaceIcon = (p: IconProps) => (
 export const ShirtIcon = (p: IconProps) => (
   <svg {...base(p)}><path d="M9 4 4 6.5 2.5 11l3 1.2V20h13v-7.8l3-1.2L20 6.5 15 4a3 3 0 0 1-6 0z" /></svg>
 );
+export const FactoryIcon = (p: IconProps) => (
+  <svg {...base(p)}><path d="M3 20V10l5 3V10l5 3V10l5 3V4h3v16z" /><path d="M7 17h2M12 17h2M17 17h2" /></svg>
+);

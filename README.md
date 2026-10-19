@@ -41,11 +41,12 @@ npm run dev        # http://localhost:5173
 | `/projects/:slug`  | Project details | 3D viewer with finish/animation pickers, overview, technologies, image gallery with lightbox, demo video **or** a hands-on "Test it yourself" section with a QR code, related projects |
 | `/ar-playground`   | AR Playground   | Pick a chair, robot or car; rotate, zoom, change finish or animation; "View in your space" in AR |
 | `/vr-showroom`     | VR Showroom     | Real-scale virtual gallery: orbit in 3D on any screen, **Enter VR** on Meta Quest and other WebXR headsets (thumbstick movement) |
-| `/demos`           | Demos hub       | One page linking all six live demos (with a QR code to open it on a phone) |
+| `/demos`           | Demos hub       | One page linking all eight live demos (with a QR code to open it on a phone) |
 | `/print-ar`        | Print AR        | Image tracking: point a phone at the printable sample card and a 3D chair stands up on it (MindAR) |
 | `/try-on`          | Virtual Try-On  | Body tracking (MediaPipe Pose): cap, necklace, watch and a simple 2D T-shirt follow the person; save photo; photo fallback |
 | `/hand-gestures`   | Hand gestures   | Camera hand tracking: 7 gestures (✋👍✌️☝️👎✊🤟) trigger robot animations; photo fallback (MediaPipe Gesture Recognizer) |
 | `/virtual-tour`    | Virtual Tour 360° | 3-room 360° tour with door and info hotspots, drag/zoom, phone motion sensor, VR on headsets |
+| `/digital-twin`   | Digital Twin    | 3D production line (6 machines) with live status, temperature/output charts, event log and table; simulated data until connected to a plant feed |
 | `/face-ar`         | Face AR         | Live camera face tracking (468-point mesh, expressions, head tilt), sunglasses/crown effects, save photo, photo upload fallback — all on-device |
 | `/services`        | Services        | WebAR Development, VR Development, Face AR & Face Tracking, 3D Visualization, Interactive Experiences, AR Consulting |
 | `/about`           | About           | Company introduction, capabilities, principles, 3D asset credits (no invented credentials)    |
@@ -204,6 +205,21 @@ To add your own effect, write a draw function in `src/lib/faceEffects.ts`, add i
 - **T-shirt:** a flat shape following the shoulders, elbows and hips. **It is not cloth simulation, and the page says so.**
 
 For real products, replace the drawn items with your product's photos (PNG with transparency) or 3D models, using the same anchor points.
+
+## Digital Twin (factory)
+
+`/digital-twin` shows a small production line in 3D: two CNC machines, a robot, a press, a vision inspection gantry and a packing station on a conveyor. Each machine has a stack light and floor ring in its status colour (running / idle / warning / fault — always with an icon and a text label, never colour alone). Click a machine (in 3D or the table) to see its readings and a 60-second temperature chart against its warning limit.
+
+- **Data source:** `src/lib/twin.ts`. By default a built-in **simulator** produces realistic drift, overheating and faults, and the page shows a permanent "Simulated data" banner.
+- **Live data:** set `VITE_TWIN_WS_URL=wss://your-gateway/twin`. The page then connects over WebSocket (reconnecting with backoff) and shows "Live data · connected". Each message is:
+
+  ```json
+  { "machines": [ { "id": "cnc-1", "status": "running", "temperature": 61.2, "throughput": 42, "vibration": 2.1 } ] }
+  ```
+
+  `status` is `running | idle | warning | fault`; unknown ids are ignored. A small gateway (Node-RED, an MQTT→WebSocket bridge, or an OPC UA client) usually translates the PLC data into this format.
+- **Your own layout:** edit `MACHINES` in `src/lib/twin.ts` (ids, codes, floor positions, warning temperatures) and the machine models in `src/components/TwinScene.tsx`. For a real plant, replace the procedural machines with GLB models from CAD.
+- The "Reset fault" button only exists in the simulator. Real resets must go through the plant's control system.
 
 ## Hand gestures
 
