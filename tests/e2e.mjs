@@ -13,6 +13,7 @@ import { createServer } from 'vite';
 import { chromium, devices } from 'playwright';
 import { AxeBuilder } from '@axe-core/playwright';
 import { AR } from '../src/vendor/aruco/aruco.js';
+import { ANON_KEY, startMockSupabase } from './mock-supabase.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const MOCK_ENDPOINT = 'https://forms.example.test/submit';
@@ -110,6 +111,9 @@ const configured = await startServer({
   VITE_CONTACT_EMAIL: 'hello@example.test',
   VITE_CONTACT_PHONE: '+66 2 123 4567',
 });
+// A third server connected to a mock Supabase, for the photo booth platform.
+const mock = await startMockSupabase();
+const live = await startServer({ VITE_SUPABASE_URL: mock.url, VITE_SUPABASE_ANON_KEY: ANON_KEY, VITE_BOOTH_RETRY_MS: '400' });
 const B = plain.url;
 
 const browser = await chromium.launch({
@@ -362,6 +366,118 @@ try {
     );
   }
 
+  // --- Photo booth platform: kiosk → upload → QR → guest page (mock Supabase) ------
+  const V = live.url;
+  const axeSerious = async (pg) => {
+    const found = (await new AxeBuilder({ page: pg }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()).violations.filter(
+      (v) => v.impact === 'serious' || v.impact === 'critical',
+    );
+    for (const v of found) console.log(`     [${v.impact}] ${v.id}: ${v.help} — ${v.nodes.slice(0, 3).map((n) => n.target.join(' ')).join(' | ')}`);
+    return found;
+  };
+  const boothCtx = await browser.newContext({ viewport: { width: 1180, height: 820 }, permissions: ['camera'] });
+  const kiosk = await boothCtx.newPage();
+  await fakeMarkerCamera(kiosk, []); // a plain camera picture; the shutter works without a face
+  const ev = mock.event;
+
+  await kiosk.goto(`${V}/booth/acme-launch?k=wrong`, { waitUntil: 'domcontentloaded' });
+  ok(await passes(kiosk.getByRole('heading', { name: 'This booth link doesn’t work' }).waitFor({ timeout: 20000 })), 'booth: a wrong kiosk token is refused');
+  ok((await axeSerious(kiosk)).length === 0, 'booth: the error screen passes axe');
+
+  await kiosk.goto(`${V}/booth/acme-launch?k=${ev.kiosk_token}`, { waitUntil: 'domcontentloaded' });
+  ok(await passes(kiosk.getByRole('heading', { name: 'Acme Launch Night' }).waitFor({ timeout: 20000 })), 'booth: the event loads with the right token');
+  ok((await axeSerious(kiosk)).length === 0, 'booth: the setup screen passes axe');
+  await kiosk.getByRole('button', { name: 'Start booth' }).click();
+  await kiosk.getByRole('button', { name: 'Take photo' }).waitFor({ timeout: 90000 });
+  await kiosk.getByRole('button', { name: 'Take photo' }).click();
+  ok(await passes(kiosk.getByText('Ready — scan now').waitFor({ timeout: 30000 })), 'booth: a photo is taken and uploaded');
+  const linkText = await kiosk.locator('p.break-all').textContent();
+  const code = linkText.match(/\/p\/([a-z2-7]{12})$/)?.[1];
+  const stored = mock.state.photos.find((p) => p.code === code);
+  ok(stored?.status === 'ready', 'booth: the photo is registered, uploaded and confirmed on the server');
+  const bytes = mock.state.objects.get(`photos/${stored?.path}`)?.bytes;
+  ok(bytes && bytes[0] === 0xff && bytes[1] === 0xd8, 'booth: the uploaded file is a JPEG');
+  ok(linkText.startsWith(V + '/p/'), 'booth: the QR link points at the guest page');
+
+  const guestCtx = await browser.newContext({ ...devices['iPhone 13'] });
+  const guest = await guestCtx.newPage();
+  await guest.goto(linkText, { waitUntil: 'domcontentloaded' });
+  await guest.getByRole('link', { name: 'Download' }).waitFor({ timeout: 20000 });
+  ok((await guest.getByRole('link', { name: 'Download' }).getAttribute('href')).includes('download='), 'guest: the download link saves the file');
+  ok(await passes(guest.waitForFunction(() => [...document.images].some((i) => i.complete && i.naturalWidth > 100), null, { timeout: 15000 })), 'guest: the photo is shown');
+  ok(!(await guest.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)), 'guest: no horizontal scroll on a phone');
+  ok((await axeSerious(guest)).length === 0, 'guest: the photo page passes axe');
+  ok((await guest.getByText('Available until').count()) === 1, 'guest: the expiry date is shown');
+  await guest.getByRole('button', { name: 'Delete my photo' }).click();
+  await guest.getByRole('button', { name: 'Yes, delete' }).click();
+  ok(await passes(guest.getByText('Your photo was deleted.').waitFor({ timeout: 10000 })), 'guest: deleting the photo works');
+  ok(mock.state.photos.find((p) => p.code === code)?.status === 'deleted', 'guest: the server marks it deleted');
+  await guest.reload({ waitUntil: 'domcontentloaded' });
+  ok(await passes(guest.getByRole('heading', { name: 'We can’t find this photo' }).waitFor({ timeout: 10000 })), 'guest: a deleted photo is gone');
+  await guest.goto(`${V}/p/aaaaaaaaaaaa`, { waitUntil: 'domcontentloaded' });
+  ok(await passes(guest.getByRole('heading', { name: 'We can’t find this photo' }).waitFor({ timeout: 10000 })), 'guest: an unknown code says so');
+  ok((await axeSerious(guest)).length === 0, 'guest: the not-found page passes axe');
+
+  // No connection: the photo is kept and uploaded once the connection is back.
+  await kiosk.getByRole('button', { name: 'Done' }).click();
+  mock.state.failUploads = true;
+  await kiosk.getByRole('button', { name: 'Take photo' }).click();
+  ok(await passes(kiosk.getByText(/Waiting for the connection/).waitFor({ timeout: 30000 })), 'booth: with no connection the guest is told the QR will work in a moment');
+  const code2 = (await kiosk.locator('p.break-all').textContent()).match(/\/p\/([a-z2-7]{12})$/)[1];
+  await guest.goto(`${V}/p/${code2}`, { waitUntil: 'domcontentloaded' });
+  ok(await passes(guest.getByRole('heading', { name: 'Your photo is almost ready' }).waitFor({ timeout: 10000 })), 'guest: an unfinished upload shows "almost ready"');
+  mock.state.failUploads = false;
+  ok(await passes(kiosk.getByText('Ready — scan now').waitFor({ timeout: 30000 })), 'booth: the queued photo uploads by itself when the connection returns');
+  ok(await passes(guest.getByRole('link', { name: 'Download' }).waitFor({ timeout: 30000 })), 'guest: the page picks the photo up without a reload');
+
+  // Photo limit reached: staff are told, the photo is kept, and it uploads once the limit is raised.
+  await kiosk.getByRole('button', { name: 'Done' }).click();
+  mock.event.max_photos = mock.state.photos.filter((p) => p.event_id === ev.id && p.status !== 'deleted').length;
+  await kiosk.getByRole('button', { name: 'Take photo' }).click();
+  await kiosk.getByText(/Waiting for the connection/).waitFor({ timeout: 30000 });
+  await kiosk.keyboard.press('Shift+S');
+  ok(await passes(kiosk.getByText(/photo limit for this event is used up/).waitFor({ timeout: 15000 })), 'booth: staff see that the photo limit is used up');
+  ok((await axeSerious(kiosk)).length === 0, 'booth: the staff panel passes axe');
+  mock.event.max_photos = null;
+  ok(await passes(kiosk.getByText('All photos saved').first().waitFor({ timeout: 30000 })), 'booth: once the limit is raised the waiting photo uploads');
+  await kiosk.getByRole('button', { name: 'Stop booth' }).click();
+  ok(await passes(kiosk.getByRole('button', { name: 'Start booth' }).waitFor()), 'booth: staff can stop the booth');
+
+  // A customer's own frame image, and a frame that cannot be loaded.
+  ev.config.frame = { kind: 'image', url: `${mock.url}/storage/v1/object/public/branding/frame.png` };
+  await kiosk.goto(`${V}/booth/acme-launch?k=${ev.kiosk_token}`, { waitUntil: 'domcontentloaded' });
+  await kiosk.getByRole('button', { name: 'Start booth' }).click();
+  await kiosk.getByRole('button', { name: 'Take photo' }).waitFor({ timeout: 90000 });
+  ok(mock.state.requests.includes('GET /storage/v1/object/public/branding/frame.png'), 'booth: the customer frame image is loaded');
+  await kiosk.keyboard.press('Shift+S');
+  ok((await kiosk.getByText(/custom frame could not be loaded/).count()) === 0, 'booth: a valid frame raises no warning');
+  ev.config.frame = { kind: 'image', url: `${mock.url}/storage/v1/object/public/branding/missing.png` };
+  await kiosk.goto(`${V}/booth/acme-launch?k=${ev.kiosk_token}`, { waitUntil: 'domcontentloaded' });
+  await kiosk.getByRole('button', { name: 'Start booth' }).click();
+  await kiosk.getByRole('button', { name: 'Take photo' }).waitFor({ timeout: 90000 });
+  await kiosk.keyboard.press('Shift+S');
+  ok(await passes(kiosk.getByText(/custom frame could not be loaded/).waitFor({ timeout: 10000 })), 'booth: a frame that cannot be loaded is reported to staff');
+  await boothCtx.close();
+  await guestCtx.close();
+
+  // Demo mode (no Supabase): photos stay on the device and the pages say so.
+  const demoCtx = await browser.newContext({ viewport: { width: 1180, height: 820 }, permissions: ['camera'] });
+  const demo = await demoCtx.newPage();
+  await fakeMarkerCamera(demo, []);
+  await demo.goto(`${B}/booth/demo`, { waitUntil: 'domcontentloaded' });
+  ok(await passes(demo.getByText(/Demo mode: photos stay on this device/).waitFor({ timeout: 20000 })), 'demo booth: says photos stay on the device');
+  ok((await axeSerious(demo)).length === 0, 'demo booth: the setup screen passes axe');
+  await demo.getByRole('button', { name: 'Start booth' }).click();
+  await demo.getByRole('button', { name: 'Take photo' }).waitFor({ timeout: 90000 });
+  await demo.getByRole('button', { name: 'Take photo' }).click();
+  ok(await passes(demo.getByText('Ready — scan now').waitFor({ timeout: 30000 })), 'demo booth: a photo is "uploaded" on the device');
+  const demoLink = await demo.locator('p.break-all').textContent();
+  await demo.goto(demoLink, { waitUntil: 'domcontentloaded' });
+  ok(await passes(demo.getByText(/Demo mode: this photo exists only on the device/).waitFor({ timeout: 20000 })), 'demo guest page: says the photo exists only on this device');
+  await demo.goto(`${B}/booth/other`, { waitUntil: 'domcontentloaded' });
+  ok(await passes(demo.getByRole('heading', { name: 'This booth link doesn’t work' }).waitFor({ timeout: 10000 })), 'demo booth: other event names are not valid');
+  await demoCtx.close();
+
   // --- In-app browsers -----------------------------------------------------------
   const lineUA = 'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0 Mobile Safari/537.36 Line/14.10.0';
   const lineCtx = await browser.newContext({ userAgent: lineUA, viewport: { width: 390, height: 844 } });
@@ -590,6 +706,8 @@ try {
   await browser.close();
   await plain.server.close();
   await configured.server.close();
+  await live.server.close();
+  await mock.close();
   await rm(emptyEnvDir, { recursive: true, force: true });
 }
 

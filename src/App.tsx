@@ -26,6 +26,8 @@ const Services = lazy(() => import('./pages/Services'));
 const About = lazy(() => import('./pages/About'));
 const Contact = lazy(() => import('./pages/Contact'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+const BoothKiosk = lazy(() => import('./pages/booth/BoothKiosk'));
+const GuestPhoto = lazy(() => import('./pages/booth/GuestPhoto'));
 
 function PageLoading() {
   const t = useT();
@@ -42,6 +44,9 @@ export default function App() {
     <LanguageProvider>
     <BrowserRouter>
       <Routes>
+        {/* The booth and the guest's photo page are apps of their own: no site navigation around them. */}
+        <Route path="booth/:slug" element={<Suspense fallback={<PageLoading />}><BoothKiosk /></Suspense>} />
+        <Route path="p/:code" element={<Suspense fallback={<PageLoading />}><GuestPhoto /></Suspense>} />
         <Route element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="projects" element={<Suspense fallback={<PageLoading />}><Projects /></Suspense>} />

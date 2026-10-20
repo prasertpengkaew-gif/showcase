@@ -1,0 +1,28 @@
+# Deletes expired and guest-deleted booth photos every day (see scripts/booth-admin.mjs purge).
+# It only runs once you add two repository secrets: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.
+# The service-role key can do anything in your database, so if you would rather not store it on GitHub,
+# delete this file and run `node scripts/booth-admin.mjs purge` yourself every week.
+name: Purge booth photos
+
+on:
+  schedule:
+    - cron: '30 19 * * *' # 02:30 in Thailand
+  workflow_dispatch:
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Delete expired photos
+        if: ${{ env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
+        run: node scripts/booth-admin.mjs purge
+      - name: Secrets are not set
+        if: ${{ env.SUPABASE_URL == '' || env.SUPABASE_SERVICE_ROLE_KEY == '' }}
+        run: echo "Add the SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY secrets to enable this job."

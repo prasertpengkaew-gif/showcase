@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
+import { Link } from 'react-router-dom';
 import type { FaceLandmarker, FaceLandmarkerResult } from '@mediapipe/tasks-vision';
 import { PageHeader } from '../components/PageHeader';
 import { Button, buttonClasses } from '../components/Button';
 import { OptionChips } from '../components/OptionChips';
 import { CameraStage, StageChip } from '../components/CameraStage';
-import { AlertIcon, CameraIcon, InfoIcon } from '../components/Icons';
+import { AlertIcon, ArrowRightIcon, CameraIcon, InfoIcon } from '../components/Icons';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { drawFaces, type FaceEffect, type MeshConnections } from '../lib/faceEffects';
 import { drawEventFrame, type FrameTheme } from '../lib/eventFrames';
@@ -458,6 +459,14 @@ export default function EventBooth() {
                 />
               </label>
               <p className="mt-2 text-xs text-muted">{e.setupNote}</p>
+            </div>
+
+            <div className="rounded-2xl border border-line bg-white p-5">
+              <h2 className="text-xs font-semibold tracking-[0.14em] text-slate-600 uppercase">{e.kioskTitle}</h2>
+              <p className="mt-3 text-sm leading-relaxed text-slate-700">{e.kioskText}</p>
+              <Link to="/booth/demo" className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-electric-700 hover:underline">
+                {e.kioskLink} <ArrowRightIcon width={16} height={16} />
+              </Link>
             </div>
 
             <div className="rounded-2xl border border-line bg-white p-5">

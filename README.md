@@ -53,6 +53,8 @@ npm run dev        # http://localhost:5173
 | `/marker-chem`    | Marker Cards: Chemistry | Eight atom cards (ArUco markers); 3D atoms sit on the cards and bond into molecules (H₂O, CO₂, CH₄, NH₃ …) when cards are slid together |
 | `/ar-cube`        | AR Cube         | Printable paper cube with six markers; a 3D product follows the cube from any side |
 | `/machine-tags`   | Machine Tags    | Marker stickers on machines show live status, readings and service steps (simulated data until connected) |
+| `/booth/:slug?k=…` | Booth kiosk     | **AR Photo Booth Studio:** the screen at the venue for a customer's event (private link with a secret token); QR code for guests, offline upload queue, staff menu. `/booth/demo` is the demo |
+| `/p/:code`        | Guest photo     | What a guest sees after scanning the QR: photo, download, share, delete |
 | `/face-ar`         | Face AR         | Live camera face tracking (468-point mesh, expressions, head tilt), sunglasses/crown effects, save photo, photo upload fallback — all on-device |
 | `/services`        | Services        | WebAR Development, VR Development, Face AR & Face Tracking, 3D Visualization, Interactive Experiences, AR Consulting |
 | `/about`           | About           | Company introduction, capabilities, principles, 3D asset credits (no invented credentials)    |
@@ -220,6 +222,20 @@ For real products, replace the drawn items with your product's photos (PNG with 
 - **Shooting:** the shutter (or holding a smile for 0.7 s, "Smile to snap") starts a 3-2-1 countdown. The camera image is cropped to the shape of the screen before the frame is drawn, so in full screen on a phone or a portrait kiosk the saved photo is exactly what guests saw.
 - **Sharing:** photos are made on the device and are saved only when a guest presses Download or Share (Web Share API, on phones that support sharing files).
 - **Not included (needs a server or hardware, quoted per event):** QR download, instant printing, live photo wall, lead capture with consent, and engagement reports. The page lists these as add-ons.
+
+## AR Photo Booth Studio (booth rental system)
+
+A booth you set up for event organisers and rent out. Guests take a photo on the kiosk and scan a QR code to download it on their own phone. **Full operator guide (Thai): [`docs/BOOTH-STUDIO-TH.md`](docs/BOOTH-STUDIO-TH.md).**
+
+- **Kiosk** `/booth/<event>?k=<token>` (`src/pages/booth/BoothKiosk.tsx`): runs on the device at the venue. Setup → idle (props, shutter, smile-to-snap) → countdown → review with QR → automatic reset. Fixed photo shape per event (portrait / landscape / square), preset frames or the customer's own transparent PNG, customer logo and accent colour, screen wake lock, full screen, a hidden staff menu (press and hold the top-right corner, or Shift+S).
+- **Offline-first:** photos are saved on the device and uploaded in the background (`src/lib/booth/queue.ts`, IndexedDB), so a dead Wi-Fi never loses a photo. The booth shows how many are waiting.
+- **Guest page** `/p/<code>`: the photo with download, share and "delete my photo"; shows the expiry date; waits by itself for a photo that is still uploading.
+- **Backend:** Supabase (Postgres + Storage), no server code of our own. `supabase/migrations/…_booth_studio.sql` creates the tables, the functions the kiosk and guests may call, and the storage policy. The browser only has the public anon key and cannot read or write the tables directly; the kiosk proves itself with the event's secret token, a guest with a 60-bit photo code. See the header of the migration for the full security model.
+- **Admin tool** `scripts/booth-admin.mjs` (service-role key, run on your own machine): `create` / `update` events from a JSON file (uploads the frame and logo), `link`, `rotate-token`, `list`, `stats`, `close`, `export` (all photos + `index.csv`) and `purge` (deletes expired and guest-deleted photos; also scheduled daily by `.github/workflows/purge-booth-photos.yml` if you add the secrets).
+- **Without Supabase** (`VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` empty) `/booth/demo` runs in a labelled demo mode: photos stay in the browser, so the QR only opens on the same device.
+- **Frame templates** for designers: `docs/booth-templates/` (1200×1800, 1800×1200, 1400×1400).
+- **Not included yet:** customer dashboard, live photo wall, lead capture, print, background removal, billing.
+- **Tests:** `npm run test:sql` (the migration against real Postgres via PGlite), `npm run test:admin` (the admin tool against a mock Supabase), and `npm run test:e2e` (kiosk → upload → QR → guest page → delete, offline queue, photo limit, custom frame, demo mode, accessibility). The mock Supabase in `tests/mock-supabase.mjs` follows the same rules as the SQL; the real project has not been tested here.
 
 ## Marker AR (chemistry cards, AR cube, machine tags)
 

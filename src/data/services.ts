@@ -53,7 +53,7 @@ export const services: Service[] = [
       'Face detection and 468-point face mesh tracking',
       'Virtual try-on for glasses, make-up, hats and jewellery',
       'Body-tracked try-on for caps, necklaces, watches and simple apparel',
-      'Event AR photo booths: branded frames, AR props, smile-to-snap, sharing',
+      'Event AR photo booth rental: branded frames, AR props, smile-to-snap, QR photo download',
       'Expression input (smile, blink) for kiosks and games',
     ],
     bestFor: 'Eyewear and beauty retail, brand activations and interactive kiosks.',

@@ -1,0 +1,20 @@
+{
+  "slug": "acme-launch",
+  "name": "Acme Launch Night",
+  "startsAt": "2026-11-01T10:00:00+07:00",
+  "endsAt": "2026-11-01T23:59:00+07:00",
+  "maxPhotos": 2000,
+  "retentionDays": 30,
+  "booth": {
+    "language": "th",
+    "aspect": "portrait",
+    "subtitle": "1 พ.ย. 2569 · กรุงเทพฯ",
+    "frame": { "kind": "preset", "theme": "neon" },
+    "accent": "#E11D48",
+    "props": ["glasses", "crown", "none"],
+    "defaultProp": "glasses",
+    "countdown": 3,
+    "smileToSnap": true,
+    "reviewSeconds": 25
+  }
+}

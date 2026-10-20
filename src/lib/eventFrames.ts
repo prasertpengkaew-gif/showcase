@@ -69,10 +69,10 @@ export function drawEventFrame(ctx: CanvasRenderingContext2D, theme: FrameTheme,
     ctx.shadowBlur = 0;
     ctx.fillStyle = '#ffffff';
     fitFont(ctx, title, textW, 7 * u, '800', SANS);
-    ctx.fillText(title, w / 2, h - band * 0.62);
+    ctx.fillText(title, w / 2, h - band * 0.7);
     ctx.fillStyle = '#93c5fd';
     fitFont(ctx, subtitle, textW, 3.4 * u, '600', SANS);
-    ctx.fillText(subtitle, w / 2, h - band * 0.24);
+    ctx.fillText(subtitle, w / 2, h - band * 0.35);
   } else if (theme === 'gold') {
     const edge = 3.5 * u;
     ctx.fillStyle = '#f8f3e7';
@@ -104,5 +104,15 @@ export function drawEventFrame(ctx: CanvasRenderingContext2D, theme: FrameTheme,
     fitFont(ctx, subtitle, textW, 3.4 * u, '700', SANS);
     ctx.fillText(subtitle, w / 2, h - band * 0.22);
   }
+  ctx.restore();
+}
+
+/** A customer's own frame: a transparent PNG laid over the photo, scaled to cover it. */
+export function drawImageFrame(ctx: CanvasRenderingContext2D, frame: ImageBitmap) {
+  const { width: w, height: h } = ctx.canvas;
+  const k = Math.max(w / frame.width, h / frame.height);
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.drawImage(frame, (w - frame.width * k) / 2, (h - frame.height * k) / 2, frame.width * k, frame.height * k);
   ctx.restore();
 }

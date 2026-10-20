@@ -7,3 +7,8 @@ dist
 .DS_Store
 *.log
 public/mediapipe
+
+# Customer events and exports for the photo booth (only the example is tracked)
+events/*
+!events/example.json
+export-*/
