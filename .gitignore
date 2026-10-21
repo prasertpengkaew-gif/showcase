@@ -12,3 +12,5 @@ public/mediapipe
 events/*
 !events/example.json
 export-*/
+.vercel
+.env*.local
