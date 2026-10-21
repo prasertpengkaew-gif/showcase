@@ -19,6 +19,8 @@ function initialLang(): Lang {
   } catch {
     // Storage can be unavailable (private mode); fall through to the browser language.
   }
+  // Thai is the site's main language, and search crawlers announce English, so they get Thai too.
+  if (/bot|crawl|spider|slurp|lighthouse/i.test(navigator.userAgent)) return 'th';
   return navigator.language?.toLowerCase().startsWith('th') ? 'th' : 'en';
 }
 

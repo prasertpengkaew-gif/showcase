@@ -1,11 +1,13 @@
 import { ButtonLink } from '../components/Button';
 import { PageHeader } from '../components/PageHeader';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import { useNoIndex } from '../hooks/useNoIndex';
 import { useT } from '../i18n';
 
 export default function NotFound({ title, message }: { title?: string; message?: string }) {
   const t = useT().notFound;
   useDocumentTitle(title ?? t.title);
+  useNoIndex();
   return (
     <PageHeader
       eyebrow="404"

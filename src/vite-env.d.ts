@@ -16,6 +16,8 @@ interface ImportMetaEnv {
   readonly VITE_BOOTH_RETRY_MS?: string;
   /** Base URL for guest photo links (QR codes). Defaults to the page's own origin. */
   readonly VITE_PUBLIC_URL?: string;
+  /** Public address of the site, used for canonical links and the sitemap (https://example.com). */
+  readonly VITE_SITE_URL?: string;
   readonly VITE_INSTAGRAM_URL?: string;
   readonly VITE_GITHUB_URL?: string;
 }

@@ -8,6 +8,7 @@
     "dev": "vite",
     "prebuild": "node scripts/copy-mediapipe.mjs",
     "build": "tsc -b && vite build",
+    "postbuild": "node scripts/prerender.mjs",
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "validate:models": "node scripts/validate-models.mjs",
@@ -20,7 +21,8 @@
     "test:sql": "node tests/booth-sql.mjs",
     "test:admin": "node tests/booth-admin.mjs",
     "test:booth": "npm run test:sql && npm run test:admin",
-    "test:map": "node tests/map-logic.mjs"
+    "test:map": "node tests/map-logic.mjs",
+    "test:seo": "node tests/seo.mjs"
   },
   "engines": {
     "node": ">=20.19"
