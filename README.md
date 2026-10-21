@@ -47,6 +47,7 @@ npm run dev        # http://localhost:5173
 | `/hand-gestures`   | Hand gestures   | Camera hand tracking: 7 gestures (✋👍✌️☝️👎✊🤟) trigger robot animations; photo fallback (MediaPipe Gesture Recognizer) |
 | `/virtual-tour`    | Virtual Tour 360° | 3-room 360° tour with door and info hotspots, drag/zoom, phone motion sensor, VR on headsets |
 | `/digital-twin`   | Digital Twin    | 3D production line (6 machines) with live status, temperature/output charts, event log and table; simulated data until connected to a plant feed |
+| `/map-3d`         | 3D Map          | Fictional sample city with search, categories, fly-to, routes, walking-time areas, day/night, minimap; sample data until connected to real map data |
 | `/event-booth`    | Event AR Photo Booth | Branded event frame (3 themes, editable event name), AR props, smile-to-snap countdown, full-screen kiosk mode, download/share; photo fallback |
 | `/ar-hunt`        | AR Scavenger Hunt | Three printable posters (one MindAR target file); each scan shows a 3D character and collects a stamp; all three unlock a reward code |
 | `/motion-game`    | Motion Game     | 30-second catch game with body tracking (or mouse/touch/arrow keys); hands-free start; top-5 board on the device |
@@ -278,6 +279,15 @@ These apps open links in a built-in browser that often blocks the camera, WebXR 
   `status` is `running | idle | warning | fault`; unknown ids are ignored. A small gateway (Node-RED, an MQTT→WebSocket bridge, or an OPC UA client) usually translates the PLC data into this format.
 - **Your own layout:** edit `MACHINES` in `src/lib/twin.ts` (ids, codes, floor positions, warning temperatures) and the machine models in `src/components/TwinScene.tsx`. For a real plant, replace the procedural machines with GLB models from CAD.
 - The "Reset fault" button only exists in the simulator. Real resets must go through the plant's control system.
+
+## 3D Map
+
+`/map-3d` is a map in 3D: a fictional city ("Nerd City", 21 places in 7 categories) with a river, bridges, parks and about 800 buildings. Search (Thai and English), filter by category, click a place to fly to it and get a route from your chosen start, or show how far you can walk in 5 / 10 / 15 minutes. Day/night, minimap, compass, 2D top view; keyboard works on the canvas (arrows pan, +/- zoom).
+
+- **Data:** the city is generated from a fixed seed in `src/data/cityMap.ts`; places are a plain list. Routing and walking areas (`src/lib/cityGraph.ts`) run Dijkstra on the street grid.
+- **Honest numbers:** routes and times are estimates on the sample streets (walking 80 m/min, car 30 km/h). Cars on the roads are decoration. The page says so.
+- **Real maps:** a real project swaps the generator for building footprints and roads from OpenStreetMap, a city GIS dataset or CAD, keeping the same scene and UI. That needs a data licence check and is a separate piece of work.
+- **Tests:** `npm run test:map` checks routing and walking areas; the e2e suite drives the page.
 
 ## Hand gestures
 

@@ -115,3 +115,38 @@ export const FlaskIcon = (p: IconProps) => (
 export const TagIcon = (p: IconProps) => (
   <svg {...base(p)}><path d="M3 12V4h8l10 10-8 8z" /><circle cx="7.5" cy="8.5" r="1.3" /></svg>
 );
+export const MapIcon = (p: IconProps) => (
+  <svg {...base(p)}><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14" /></svg>
+);
+export const MinusIcon = (p: IconProps) => (
+  <svg {...base(p)}><path d="M5 12h14" /></svg>
+);
+export const PlusIcon = (p: IconProps) => (
+  <svg {...base(p)}><path d="M12 5v14M5 12h14" /></svg>
+);
+export const SearchIcon = (p: IconProps) => (
+  <svg {...base(p)}><circle cx="11" cy="11" r="6.5" /><path d="m20 20-4.2-4.2" /></svg>
+);
+export const MoonIcon = (p: IconProps) => (
+  <svg {...base(p)}><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z" /></svg>
+);
+export const SunIcon = (p: IconProps) => (
+  <svg {...base(p)}><circle cx="12" cy="12" r="4" /><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" /></svg>
+);
+export const CategoryIcon = ({ category, ...p }: IconProps & { category: 'transit' | 'food' | 'shopping' | 'culture' | 'health' | 'park' | 'education' | 'stay' }) => {
+  const paths: Record<string, string> = {
+    transit: 'M6 4h12v11a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3zM6 11h12M9 21l1.5-3M15 21l-1.5-3',
+    food: 'M7 3v8M5 3v5a2 2 0 0 0 4 0V3M7 11v10M17 3c-2 2-3 4-3 7h3v11',
+    shopping: 'M6 8h12l1 12H5zM9 8a3 3 0 0 1 6 0',
+    culture: 'M3 21h18M5 21V10M10 21V10M14 21V10M19 21V10M3 10l9-6 9 6',
+    health: 'M12 5v14M5 12h14',
+    education: 'M2 9l10-5 10 5-10 5zM6 11.5V16c3 2.5 9 2.5 12 0v-4.5',
+    stay: 'M3 18V7M3 13h18v5M21 13a3 3 0 0 0-3-3h-7v3',
+    park: 'M12 21v-6M9 15h6a4 4 0 0 0 1-7.5A5 5 0 0 0 8 7.5 4 4 0 0 0 9 15z',
+  };
+  return (
+    <svg {...base({ strokeWidth: 2.2, ...p })}>
+      <path d={paths[category]} />
+    </svg>
+  );
+};

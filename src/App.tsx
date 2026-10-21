@@ -26,6 +26,7 @@ const Services = lazy(() => import('./pages/Services'));
 const About = lazy(() => import('./pages/About'));
 const Contact = lazy(() => import('./pages/Contact'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+const Map3D = lazy(() => import('./pages/Map3D'));
 const BoothKiosk = lazy(() => import('./pages/booth/BoothKiosk'));
 const GuestPhoto = lazy(() => import('./pages/booth/GuestPhoto'));
 
@@ -65,6 +66,7 @@ export default function App() {
           <Route path="ar-cube" element={<Suspense fallback={<PageLoading />}><ARCube /></Suspense>} />
           <Route path="machine-tags" element={<Suspense fallback={<PageLoading />}><MachineTags /></Suspense>} />
           <Route path="motion-game" element={<Suspense fallback={<PageLoading />}><MotionGame /></Suspense>} />
+          <Route path="map-3d" element={<Suspense fallback={<PageLoading />}><Map3D /></Suspense>} />
           <Route path="digital-twin" element={<Suspense fallback={<PageLoading />}><DigitalTwin /></Suspense>} />
           <Route path="services" element={<Suspense fallback={<PageLoading />}><Services /></Suspense>} />
           <Route path="about" element={<Suspense fallback={<PageLoading />}><About /></Suspense>} />

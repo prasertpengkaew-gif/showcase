@@ -19,7 +19,8 @@
     "make:hunt-posters": "node scripts/make-hunt-posters.mjs",
     "test:sql": "node tests/booth-sql.mjs",
     "test:admin": "node tests/booth-admin.mjs",
-    "test:booth": "npm run test:sql && npm run test:admin"
+    "test:booth": "npm run test:sql && npm run test:admin",
+    "test:map": "node tests/map-logic.mjs"
   },
   "engines": {
     "node": ">=20.19"

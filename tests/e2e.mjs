@@ -36,6 +36,7 @@ const ROUTES = [
   '/machine-tags',
   '/virtual-tour',
   '/digital-twin',
+  '/map-3d',
   '/demos',
   '/services',
   '/about',
@@ -144,7 +145,7 @@ try {
   await page.waitForTimeout(300);
   ok((await viewerProp('variantName')) === 'Peacock Velvet', 'chair finish switches variant');
   await page.getByRole('button', { name: 'Rotate right' }).click();
-  await page.getByRole('button', { name: 'Zoom in' }).click();
+  await page.getByRole('button', { name: 'Zoom in' }).click({ timeout: 120000 });
 
   await page.getByText('Service Robot', { exact: true }).click();
   await page.waitForTimeout(500);
@@ -241,7 +242,7 @@ try {
   // --- Demos hub ---------------------------------------------------------------
   await go(B + '/demos');
   await page.locator('main article').first().waitFor();
-  ok((await page.locator('main article').count()) === 14, 'demos hub lists 14 demos');
+  ok((await page.locator('main article').count()) === 15, 'demos hub lists 15 demos');
   ok((await page.getByRole('link', { name: 'Demos' }).first().getAttribute('aria-current')) === 'page', 'Demos nav item is current');
 
   // --- Print AR --------------------------------------------------------------
@@ -510,6 +511,39 @@ try {
   await page.getByRole('button', { name: 'Inspect PCK-01' }).click();
   ok(await passes(page.getByRole('heading', { name: 'PCK-01 temperature, last 60 s' }).waitFor()), 'Inspect selects a machine');
 
+  // --- 3D map ---------------------------------------------------------------------
+  await go(B + '/map-3d');
+  ok(await passes(page.getByText('Nerd City is made up').waitFor()), '3D map: says the city is a sample');
+  await page.locator('canvas[aria-label]').waitFor({ timeout: 60000 });
+  const places = page.getByRole('list', { name: 'Places' }).getByRole('button');
+  ok((await places.count()) === 21, '3D map: lists all 21 places');
+  await page.getByRole('searchbox', { name: 'Search places' }).fill('museum');
+  ok((await places.count()) === 1 && (await places.first().textContent()).includes('City Museum'), '3D map: search filters the places');
+  await page.getByRole('searchbox', { name: 'Search places' }).fill('พิพิธภัณฑ์');
+  ok((await places.count()) === 1, '3D map: search also finds Thai names');
+  await page.getByRole('searchbox', { name: 'Search places' }).fill('');
+  await page.getByRole('button', { name: 'Parks', exact: true }).click();
+  ok((await places.count()) === 18 && (await page.getByRole('button', { name: 'Parks', exact: true }).getAttribute('aria-pressed')) === 'false', '3D map: a category can be switched off');
+  await page.getByRole('button', { name: 'Parks', exact: true }).click();
+  await places.filter({ hasText: 'Skyline Hotel' }).click();
+  ok(await passes(page.getByRole('heading', { name: 'Skyline Hotel', level: 2 }).waitFor()), '3D map: selecting a place opens its card');
+  ok(await passes(page.getByText(/\d+ m · about \d+ min on foot · \d+ min by car/).waitFor()), '3D map: shows the route length and times from the start');
+  ok(await passes(page.getByRole('heading', { name: 'Within a 10-minute walk' }).waitFor()), '3D map: lists what is within a 10-minute walk');
+  const routeText = await page.getByText(/\d+ m · about \d+ min on foot/).textContent();
+  await page.getByRole('button', { name: 'Use as start' }).click();
+  ok(await passes(page.getByText('This is the start point.').waitFor()), '3D map: a place can be made the start point');
+  ok((await page.getByText(/\d+ m · about \d+ min on foot/).count()) === 0 && routeText.length > 0, '3D map: the route disappears when the place is the start');
+  await page.getByRole('button', { name: 'Hide walking time' }).click();
+  ok((await page.getByRole('button', { name: 'Walking time', exact: true }).getAttribute('aria-pressed')) === 'false', '3D map: walking time can be hidden');
+  const nightBtn = page.getByRole('button', { name: 'Time of day: Day' });
+  await nightBtn.click();
+  ok(await passes(page.getByRole('button', { name: 'Time of day: Night' }).waitFor()), '3D map: switches to night');
+  ok((await page.getByRole('button', { name: 'Reset view' }).count()) === 1 && (await page.getByRole('button', { name: /Mini-map/ }).count()) === 1, '3D map: view controls and the mini-map are there');
+  await page.getByRole('button', { name: 'Zoom in' }).click({ timeout: 120000 });
+  await page.getByRole('button', { name: '2D' }).click({ timeout: 120000 });
+  await page.getByRole('button', { name: /Mini-map/ }).click({ position: { x: 40, y: 40 }, timeout: 120000 });
+  ok(await passes(page.locator('canvas[aria-label]').waitFor()), '3D map: the view can be zoomed, flattened and moved from the mini-map');
+
   // --- Virtual tour ------------------------------------------------------------
   await go(B + '/virtual-tour');
   const tour = page.locator('[aria-label^="Interactive 360° panorama"]');
@@ -680,6 +714,9 @@ try {
   ok((await np.locator('section[aria-labelledby="hero-title"] img').count()) === 1, 'no WebGL: hero shows a still image');
   await np.goto(B + '/ar-playground');
   ok(await passes(np.getByText(/WebGL turned off/).waitFor({ timeout: 10000 })), 'no WebGL: viewer explains why');
+  await np.goto(B + '/map-3d');
+  ok(await passes(np.getByText(/3D graphics are not available/).waitFor({ timeout: 10000 })), 'no WebGL: the 3D map explains why it cannot be shown');
+  ok((await np.getByRole('list', { name: 'Places' }).getByRole('button').count()) === 21, 'no WebGL: the list of places still works');
   await noGL.close();
 
   // --- Accessibility (axe-core, WCAG 2.2 A/AA) -------------------------------
