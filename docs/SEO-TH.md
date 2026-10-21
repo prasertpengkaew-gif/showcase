@@ -14,8 +14,8 @@
 
 ## ต้องทำเองหลังเปิดเว็บ (สำคัญที่สุด)
 
-1. **ตั้งค่าที่อยู่เว็บจริง** — ใน Vercel → Settings → Environment Variables เพิ่ม `VITE_SITE_URL` = `https://โดเมนของคุณ` แล้ว Redeploy ถ้าไม่ตั้ง จะใช้ที่อยู่ `*.vercel.app` ของโปรเจกต์
-2. **ซื้อโดเมนของตัวเอง** (เช่น `thenerdstudio.co.th` หรือ `.com`) แล้วผูกกับ Vercel — โดเมนของตัวเองน่าเชื่อถือกว่า `*.vercel.app` มาก และเปลี่ยนที่อยู่ทีหลังจะเสียอันดับ จึงควรทำก่อนเริ่มโปรโมต
+1. **ที่อยู่เว็บ** — ตั้งค่าเริ่มต้นเป็น `https://www.thenerdstudio.space` (canonical, sitemap, การ์ดแชร์) ถ้าเปลี่ยนโดเมน ให้ตั้ง `VITE_SITE_URL` ใน Vercel แล้ว Redeploy
+2. **ผูกโดเมนกับ Vercel** — Vercel → Settings → Domains เพิ่ม `www.thenerdstudio.space` และ `thenerdstudio.space` แล้วตั้งให้ตัวที่ไม่มี www redirect ไปที่ www (ให้มีที่อยู่เดียวที่ Google เก็บ) ตามค่า DNS ที่ Vercel บอก
 3. **Google Search Console** (search.google.com/search-console)
    - เพิ่มเว็บของคุณ ยืนยันความเป็นเจ้าของ (ง่ายสุดคือผ่าน DNS ของโดเมน)
    - เมนู Sitemaps → ใส่ `sitemap.xml` → ส่ง

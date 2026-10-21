@@ -15,12 +15,7 @@ import { createServer, loadEnv } from 'vite';
 const root = process.cwd();
 const dist = join(root, 'dist');
 const env = loadEnv('production', root, 'VITE_');
-const vercelHost = process.env.VERCEL_PROJECT_PRODUCTION_URL;
-const SITE_URL = (
-  env.VITE_SITE_URL ||
-  process.env.VITE_SITE_URL ||
-  (vercelHost ? `https://${vercelHost}` : 'https://showcase-zeta-ruby.vercel.app')
-).replace(/\/+$/, '');
+const SITE_URL = (env.VITE_SITE_URL || process.env.VITE_SITE_URL || 'https://www.thenerdstudio.space').replace(/\/+$/, '');
 
 const server = await createServer({ root, appType: 'custom', server: { middlewareMode: true }, logLevel: 'silent' });
 let pages, th, svc;

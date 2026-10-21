@@ -293,7 +293,7 @@ These apps open links in a built-in browser that often blocks the camera, WebXR 
 
 Every public page has Thai and English search copy in `src/seo/pages.ts`. `npm run build` runs `scripts/prerender.mjs` afterwards, which writes a real HTML file per page (title, description, canonical, Open Graph, JSON-LD, plain-text content), plus `sitemap.xml` and `robots.txt`. Search crawlers get the Thai version (the app picks Thai for crawler user agents), while real visitors get their browser language.
 
-- Set `VITE_SITE_URL` to the public address (canonical links, sitemap). On Vercel it falls back to the production URL.
+- Set `VITE_SITE_URL` to the public address (canonical links, sitemap). Defaults to `https://www.thenerdstudio.space`.
 - `npm run test:seo` checks the built `dist/`: one H1, unique titles and descriptions, canonical, JSON-LD, Thai for Googlebot.
 - The Thai guide with Search Console steps is in `docs/SEO-TH.md`.
 
