@@ -165,6 +165,12 @@ export const staticPages: SeoPage[] = [
     en: { title: 'Gesture Vote Booth for Events', description: 'A sample event feedback kiosk. Vote with a thumbs-up or down gesture, or use the buttons. Votes stay on screen and are not saved.' },
   },
   {
+    path: '/stamp-rally',
+    priority: 0.6,
+    th: { title: 'สแตมป์แรลลี่และเก็บลีดสำหรับงานแสดงสินค้า', description: 'เดโมสแตมป์แรลลี่สำหรับงานหลายบูธ ผู้เข้างานสะสมแสตมป์ทุกบูธและฝากข้อมูลเฉพาะบูธที่สนใจ ผู้จัดดูจำนวนลีดและดาวน์โหลดเป็น CSV ข้อมูลไม่ถูกบันทึก' },
+    en: { title: 'Stamp Rally and Lead Capture for Trade Shows', description: 'A sample stamp rally for multi-booth events. Visitors collect stamps and share details only with booths they choose; organizers see leads and download a CSV. Nothing is saved.' },
+  },
+  {
     path: '/app-design',
     priority: 0.7,
     th: {

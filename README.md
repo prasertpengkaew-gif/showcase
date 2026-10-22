@@ -30,6 +30,7 @@ npm run dev        # http://localhost:5173
 | `npm run test:tms`        | Status, delay and KPI checks for the TMS demo                    |
 | `npm run test:coldroom`   | Layout, picking-order and stock-control checks for the cold-room demo |
 | `npm run test:vote`       | Vote timing, cooldown and percentage-share checks for the gesture vote demo |
+| `npm run test:rally`      | Stamp, consent, duplicate and CSV-safety checks for the stamp rally demo |
 | `npm run render:media`    | Re-render posters, project images and videos from the GLBs       |
 | `npm run render:panoramas`| Re-render the 360° tour panoramas from the GLBs                  |
 | `npm run make:ar-card`    | Rebuild the printable AR card and its compiled MindAR target     |
@@ -55,6 +56,7 @@ npm run dev        # http://localhost:5173
 | `/tms`            | Transport Management (TMS) | Dispatch board for sample trucking trips on a simulated clock: live progress, delay alerts (30 min behind plan), ETA, on-time rate, status filter, route detail; sample data |
 | `/cold-room`      | Cold Room Locator | 2D floor plan of two sample cold rooms; pick a product and count to get a rule-based picking order (fewest moves first, oldest first on a tie); stock only drops on **Confirm dispatch**; sample stock |
 | `/gesture-vote`  | Gesture Vote Booth | Vote with a thumbs-up or down gesture, or use the buttons; votes stay in memory on screen only |
+| `/stamp-rally`   | Stamp Rally & Lead Capture | Visitors collect booth stamps (scan is simulated with buttons) and share details with consent; organizer view counts leads and exports CSV; all in memory |
 | `/enterprise-ai`  | Enterprise AI Assistant | Retrieval (BM25, Thai and English) over five made-up company documents with role-based access (employee / HR / finance); the answer quotes the best passage, no LLM is called |
 | `/event-ar`       | AR for events   | Ideas for six kinds of event (trade shows, launches, weddings, festivals, conferences, open houses), each marked as having a related live demo or being an idea only; demos to try, how an event runs, what to plan for |
 | `/web-apps`       | Web apps        | Showcase of the web-app work: the demos above, what a full system covers, and the stack |

@@ -503,6 +503,7 @@ export const en = {
       cold: { title: 'Cold Room Locator', text: 'See where pallets sit in each cold room, and get the picking order that moves the fewest.', needs: 'Any screen · sample stock' },
       rag: { title: 'Enterprise AI Assistant', text: 'Ask a question and get an answer quoted from company documents, limited by role.', needs: 'Any screen · sample documents' },
       vote: { title: 'Gesture Vote Booth', text: 'Cast a vote with a thumbs-up or thumbs-down, or use the buttons.', needs: 'Laptop or tablet with a camera, or any screen with the buttons' },
+      rally: { title: 'Stamp Rally & Lead Capture', text: 'Visitors collect a stamp at each booth and share their details only where they want to be contacted.', needs: 'Any phone, tablet or laptop' },
     },
   },
 
@@ -862,6 +863,31 @@ export const en = {
     ctaTitle: 'Running a fleet or a delivery operation?',
     ctaText: 'Tell us how you dispatch today and where it slows you down. We will propose a first version you can pilot with a few vehicles.',
     ctaContact: 'Discuss your TMS',
+  },
+
+  rally: {
+    metaTitle: 'Stamp Rally & Lead Capture', eyebrow: 'Events · booths · exhibitions', title: 'Get visitors to every booth, and know who they were',
+    description: 'A sample stamp rally for trade shows: visitors collect a stamp at each booth, and share their details only where they want to hear back.',
+    sampleTitle: 'Concept demo', sampleText: 'Scanning is simulated with buttons. Everything stays on this screen and disappears when you reload.',
+    viewLegend: 'Choose a view', views: { visitor: 'Visitor', organizer: 'Organizer' },
+    booths: { a: 'Booth A · Smart home', b: 'Booth B · Electric bikes', c: 'Booth C · Coffee', d: 'Booth D · Wearables', e: 'Booth E · Travel' },
+    cardTitle: 'My stamp card', cardText: (need: number, total: number) => `Collect ${need} of ${total} stamps to win the prize.`,
+    scanButton: 'Scan booth QR (simulated)', stampedLabel: 'Stamped',
+    stamped: (booth: string, have: number, need: number) => `Stamp collected at ${booth}. ${have} of ${need} stamps.`, alreadyStamped: (booth: string) => `You already have the stamp for ${booth}.`,
+    rewardProgress: (have: number, need: number) => `${have} of ${need} stamps. Keep going!`, rewardReady: 'You have enough stamps. Show this screen at the prize desk.',
+    leadTitle: 'Share my details with a booth', leadText: 'Optional. Only the booth you pick receives your name and email.',
+    boothLabel: 'Booth', nameLabel: 'Name', emailLabel: 'Email', consent: 'I agree that this booth may contact me about its products.', shareButton: 'Share my details',
+    leadSaved: (booth: string) => `Your details were shared with ${booth}.`, leadRejected: 'Enter your name and a valid email, tick the consent box, and use each booth once per email.',
+    organizerTitle: 'Organizer view', organizerText: 'Each booth sees how many visitors asked to be contacted. The list can be downloaded as a CSV file.',
+    leadsUnit: 'leads', noLeads: 'No leads yet. Switch to the visitor view, share some details, then come back.', download: 'Download CSV',
+    privacy: 'Names and emails you type here are not sent anywhere and are lost on reload. A real event needs a consent notice and a place to store the list safely.',
+    howEyebrow: 'A simple booth idea', howTitle: 'How it works', howText: 'Each booth shows a QR code. Visitors scan it with their phone, collect the stamp, and can choose to leave their contact details at the booths they liked.',
+    goodTitle: 'Good to know', goodToKnow: [
+      { title: 'Why exhibitors like it', text: 'Visitors walk the whole hall, and each booth gets a list of people who asked to be contacted, not a pile of business cards.' },
+      { title: 'Consent first', text: 'Details are shared only after a tick box, per booth. This keeps the list useful and fits data-protection rules.' },
+      { title: 'Concept only', text: 'This demo simulates the scan. A real event needs printed QR codes, a server to keep results and a prize check at the desk.' },
+    ],
+    ctaTitle: 'Planning an exhibition or a multi-booth event?', ctaText: 'Tell us how many booths and visitors you expect and what the exhibitors want to learn. We will propose a rally that fits.', ctaContact: 'Discuss your event',
   },
 
   vote: {

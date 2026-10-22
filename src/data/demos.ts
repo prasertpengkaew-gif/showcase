@@ -1,7 +1,7 @@
 import type { ComponentType, SVGProps } from 'react';
 import { CameraIcon, CompassIcon, FlagIcon, FlaskIcon, GamepadIcon, LayersIcon, MapIcon, MapPinIcon, SearchIcon, TagIcon, CubeIcon, FaceIcon, FactoryIcon, HandIcon, HeadsetIcon, ScanIcon, ShirtIcon } from '../components/Icons';
 
-export type DemoId = 'ar' | 'print' | 'face' | 'tryon' | 'hands' | 'vr' | 'tour' | 'twin' | 'event' | 'hunt' | 'game' | 'chem' | 'cube' | 'tags' | 'map' | 'tms' | 'cold' | 'rag' | 'vote';
+export type DemoId = 'ar' | 'print' | 'face' | 'tryon' | 'hands' | 'vr' | 'tour' | 'twin' | 'event' | 'hunt' | 'game' | 'chem' | 'cube' | 'tags' | 'map' | 'tms' | 'cold' | 'rag' | 'vote' | 'rally';
 
 export type DemoGroup = 'phone' | 'marker' | 'camera' | 'event' | 'space' | 'apps';
 export const demoGroups: DemoGroup[] = ['phone', 'marker', 'camera', 'event', 'space', 'apps'];
@@ -28,6 +28,7 @@ export const demos: Demo[] = [
   { id: 'tryon', group: 'camera', to: '/try-on', icon: ShirtIcon, image: '/images/try-on.webp' },
   { id: 'hands', group: 'camera', to: '/hand-gestures', icon: HandIcon, image: '/images/hand-gestures.webp' },
   { id: 'vote', group: 'event', to: '/gesture-vote', icon: HandIcon, image: '/images/gesture-vote.webp' },
+  { id: 'rally', group: 'event', to: '/stamp-rally', icon: FlagIcon },
   { id: 'event', group: 'event', to: '/event-booth', icon: CameraIcon, image: '/images/event-booth.webp' },
   { id: 'hunt', group: 'event', featured: true, to: '/ar-hunt', icon: FlagIcon, image: '/images/ar-hunt.webp' },
   { id: 'game', group: 'event', to: '/motion-game', icon: GamepadIcon, image: '/images/motion-game.webp' },

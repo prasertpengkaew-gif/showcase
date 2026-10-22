@@ -44,6 +44,7 @@ const ROUTES = [
   '/app-design',
   '/cold-room',
   '/gesture-vote',
+  '/stamp-rally',
   '/tms',
   '/enterprise-ai',
   '/about',
@@ -249,7 +250,7 @@ try {
   // --- Demos hub ---------------------------------------------------------------
   await go(B + '/demos');
   await page.locator('main article').first().waitFor();
-  ok((await page.locator('main article').count()) === 19, 'demos hub lists 19 demos');
+  ok((await page.locator('main article').count()) === 20, 'demos hub lists 20 demos');
   ok((await page.getByRole('link', { name: 'Demos' }).first().getAttribute('aria-current')) === 'page', 'Demos nav item is current');
 
   // --- Print AR --------------------------------------------------------------
@@ -427,7 +428,8 @@ try {
   ok((await axeSerious(guest)).length === 0, 'guest: the not-found page passes axe');
 
   // No connection: the photo is kept and uploaded once the connection is back.
-  await kiosk.getByRole('button', { name: 'Done' }).click();
+  // The review screen returns to idle by itself after a few seconds, so Done may already be gone by now.
+  await kiosk.getByRole('button', { name: 'Done' }).click({ timeout: 2000 }).catch(() => {});
   mock.state.failUploads = true;
   await kiosk.getByRole('button', { name: 'Take photo' }).click();
   ok(await passes(kiosk.getByText(/Waiting for the connection/).waitFor({ timeout: 30000 })), 'booth: with no connection the guest is told the QR will work in a moment');
