@@ -1,0 +1,20 @@
+{
+  "sender": {
+    "name": "",
+    "role": "",
+    "company": "TheNerdStudio",
+    "email": "thenerdstudio@gmail.com",
+    "phone": "",
+    "website": "https://www.thenerdstudio.space"
+  },
+  "polite": "ครับ",
+  "minScore": 20,
+  "maxPagesPerSite": 4,
+  "delayMs": 2500,
+  "llm": {
+    "baseUrl": "http://192.168.1.161:8080/v1",
+    "model": "hf.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF:UD-Q4_K_XL",
+    "timeoutMs": 120000,
+    "maxChars": 5000
+  }
+}

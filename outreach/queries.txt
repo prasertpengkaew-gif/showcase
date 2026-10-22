@@ -1,0 +1,29 @@
+# One search query per line. Lines starting with # are ignored.
+# Add cities, event types and English phrases freely; each query adds a few new company sites.
+รับจัดงานอีเวนต์ กรุงเทพ
+บริษัทรับจัดงานอีเวนต์
+event organizer กรุงเทพ
+event agency Bangkok
+รับจัดงานนิทรรศการ ออกแบบบูธ
+รับจัดงานเปิดตัวสินค้า
+รับจัดงานสัมมนา งานประชุม
+รับจัดงาน activation roadshow
+experiential marketing agency Thailand
+รับจัดงานอีเวนต์ เชียงใหม่
+รับจัดงานอีเวนต์ ภูเก็ต
+รับจัดงานอีเวนต์ ขอนแก่น
+รับจัดงานอีเวนต์ พัทยา ชลบุรี
+รับจัดงานแสดงสินค้า เอ็กซิบิชั่น
+รับจัดงานคอนเสิร์ต เฟสติวัล
+รับจัดงานประชุมนานาชาติ MICE
+รับจัดงานปีใหม่ งานเลี้ยงบริษัท
+รับจัดงานอีเวนต์ นครราชสีมา
+รับจัดงานอีเวนต์ หาดใหญ่ สงขลา
+รับจัดงานอีเวนต์ อุดรธานี
+รับเหมาจัดงาน ออกแบบเวที จอ LED
+บริษัทอีเวนต์ interactive AR VR
+brand activation agency Thailand
+MICE company Bangkok
+exhibition stand contractor Thailand
+product launch event company Thailand
+corporate event management Bangkok
