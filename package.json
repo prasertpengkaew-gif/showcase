@@ -22,6 +22,10 @@
     "test:admin": "node tests/booth-admin.mjs",
     "test:booth": "npm run test:sql && npm run test:admin",
     "test:map": "node tests/map-logic.mjs",
+    "test:rag": "node tests/rag-logic.mjs",
+    "test:tms": "node tests/tms-logic.mjs",
+    "test:coldroom": "node tests/coldroom-logic.mjs",
+    "test:vote": "node tests/vote-logic.mjs",
     "test:seo": "node tests/seo.mjs"
   },
   "engines": {

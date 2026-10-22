@@ -23,6 +23,13 @@ const ARCube = lazy(() => import('./pages/ARCube'));
 const MachineTags = lazy(() => import('./pages/MachineTags'));
 const DigitalTwin = lazy(() => import('./pages/DigitalTwin'));
 const Services = lazy(() => import('./pages/Services'));
+const WebApps = lazy(() => import('./pages/WebApps'));
+const TMS = lazy(() => import('./pages/TMS'));
+const EventAR = lazy(() => import('./pages/EventAR'));
+const AppDesign = lazy(() => import('./pages/AppDesign'));
+const ColdRoom = lazy(() => import('./pages/ColdRoom'));
+const GestureVote = lazy(() => import('./pages/GestureVote'));
+const EnterpriseAI = lazy(() => import('./pages/EnterpriseAI'));
 const About = lazy(() => import('./pages/About'));
 const Contact = lazy(() => import('./pages/Contact'));
 const NotFound = lazy(() => import('./pages/NotFound'));
@@ -69,6 +76,13 @@ export default function App() {
           <Route path="map-3d" element={<Suspense fallback={<PageLoading />}><Map3D /></Suspense>} />
           <Route path="digital-twin" element={<Suspense fallback={<PageLoading />}><DigitalTwin /></Suspense>} />
           <Route path="services" element={<Suspense fallback={<PageLoading />}><Services /></Suspense>} />
+          <Route path="enterprise-ai" element={<Suspense fallback={<PageLoading />}><EnterpriseAI /></Suspense>} />
+          <Route path="tms" element={<Suspense fallback={<PageLoading />}><TMS /></Suspense>} />
+          <Route path="cold-room" element={<Suspense fallback={<PageLoading />}><ColdRoom /></Suspense>} />
+          <Route path="gesture-vote" element={<Suspense fallback={<PageLoading />}><GestureVote /></Suspense>} />
+          <Route path="app-design" element={<Suspense fallback={<PageLoading />}><AppDesign /></Suspense>} />
+          <Route path="event-ar" element={<Suspense fallback={<PageLoading />}><EventAR /></Suspense>} />
+          <Route path="web-apps" element={<Suspense fallback={<PageLoading />}><WebApps /></Suspense>} />
           <Route path="about" element={<Suspense fallback={<PageLoading />}><About /></Suspense>} />
           <Route path="contact" element={<Suspense fallback={<PageLoading />}><Contact /></Suspense>} />
           <Route path="*" element={<Suspense fallback={<PageLoading />}><NotFound /></Suspense>} />

@@ -1,5 +1,5 @@
 import type { ComponentType, SVGProps } from 'react';
-import { CompassIcon, CubeIcon, FaceIcon, HandIcon, HeadsetIcon, ScanIcon } from '../components/Icons';
+import { CompassIcon, CubeIcon, FaceIcon, HandIcon, HeadsetIcon, LayersIcon, PhoneIcon, ScanIcon, SearchIcon } from '../components/Icons';
 
 export interface Service {
   id: string;
@@ -8,6 +8,8 @@ export interface Service {
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   includes: string[];
   bestFor: string;
+  /** Route of a live example on this site, shown as a link on the services page. */
+  example?: string;
 }
 
 export const services: Service[] = [
@@ -27,6 +29,7 @@ export const services: Service[] = [
       'Analytics hooks for your existing tools',
     ],
     bestFor: 'Product pages, campaigns, packaging, brochures and print-to-AR.',
+    example: '/event-ar',
   },
   {
     id: 'vr-development',
@@ -88,6 +91,55 @@ export const services: Service[] = [
       'Integration with your CMS or e-commerce platform',
     ],
     bestFor: 'Training, education, trade shows, factory monitoring and brand storytelling.',
+  },
+  {
+    id: 'web-app-development',
+    title: 'Web App Development',
+    summary:
+      'Custom browser-based apps for your team and customers: dashboards, kiosks, back-office tools and logistics systems, usable on desktop and mobile.',
+    icon: LayersIcon,
+    includes: [
+      'Live dashboards and status boards',
+      'Transport and warehouse systems: dispatch boards, cold-room stock locations and picking order',
+      'Accounts, roles and a database with access rules',
+      'Admin tools for staff, with audit history and exports',
+      'Kiosk and event modes that keep working on poor Wi-Fi',
+      'One responsive app for desktop, tablet and phone',
+    ],
+    bestFor: 'Logistics, warehouses, factories, events and any team still running on spreadsheets.',
+    example: '/web-apps',
+  },
+  {
+    id: 'enterprise-ai',
+    title: 'Enterprise AI Assistants (LLM and RAG)',
+    summary:
+      'Assistants that answer staff and customer questions from your own documents, quote their sources and respect who may read what.',
+    icon: SearchIcon,
+    includes: [
+      'Connect documents from drives, wikis, PDFs and databases',
+      'Search that works in Thai and English',
+      'Answers that show the source passage, and a clear “not found” when the documents do not say',
+      'Access control that follows your existing accounts and groups',
+      'A pilot on real questions before you commit to a full build',
+    ],
+    bestFor: 'HR and policy questions, internal knowledge bases, support teams and compliance.',
+    example: '/enterprise-ai',
+  },
+  {
+    id: 'app-ui-design',
+    title: 'Mobile App UI/UX Design',
+    summary:
+      'Complete screen designs for iPhone and Android apps, with a clickable prototype and notes a developer can build from.',
+    icon: PhoneIcon,
+    includes: [
+      'User flows and screen structure',
+      'Every screen, including loading, empty, error and offline states',
+      'Clickable prototype to test with real users',
+      'Colour, type and spacing written as constants for developers',
+      'Light and dark themes where they help',
+    ],
+    bestFor: 'Founders and teams planning an app before they hire developers.',
+    example: '/app-design',
   },
   {
     id: 'ar-consulting',

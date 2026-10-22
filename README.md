@@ -26,6 +26,10 @@ npm run dev        # http://localhost:5173
 | `npm run typecheck`       | TypeScript only                                                 |
 | `npm run validate:models` | Check every file in `public/models` with the Khronos glTF Validator |
 | `npm run test:e2e`        | End-to-end + accessibility (axe-core) checks in headless Chromium |
+| `npm run test:rag`        | Retrieval and access-control checks for the enterprise AI demo   |
+| `npm run test:tms`        | Status, delay and KPI checks for the TMS demo                    |
+| `npm run test:coldroom`   | Layout, picking-order and stock-control checks for the cold-room demo |
+| `npm run test:vote`       | Vote timing, cooldown and percentage-share checks for the gesture vote demo |
 | `npm run render:media`    | Re-render posters, project images and videos from the GLBs       |
 | `npm run render:panoramas`| Re-render the 360° tour panoramas from the GLBs                  |
 | `npm run make:ar-card`    | Rebuild the printable AR card and its compiled MindAR target     |
@@ -41,13 +45,20 @@ npm run dev        # http://localhost:5173
 | `/projects/:slug`  | Project details | 3D viewer with finish/animation pickers, overview, technologies, image gallery with lightbox, demo video **or** a hands-on "Test it yourself" section with a QR code, related projects |
 | `/ar-playground`   | AR Playground   | Pick a chair, robot or car; rotate, zoom, change finish or animation; "View in your space" in AR |
 | `/vr-showroom`     | VR Showroom     | Real-scale virtual gallery: orbit in 3D on any screen, **Enter VR** on Meta Quest and other WebXR headsets (thumbstick movement) |
-| `/demos`           | Demos hub       | One page linking all fourteen live demos, grouped (AR on phones, AR with markers, face & body tracking, events, VR & digital twins) (with a QR code to open it on a phone) |
+| `/demos`           | Demos hub       | One page linking all nineteen live demos, grouped (AR on phones, AR with markers, face & body tracking, events, VR & digital twins, web apps for teams) (with a QR code to open it on a phone) |
 | `/print-ar`        | Print AR        | Image tracking: point a phone at the printable sample card and a 3D chair stands up on it (MindAR) |
 | `/try-on`          | Virtual Try-On  | Body tracking (MediaPipe Pose): cap, necklace, watch and a simple 2D T-shirt follow the person; save photo; photo fallback |
 | `/hand-gestures`   | Hand gestures   | Camera hand tracking: 7 gestures (✋👍✌️☝️👎✊🤟) trigger robot animations; photo fallback (MediaPipe Gesture Recognizer) |
 | `/virtual-tour`    | Virtual Tour 360° | 3-room 360° tour with door and info hotspots, drag/zoom, phone motion sensor, VR on headsets |
 | `/digital-twin`   | Digital Twin    | 3D production line (6 machines) with live status, temperature/output charts, event log and table; simulated data until connected to a plant feed |
 | `/map-3d`         | 3D Map          | Fictional sample city with search, categories, fly-to, routes, walking-time areas, day/night, minimap; sample data until connected to real map data |
+| `/tms`            | Transport Management (TMS) | Dispatch board for sample trucking trips on a simulated clock: live progress, delay alerts (30 min behind plan), ETA, on-time rate, status filter, route detail; sample data |
+| `/cold-room`      | Cold Room Locator | 2D floor plan of two sample cold rooms; pick a product and count to get a rule-based picking order (fewest moves first, oldest first on a tie); stock only drops on **Confirm dispatch**; sample stock |
+| `/gesture-vote`  | Gesture Vote Booth | Vote with a thumbs-up or down gesture, or use the buttons; votes stay in memory on screen only |
+| `/enterprise-ai`  | Enterprise AI Assistant | Retrieval (BM25, Thai and English) over five made-up company documents with role-based access (employee / HR / finance); the answer quotes the best passage, no LLM is called |
+| `/event-ar`       | AR for events   | Ideas for six kinds of event (trade shows, launches, weddings, festivals, conferences, open houses), each marked as having a related live demo or being an idea only; demos to try, how an event runs, what to plan for |
+| `/web-apps`       | Web apps        | Showcase of the web-app work: the demos above, what a full system covers, and the stack |
+| `/app-design`     | App design      | Two of our own mobile app designs (Rui Ya, Mochi Pet Passport) with selected screens; design only, not built apps |
 | `/event-booth`    | Event AR Photo Booth | Branded event frame (3 themes, editable event name), AR props, smile-to-snap countdown, full-screen kiosk mode, download/share; photo fallback |
 | `/ar-hunt`        | AR Scavenger Hunt | Three printable posters (one MindAR target file); each scan shows a 3D character and collects a stamp; all three unlock a reward code |
 | `/motion-game`    | Motion Game     | 30-second catch game with body tracking (or mouse/touch/arrow keys); hands-free start; top-5 board on the device |
@@ -57,7 +68,7 @@ npm run dev        # http://localhost:5173
 | `/booth/:slug?k=…` | Booth kiosk     | **AR Photo Booth Studio:** the screen at the venue for a customer's event (private link with a secret token); QR code for guests, offline upload queue, staff menu. `/booth/demo` is the demo |
 | `/p/:code`        | Guest photo     | What a guest sees after scanning the QR: photo, download, share, delete |
 | `/face-ar`         | Face AR         | Live camera face tracking (468-point mesh, expressions, head tilt), sunglasses/crown effects, save photo, photo upload fallback — all on-device |
-| `/services`        | Services        | WebAR Development, VR Development, Face AR & Face Tracking, 3D Visualization, Interactive Experiences, AR Consulting |
+| `/services`        | Services        | WebAR Development, VR Development, Face AR & Face Tracking, 3D Visualization, Interactive Experiences, Web App Development, Enterprise AI Assistants, Mobile App UI/UX Design, AR Consulting |
 | `/about`           | About           | Company introduction, capabilities, principles, 3D asset credits (no invented credentials)    |
 | `/contact`         | Contact         | Validated form, contact details from config                                                   |
 | anything else      | 404             | Friendly not-found page                                                                        |

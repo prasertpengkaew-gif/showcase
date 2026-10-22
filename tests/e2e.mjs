@@ -39,6 +39,13 @@ const ROUTES = [
   '/map-3d',
   '/demos',
   '/services',
+  '/web-apps',
+  '/event-ar',
+  '/app-design',
+  '/cold-room',
+  '/gesture-vote',
+  '/tms',
+  '/enterprise-ai',
   '/about',
   '/contact',
   '/does-not-exist',
@@ -242,7 +249,7 @@ try {
   // --- Demos hub ---------------------------------------------------------------
   await go(B + '/demos');
   await page.locator('main article').first().waitFor();
-  ok((await page.locator('main article').count()) === 15, 'demos hub lists 15 demos');
+  ok((await page.locator('main article').count()) === 19, 'demos hub lists 19 demos');
   ok((await page.getByRole('link', { name: 'Demos' }).first().getAttribute('aria-current')) === 'page', 'Demos nav item is current');
 
   // --- Print AR --------------------------------------------------------------

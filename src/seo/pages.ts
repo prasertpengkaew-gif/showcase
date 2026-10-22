@@ -31,14 +31,14 @@ export const staticPages: SeoPage[] = [
     path: '/',
     priority: 1,
     th: {
-      title: 'TheNerdStudio — รับทำ AR, VR และ 3D บนเว็บ ไม่ต้องโหลดแอป',
+      title: 'TheNerdStudio — รับทำ AR, VR, 3D และ Web App ไม่ต้องโหลดแอป',
       description:
-        'สตูดิโอรับทำ WebAR, VR และ 3D สำหรับสินค้า อีเวนต์ อสังหาริมทรัพย์ โรงงาน และการศึกษา เปิดได้จากลิงก์หรือ QR code ลองเดโมได้ฟรีบนเว็บนี้',
+        'สตูดิโอรับทำ WebAR, VR, 3D และ Web app ตามสั่ง สำหรับสินค้า อีเวนต์ โลจิสติกส์ โรงงาน และการศึกษา เปิดได้จากลิงก์หรือ QR code ลองเดโมได้ฟรีบนเว็บนี้',
     },
     en: {
-      title: 'TheNerdStudio — WebAR, VR & 3D Experiences, No App Needed',
+      title: 'TheNerdStudio — WebAR, VR, 3D & Web App Development',
       description:
-        'A studio building WebAR, VR and 3D for products, events, real estate, factories and education. Opens from a link or QR code. Try the demos free on this site.',
+        'A studio building WebAR, VR, 3D and custom web apps for products, events, logistics, factories and education. Opens from a link or QR code. Try the demos free.',
     },
   },
   {
@@ -60,11 +60,11 @@ export const staticPages: SeoPage[] = [
     th: {
       title: 'เดโม AR VR 3D ลองเล่นฟรี — ตู้ถ่ายรูป AR แผนที่ 3D Digital Twin',
       description:
-        'รวมเดโมที่ลองได้จริงบนมือถือและคอม: ตู้ถ่ายรูป AR สำหรับอีเวนต์ ล่าสมบัติ AR การ์ด Marker แผนที่ 3D Digital Twin โรงงาน และเกมขยับตัว',
+        'รวมเดโมที่ลองได้จริงบนมือถือและคอม: ตู้ถ่ายรูป AR ล่าสมบัติ AR แผนที่ 3D Digital Twin โรงงาน ระบบขนส่ง TMS ห้องเย็น และผู้ช่วย AI ในองค์กร',
     },
     en: {
       title: 'Free AR, VR and 3D Demos — Photo Booth, 3D Map, Digital Twin',
-      description: 'Working demos for phone and desktop: event AR photo booth, AR scavenger hunt, marker cards, 3D map, factory digital twin and a motion game.',
+      description: 'Working demos for phone and desktop: AR photo booth, AR scavenger hunt, 3D map, factory digital twin, TMS dispatch board, cold room and enterprise AI.',
     },
   },
   {
@@ -104,6 +104,90 @@ export const staticPages: SeoPage[] = [
     en: {
       title: 'Factory Digital Twin in 3D — Live Machine Status',
       description: 'A production-line digital twin with machine status, temperature and alerts in 3D. Connects to real data from PLC, OPC UA or MQTT (the demo uses simulated data).',
+    },
+  },
+  {
+    path: '/web-apps',
+    priority: 0.8,
+    th: {
+      title: 'รับพัฒนา Web App ตามสั่ง แดชบอร์ด ตู้คีออสก์ ระบบหลังบ้าน',
+      description:
+        'รับพัฒนา web app บนเบราว์เซอร์ ทั้งแดชบอร์ดข้อมูลสด ตู้คีออสก์งานอีเวนต์ ระบบหลังบ้านและฐานข้อมูล ลองใช้แอปตัวอย่างที่ใช้งานจริงได้ฟรีบนเว็บนี้',
+    },
+    en: {
+      title: 'Custom Web App Development — Dashboards, Kiosks, Admin Tools',
+      description: 'We build browser-based web apps: live dashboards, event kiosks, back-office tools and databases. Try working example apps free on this site.',
+    },
+  },
+  {
+    path: '/enterprise-ai',
+    priority: 0.8,
+    th: {
+      title: 'ผู้ช่วย AI ในองค์กร ตอบจากเอกสารบริษัทด้วย LLM และ RAG',
+      description:
+        'ตัวอย่างผู้ช่วย AI ที่ตอบจากเอกสารภายในองค์กร อ้างแหล่งที่มา และจำกัดตามสิทธิ์ของแต่ละตำแหน่ง รับพัฒนาระบบ LLM และ RAG เชื่อม SharePoint, Google Drive ได้ ลองเดโมฟรี',
+    },
+    en: {
+      title: 'Enterprise AI Assistant — LLM and RAG on Company Documents',
+      description: 'A sample AI assistant that answers from internal documents, cites its sources and respects each role’s access. We build LLM and RAG systems on SharePoint or Google Drive. Try the demo free.',
+    },
+  },
+  {
+    path: '/tms',
+    priority: 0.8,
+    th: {
+      title: 'ระบบ TMS บริหารการขนส่ง ติดตามรถ แจ้งเตือนล่าช้า แอปคนขับ',
+      description:
+        'ตัวอย่างระบบบริหารการขนส่ง (TMS) กระดานจัดรถแสดงความคืบหน้าแบบสด แจ้งเตือนเที่ยวล่าช้า เวลาถึง และอัตราส่งตรงเวลา รับพัฒนา TMS ตามสั่ง พร้อมแอปคนขับ ลองเดโมฟรี',
+    },
+    en: {
+      title: 'Transport Management System (TMS) — Dispatch, Tracking, Driver App',
+      description: 'A sample TMS dispatch board with live trip progress, delay alerts, ETAs and on-time rate. We build custom transport management systems with driver apps. Try the demo free.',
+    },
+  },
+  {
+    path: '/cold-room',
+    priority: 0.8,
+    th: {
+      title: 'ระบบจัดการห้องเย็น Cold Room Locator ตำแหน่งสต๊อก ลำดับการเบิก',
+      description:
+        'ตัวอย่างเว็บแอปจัดการห้องเย็นและคลังสินค้า บันทึกตำแหน่งพาเลท แนะนำลำดับการเบิกที่ย้ายของน้อยที่สุด ควบคุมยอดสต๊อกและประวัติย้อนหลัง รับพัฒนาตามสั่ง ลองเดโมฟรี',
+    },
+    en: {
+      title: 'Cold Room Locator — Cold Storage Stock Location and Picking Order',
+      description: 'A sample web app for cold rooms and warehouses: pallet locations, a picking order that moves the fewest pallets, stock control and audit history. Built to order. Try the demo free.',
+    },
+  },
+  {
+    path: '/gesture-vote',
+    priority: 0.6,
+    th: { title: 'ตู้โหวตด้วยท่ามือสำหรับงานอีเวนต์', description: 'เดโมคีออสก์รับความคิดเห็นในงาน โหวตด้วยท่ามือหน้ากล้องหรือกดปุ่ม คะแนนอยู่บนหน้าจอและไม่ถูกบันทึก' },
+    en: { title: 'Gesture Vote Booth for Events', description: 'A sample event feedback kiosk. Vote with a thumbs-up or down gesture, or use the buttons. Votes stay on screen and are not saved.' },
+  },
+  {
+    path: '/app-design',
+    priority: 0.7,
+    th: {
+      title: 'รับออกแบบ UI/UX แอปมือถือ ต้นแบบที่กดได้ พร้อมส่งต่อนักพัฒนา',
+      description:
+        'รับออกแบบหน้าจอแอปมือถือสำหรับ iPhone และ Android ครบทุกหน้า มีต้นแบบที่กดใช้ได้และบันทึกส่งต่อนักพัฒนา ดูงานออกแบบแอปแฟชั่น AI และแอปดูแลสัตว์เลี้ยงของเรา',
+    },
+    en: {
+      title: 'Mobile App UI/UX Design — Clickable Prototypes and Developer Hand-off',
+      description: 'We design iPhone and Android app screens end to end, with a clickable prototype and developer hand-off notes. See our fashion AI and pet care app designs.',
+    },
+  },
+  {
+    path: '/event-ar',
+    priority: 0.9,
+    th: {
+      title: 'ไอเดีย AR สำหรับงานอีเวนต์ ตู้ถ่ายรูป ล่าสมบัติ เกม และโปสเตอร์',
+      description:
+        'ไอเดีย AR สำหรับงานแสดงสินค้า เปิดตัวสินค้า งานแต่งงาน เทศกาล งานสัมมนา และงานเปิดบ้าน พร้อมเดโมที่ลองได้บนมือถือ ตู้ถ่ายรูป AR ล่าสมบัติ เกมขยับตัว และโปสเตอร์ AR',
+    },
+    en: {
+      title: 'AR Ideas for Events — Photo Booth, Hunts, Games and Posters',
+      description: 'AR ideas for trade shows, launches, weddings, festivals, conferences and open houses, with demos to try on your phone: AR photo booth, scavenger hunt, motion game and AR posters.',
     },
   },
   {
@@ -254,37 +338,37 @@ export const staticPages: SeoPage[] = [
     path: '/services',
     priority: 0.9,
     th: {
-      title: 'บริการ พัฒนา WebAR VR 3D Visualization และที่ปรึกษา AR',
+      title: 'บริการ WebAR VR 3D, Web App, AI องค์กร และออกแบบแอป',
       description:
-        'บริการของเรา: พัฒนา WebAR, พัฒนา VR, Face AR, งาน 3D Visualization, ประสบการณ์แบบโต้ตอบ และที่ปรึกษาด้าน AR สำหรับธุรกิจในไทย',
+        'บริการของเรา: พัฒนา WebAR, VR, Face AR, 3D Visualization, Web app ตามสั่ง, ผู้ช่วย AI (LLM/RAG) ในองค์กร, ออกแบบ UI/UX แอปมือถือ และที่ปรึกษาด้าน AR',
     },
     en: {
-      title: 'Services — WebAR, VR, 3D Visualization and AR Consulting',
-      description: 'Our services: WebAR and VR development, Face AR, 3D visualization, interactive experiences and AR consulting.',
+      title: 'Services — WebAR, VR, 3D, Web Apps, Enterprise AI, App Design',
+      description: 'Our services: WebAR and VR, Face AR, 3D visualization, custom web apps, enterprise AI assistants (LLM, RAG), mobile app design and AR consulting.',
     },
   },
   {
     path: '/about',
     priority: 0.5,
     th: {
-      title: 'เกี่ยวกับเรา — ทีมสตูดิโอ AR VR 3D | TheNerdStudio',
-      description: 'รู้จัก TheNerdStudio สตูดิโอที่ทำ AR, VR และ 3D ให้ใช้งานได้จริงบนเว็บ วิธีทำงาน และสิ่งที่เรายึดถือ',
+      title: 'เกี่ยวกับเรา — สตูดิโอ AR VR 3D และ Web App | TheNerdStudio',
+      description: 'รู้จัก TheNerdStudio สตูดิโอที่ทำ AR, VR, 3D และ Web app ให้ใช้งานได้จริงบนเว็บ วิธีทำงาน ความสามารถ และสิ่งที่เรายึดถือ',
     },
     en: {
-      title: 'About — The AR, VR and 3D Studio | TheNerdStudio',
-      description: 'Meet TheNerdStudio: how we make AR, VR and 3D that works on the web, and what we stand for.',
+      title: 'About — AR, VR, 3D and Web App Studio | TheNerdStudio',
+      description: 'Meet TheNerdStudio: how we make AR, VR, 3D and web apps that work in the browser, what we can build, and what we stand for.',
     },
   },
   {
     path: '/contact',
     priority: 0.8,
     th: {
-      title: 'ติดต่อ ขอใบเสนอราคา งาน AR VR 3D | TheNerdStudio',
-      description: 'เล่าโปรเจกต์ของคุณให้เราฟัง ขอคำปรึกษาและใบเสนอราคางาน AR, VR และ 3D ติดต่อทางอีเมลหรือแบบฟอร์ม',
+      title: 'ติดต่อ ขอใบเสนอราคา AR VR 3D และ Web App | TheNerdStudio',
+      description: 'เล่าโปรเจกต์ของคุณให้เราฟัง ขอคำปรึกษาและใบเสนอราคางาน AR, VR, 3D และ Web app ติดต่อทางอีเมลหรือแบบฟอร์ม',
     },
     en: {
-      title: 'Contact — Get a Quote for AR, VR and 3D | TheNerdStudio',
-      description: 'Tell us about your project and get advice and a quote for AR, VR and 3D work, by email or form.',
+      title: 'Contact — Quote for AR, VR, 3D and Web Apps | TheNerdStudio',
+      description: 'Tell us about your project and get advice and a quote for AR, VR, 3D and web app work, by email or form.',
     },
   },
 ];

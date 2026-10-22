@@ -29,7 +29,7 @@ export default function About() {
       <section aria-labelledby="capabilities-title" className="bg-surface py-20 sm:py-24">
         <div className="container-page">
           <SectionHeading id="capabilities-title" eyebrow={a.capEyebrow} title={a.capTitle} />
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {a.capabilities.map((c) => (
               <div key={c.area} className="rounded-2xl border border-line bg-white p-7">
                 <h3 className="font-display text-lg font-bold">{c.area}</h3>

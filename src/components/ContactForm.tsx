@@ -21,7 +21,7 @@ type ErrorCode = 'name' | 'nameShort' | 'nameLong' | 'email' | 'emailFormat' | '
 type Errors = Partial<Record<FieldName, ErrorCode>>;
 
 const EMPTY: FormValues = { name: '', email: '', company: '', projectType: '', message: '', website: '' };
-const OTHER_TYPES = ['VR experience', 'Not sure yet'] as const;
+const OTHER_TYPES = ['VR experience', 'Web app', 'AI assistant', 'App design', 'Not sure yet'] as const;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const MESSAGE_MIN = 20;
 const MESSAGE_MAX = 2000;
@@ -87,8 +87,14 @@ export function ContactForm() {
   const formId = useId();
   const f = useT().form;
   const categoryLabel = useCategoryLabel();
-  const typeLabel = (type: string) =>
-    type === 'VR experience' ? f.vrType : type === 'Not sure yet' ? f.notSure : categoryLabel(type as (typeof PROJECT_CATEGORIES)[number]);
+  const otherLabels: Record<(typeof OTHER_TYPES)[number], string> = {
+    'VR experience': f.vrType,
+    'Web app': f.webAppType,
+    'AI assistant': f.aiType,
+    'App design': f.designType,
+    'Not sure yet': f.notSure,
+  };
+  const typeLabel = (type: string) => otherLabels[type as keyof typeof otherLabels] ?? categoryLabel(type as (typeof PROJECT_CATEGORIES)[number]);
 
   const set = (field: keyof FormValues, value: string) => {
     const next = { ...values, [field]: value };

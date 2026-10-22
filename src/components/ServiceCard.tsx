@@ -1,5 +1,6 @@
+import { Link } from 'react-router-dom';
 import type { Service } from '../data/services';
-import { CheckIcon } from './Icons';
+import { ArrowRightIcon, CheckIcon } from './Icons';
 import { useT } from '../i18n';
 
 interface ServiceCardProps {
@@ -43,6 +44,11 @@ export function ServiceCard({ service, variant = 'full', index }: ServiceCardPro
             <span className="font-semibold text-ink">{t.servicesPage.bestFor} </span>
             {service.bestFor}
           </p>
+          {service.example && (
+            <Link to={service.example} className="mt-4 inline-flex items-center gap-1.5 self-start text-sm font-semibold text-electric-700 hover:underline">
+              {t.servicesPage.seeExample} <ArrowRightIcon aria-hidden width={16} height={16} />
+            </Link>
+          )}
         </>
       )}
     </article>

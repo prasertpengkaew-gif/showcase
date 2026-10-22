@@ -40,6 +40,7 @@ export const navLinks = [
   { to: '/projects', key: 'projects' },
   { to: '/demos', key: 'demos' },
   { to: '/services', key: 'services' },
+  { to: '/web-apps', key: 'webApps' },
   { to: '/about', key: 'about' },
   { to: '/contact', key: 'contact' },
 ] as const;
