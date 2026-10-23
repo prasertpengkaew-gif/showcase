@@ -1038,8 +1038,23 @@ export const en = {
     ],
     ctaTitle: 'Planning a New Year or Lunar New Year event?', ctaText: 'Tell us the venue, the date and the mood. We will design an AR greeting for your guests.', ctaContact: 'Discuss your event',
     greetingLegend: 'Choose a greeting', greetings: { th: 'สวัสดีปีใหม่', en: 'Happy New Year', zh: '新年快乐', fortune: '恭喜发财' },
+    arTitle: 'Place the dragon on your floor, and take a photo', arText: 'Our camera page puts the dragon in front of you, swimming at life size. Tap the floor to place it, walk around it, and save a photo to your phone.',
+    arDialog: 'New Year dragon AR camera', arCanvas: 'Chinese dragon placed on the floor', arCaption: 'Happy New Year · TheNerdStudio', arPhotoAlt: 'Your photo with the Chinese dragon',
+    iosNote: 'On iPhone, the system AR button shows the dragon standing still. The swimming animation plays in our camera page and in the 3D view above.',
     celebrate: 'Fireworks!', celebrateStill: 'Show the greeting', arHint: 'On a phone, press “View in your space” to place the dragon in the room.',
     privacy: 'The camera is used only while AR is open, and nothing is uploaded or saved.',
+  },
+
+  floorAr: {
+    worldHint: 'Tap the floor to place it. Walk around it, then stand back for a photo.', scanning: 'Move the phone slowly to scan the floor…', fallbackNote: 'Real tracking is not available on this phone, so the basic mode is on.',
+    engineCredit: 'Floor tracking in our camera page uses the 8th Wall engine by Niantic Spatial, licensed under the XR Engine License Agreement.', engineLicense: 'Read the licence',
+    startAr: 'Start AR camera', startPreview: 'Preview without a camera', starting: 'Starting…',
+    tapHint: 'Tap the floor to place it. Stand back and take a photo.', previewHint: 'Preview: drag to look around and tap to move it.', noSensor: 'No motion sensor found. Drag on the screen to look around.',
+    close: 'Close', placeHere: 'Place in the middle', shutter: 'Take photo', heightLegend: 'How high do you hold the phone?', heightLabel: (m: string) => `${m} m`,
+    save: 'Save to phone', retake: 'Take another', saveHint: 'On iPhone, choose Save Image in the share sheet. On Android the photo downloads.',
+    shared: 'Shared. Choose Save Image to keep it.', downloaded: 'The photo was downloaded.', photoFailed: 'The photo could not be made. Try again.',
+    denied: 'Camera permission was blocked. Allow the camera for this site, or use the preview.', noCamera: 'This device has no camera available.', insecure: 'The camera needs a secure (https) page.', error: 'The camera could not start.',
+    privacy: 'The camera is used only while AR is open. Photos are made on your phone and are never uploaded.',
   },
 
   halloween: {
@@ -1055,16 +1070,7 @@ export const en = {
     ctaTitle: 'Planning a Halloween event or a photo corner?', ctaText: 'Tell us the space and the date. We will design a gate, a sign and a photo flow for your guests.', ctaContact: 'Discuss your event',
     realTitle: 'Place it on the floor with real tracking', realText: 'Press “View in your space” on your phone. The system AR finds the floor, keeps the gate at life size and has its own camera button that saves to your photos.',
     startTitle: 'Take a photo with the gate', startText: 'Our own camera page puts the gate in front of you and has a photo button that saves to your phone. Tap the floor to place it, stand back, and let a friend take the picture.',
-    worldHint: 'Tap the floor to place the gate. Walk around it, then stand back for a photo.', scanning: 'Move the phone slowly to scan the floor…', fallbackNote: 'Real tracking is not available on this phone, so the basic mode is on.',
-    engineCredit: 'Floor tracking in our camera page uses the 8th Wall engine by Niantic Spatial, licensed under the XR Engine License Agreement.', engineLicense: 'Read the licence',
-    startAr: 'Start AR camera', startPreview: 'Preview without a camera', starting: 'Starting…',
-    dialogLabel: 'Halloween gate AR camera', canvasLabel: 'Halloween gate placed on the floor', banner: 'HAPPY HALLOWEEN', photoCaption: 'Happy Halloween · TheNerdStudio',
-    tapHint: 'Tap the floor to place the gate. Stand back and take a photo.', previewHint: 'Preview: drag to look around and tap to move the gate.', noSensor: 'No motion sensor found. Drag on the screen to look around.',
-    close: 'Close', placeHere: 'Place in the middle', shutter: 'Take photo', heightLegend: 'How high do you hold the phone?', heightLabel: (m: string) => `${m} m`,
-    save: 'Save to phone', retake: 'Take another', photoAlt: 'Your photo with the Halloween gate', saveHint: 'On iPhone, choose Save Image in the share sheet. On Android the photo downloads.',
-    shared: 'Shared. Choose Save Image to keep it.', downloaded: 'The photo was downloaded.', photoFailed: 'The photo could not be made. Try again.',
-    denied: 'Camera permission was blocked. Allow the camera for this site, or use the preview.', noCamera: 'This device has no camera available.', insecure: 'The camera needs a secure (https) page.', error: 'The camera could not start.',
-    privacy: 'The camera is used only while AR is open. Photos are made on your phone and are never uploaded.',
+    dialogLabel: 'Halloween gate AR camera', canvasLabel: 'Halloween gate placed on the floor', banner: 'HAPPY HALLOWEEN', photoCaption: 'Happy Halloween · TheNerdStudio', photoAlt: 'Your photo with the Halloween gate',
   },
 
   vote: {

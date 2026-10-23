@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '../components/Button';
 import { DemoShell } from '../components/DemoShell';
+import { FloorAR } from '../components/FloorAR';
 import { ModelExplorer } from '../components/ModelExplorer';
 import { OptionChips } from '../components/OptionChips';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
+import { buildDragon } from '../lib/dragonObject';
 import { useModels, useT } from '../i18n';
 
 const GREETINGS = ['th', 'en', 'zh', 'fortune'] as const;
@@ -78,6 +80,8 @@ export default function NewYearAR() {
       <span className="text-sm text-muted">{d.arHint}</span>
     </div>
     {celebrating && reduced && <p role="status" className="mt-4 rounded-xl bg-amber-50 p-4 font-semibold text-amber-950">🎆 {d.greetings[greeting]}</p>}
-    <p className="mt-6 text-sm text-muted">{d.privacy}</p>
+    <FloorAR build={buildDragon} title={`🐉 ${d.arTitle}`} text={d.arText} panelClass="from-[#3a0a10] to-[#12060a]" minDistance={3.2} dialogLabel={d.arDialog} canvasLabel={d.arCanvas} photoCaption={d.arCaption} photoAlt={d.arPhotoAlt} />
+    <p className="mt-4 text-sm text-muted">{d.iosNote}</p>
+    <p className="mt-2 text-sm text-muted">{d.privacy}</p>
   </DemoShell>;
 }
