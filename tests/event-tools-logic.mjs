@@ -96,6 +96,9 @@ try {
   const far = fl.floorHit({ x: 0, y: -0.1, z: -1 }, 1.4, 1.5, 8);
   ok(far.hit && far.z === -8, 'floor: a shallow look is capped at 8 m');
   ok(!fl.floorHit({ x: 0, y: 0.5, z: -1 }, 1.4).hit && fl.floorHit({ x: 0, y: 0.5, z: -1 }, 1.4).z === -3, 'floor: looking above the horizon guesses 3 m ahead');
+  const moved = fl.floorHitFrom({ x: 2, y: 1.4, z: -1 }, { x: 0, y: -1, z: -1 }, 0);
+  ok(moved.hit && Math.abs(moved.x - 2) < 1e-9 && Math.abs(moved.z - -2.5) < 1e-9, 'floor: a camera that has walked away from the origin keeps its own start point');
+  ok(!fl.floorHitFrom({ x: 0, y: 0.1, z: 0 }, { x: 0, y: -1, z: -1 }, 0.5).hit, 'floor: a camera below the floor plane never hits it');
   const side = fl.floorHit({ x: 1, y: -0.5, z: 0 }, 1.5);
   ok(Math.abs(side.x - 3) < 1e-9 && Math.abs(side.z) < 1e-9, 'floor: sideways look keeps its direction');
   ok(Math.abs(fl.yawFacingOrigin(0, -3)) < 1e-9 && Math.abs(fl.yawFacingOrigin(3, 0) - -Math.PI / 2) < 1e-9, 'floor: the gate turns to face the camera');

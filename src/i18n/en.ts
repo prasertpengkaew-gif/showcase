@@ -1055,6 +1055,8 @@ export const en = {
     ctaTitle: 'Planning a Halloween event or a photo corner?', ctaText: 'Tell us the space and the date. We will design a gate, a sign and a photo flow for your guests.', ctaContact: 'Discuss your event',
     realTitle: 'Place it on the floor with real tracking', realText: 'Press “View in your space” on your phone. The system AR finds the floor, keeps the gate at life size and has its own camera button that saves to your photos.',
     startTitle: 'Take a photo with the gate', startText: 'Our own camera page puts the gate in front of you and has a photo button that saves to your phone. Tap the floor to place it, stand back, and let a friend take the picture.',
+    worldHint: 'Tap the floor to place the gate. Walk around it, then stand back for a photo.', scanning: 'Move the phone slowly to scan the floor…', fallbackNote: 'Real tracking is not available on this phone, so the basic mode is on.',
+    engineCredit: 'Floor tracking in our camera page uses the 8th Wall engine by Niantic Spatial, licensed under the XR Engine License Agreement.', engineLicense: 'Read the licence',
     startAr: 'Start AR camera', startPreview: 'Preview without a camera', starting: 'Starting…',
     dialogLabel: 'Halloween gate AR camera', canvasLabel: 'Halloween gate placed on the floor', banner: 'HAPPY HALLOWEEN', photoCaption: 'Happy Halloween · TheNerdStudio',
     tapHint: 'Tap the floor to place the gate. Stand back and take a photo.', previewHint: 'Preview: drag to look around and tap to move the gate.', noSensor: 'No motion sensor found. Drag on the screen to look around.',
