@@ -1,0 +1,160 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Dragon exporter</title>
+<script type="module">
+  // Builds a stylised Chinese dragon from basic shapes and exports it as a GLB with a swimming animation.
+  // Run through scripts/make-dragon.mjs; the result lands in public/models/dragon.glb.
+  import * as THREE from 'three';
+  import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
+
+  const N = 56;
+  const LENGTH = 1.9;
+  const AMP = 0.16;
+  const K = (2 * Math.PI * 1.5) / LENGTH;
+  const PERIOD = 3;
+  const FRAMES = 30;
+
+  const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ roughness: 0.55, metalness: 0.15, color, ...extra });
+  const M = {
+    red: mat(0xc4161c),
+    gold: mat(0xf2b632, { metalness: 0.4, roughness: 0.4 }),
+    belly: mat(0xf6d27a),
+    cream: mat(0xf3ead2),
+    orange: mat(0xff7a1a),
+    black: mat(0x111111),
+    white: mat(0xffffff),
+    glow: mat(0xffd54a, { emissive: 0xffa800, emissiveIntensity: 1.2 }),
+    flame: mat(0xff6a00, { emissive: 0xff3d00, emissiveIntensity: 1.1 }),
+  };
+
+  const mesh = (geo, material, name) => { const m = new THREE.Mesh(geo, material); if (name) m.name = name; return m; };
+  const sphere = (r, material, sx = 1, sy = 1, sz = 1) => { const m = mesh(new THREE.SphereGeometry(r, 12, 8), material); m.scale.set(sx, sy, sz); return m; };
+  const cone = (r, h, material) => mesh(new THREE.ConeGeometry(r, h, 8), material);
+  const at = (o, x, y, z) => { o.position.set(x, y, z); return o; };
+
+  const radius = (t) => {
+    const body = 0.02 + 0.075 * Math.sin((Math.min(t, 0.85) / 0.85) * (Math.PI / 2));
+    return t > 0.85 ? body * (1 - (t - 0.85) * 1.6) : body;
+  };
+  const waveY = (x, t, phase) => AMP * Math.sin(K * x - phase) * (0.4 + 0.6 * t);
+  const waveZ = (x, phase) => 0.08 * Math.sin(K * x * 0.5 + 1 - phase);
+
+  const root = new THREE.Group();
+  root.name = 'dragon';
+  const segs = [];
+
+  for (let i = 0; i < N; i++) {
+    const t = i / (N - 1);
+    const x = t * LENGTH;
+    const r = radius(t);
+    const g = new THREE.Group();
+    g.name = `seg${i}`;
+    g.position.set(x, waveY(x, t, 0), waveZ(x, 0));
+    g.add(sphere(r, M.red, 1.15, 1, 1));
+    if (t > 0.08) g.add(at(sphere(r, M.belly, 1.1, 0.45, 0.75), 0, -r * 0.55, 0));
+    if (t > 0.1 && i % 2 === 0) {
+      const mane = t > 0.82;
+      const fin = cone(r * (mane ? 0.5 : 0.4), r * (mane ? 2.4 : 1.2), mane ? M.orange : M.gold);
+      g.add(at(fin, 0, r * 0.95, 0));
+      if (mane) fin.rotation.z = 0.5;
+    }
+    // Short legs with claws on the body, two pairs.
+    if (i === Math.round(0.3 * (N - 1)) || i === Math.round(0.7 * (N - 1))) {
+      for (const side of [-1, 1]) {
+        const leg = new THREE.Group();
+        const thigh = mesh(new THREE.CylinderGeometry(r * 0.3, r * 0.22, 0.14, 8), M.red);
+        thigh.position.set(0, -0.07, 0);
+        leg.add(thigh);
+        leg.add(at(sphere(r * 0.34, M.gold), 0, -0.15, 0));
+        for (const c of [-1, 0, 1]) {
+          const claw = cone(0.012, 0.05, M.cream);
+          claw.position.set(0.02, -0.19, c * 0.025);
+          claw.rotation.z = -Math.PI / 2 + 0.6;
+          leg.add(claw);
+        }
+        leg.position.set(0, -r * 0.5, side * r * 0.85);
+        leg.rotation.x = side * 0.5;
+        g.add(leg);
+      }
+    }
+    root.add(g);
+    segs.push({ g, x, t });
+  }
+
+  // Head sits on the last segment, facing +x.
+  const head = new THREE.Group();
+  head.name = 'head';
+  head.add(sphere(0.1, M.red, 1.3, 1, 1));
+  head.add(at(sphere(0.07, M.gold, 1.9, 0.6, 0.8), 0.17, -0.02, 0));
+  head.add(at(sphere(0.06, M.red, 2, 0.35, 0.75), 0.15, -0.075, 0));
+  for (const s of [-1, 1]) {
+    head.add(at(sphere(0.011, M.black), 0.285, 0.0, s * 0.03));
+    head.add(at(sphere(0.03, M.white), 0.07, 0.065, s * 0.085));
+    head.add(at(sphere(0.016, M.black), 0.085, 0.065, s * 0.105));
+    const horn = cone(0.022, 0.22, M.cream);
+    horn.position.set(-0.04, 0.12, s * 0.05);
+    horn.rotation.z = 0.95;
+    head.add(horn);
+    const tine = cone(0.012, 0.1, M.cream);
+    tine.position.set(-0.12, 0.2, s * 0.05);
+    tine.rotation.z = 0.2;
+    head.add(tine);
+    const curve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(0.26, -0.01, s * 0.04),
+      new THREE.Vector3(0.34, 0.02, s * 0.14),
+      new THREE.Vector3(0.28, 0.0, s * 0.3),
+      new THREE.Vector3(0.1, -0.06, s * 0.4),
+    ]);
+    head.add(mesh(new THREE.TubeGeometry(curve, 16, 0.004, 5), M.gold));
+  }
+  const beard = cone(0.02, 0.09, M.gold);
+  beard.rotation.z = Math.PI;
+  head.add(at(beard, 0.2, -0.13, 0));
+  segs[N - 1].g.add(at(head, 0.06, 0.01, 0));
+
+  // The flaming pearl floats just ahead of the dragon.
+  const pearl = new THREE.Group();
+  pearl.name = 'pearl';
+  pearl.add(sphere(0.07, M.glow));
+  for (let k = 0; k < 6; k++) {
+    const flame = cone(0.022, 0.1, M.flame);
+    const a = (k / 6) * Math.PI * 2;
+    flame.position.set(Math.cos(a) * 0.07, 0.07 + Math.sin(a) * 0.03, Math.sin(a) * 0.07);
+    flame.rotation.z = -Math.cos(a) * 0.9;
+    flame.rotation.x = Math.sin(a) * 0.9;
+    pearl.add(flame);
+  }
+  const pearlBase = new THREE.Vector3(LENGTH + 0.5, 0.06, 0);
+  pearl.position.copy(pearlBase);
+  root.add(pearl);
+
+  // Centre the dragon on the origin so it sits in the middle of the viewer, resting a little above the floor.
+  root.position.set(-LENGTH / 2, 0.3, 0);
+  const holder = new THREE.Group();
+  holder.add(root);
+
+  // A travelling wave from head to tail; it loops after PERIOD seconds.
+  const times = Array.from({ length: FRAMES + 1 }, (_, f) => (f / FRAMES) * PERIOD);
+  const tracks = segs.map(({ g, x, t }) => {
+    const values = [];
+    for (const time of times) {
+      const phase = (time / PERIOD) * Math.PI * 2;
+      values.push(x, waveY(x, t, phase), waveZ(x, phase));
+    }
+    return new THREE.VectorKeyframeTrack(`${g.name}.position`, times, values);
+  });
+  tracks.push(new THREE.VectorKeyframeTrack('pearl.position', times, times.flatMap((time) => [pearlBase.x, pearlBase.y + 0.03 * Math.sin((time / PERIOD) * Math.PI * 2), 0])));
+  const clip = new THREE.AnimationClip('swim', PERIOD, tracks);
+
+  new GLTFExporter().parse(
+    holder,
+    (buffer) => {
+      let s = '';
+      const bytes = new Uint8Array(buffer);
+      for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+      window.__glb = btoa(s);
+    },
+    (e) => { window.__glbError = String(e); },
+    { binary: true, animations: [clip] },
+  );
+</script>

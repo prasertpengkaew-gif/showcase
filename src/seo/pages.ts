@@ -213,6 +213,12 @@ export const staticPages: SeoPage[] = [
     en: { title: 'Event Results Dashboard for Agencies', description: 'A sample event report with check-ins per hour, the busiest time and the favourite activity, plus a CSV download. Sample data.' },
   },
   {
+    path: '/new-year-ar',
+    priority: 0.7,
+    th: { title: 'มังกรจีน AR ต้อนรับปีใหม่ วางในห้องผ่านมือถือ', description: 'มังกรจีนสีแดงทองแบบ 3D เปิดผ่านลิงก์หรือ QR code วางในห้องผ่านกล้องมือถือ พร้อมคำอวยพรและพลุ สำหรับงานปีใหม่และตรุษจีน ไม่ต้องติดตั้งแอป' },
+    en: { title: 'Chinese Dragon AR for the New Year', description: 'A red and gold 3D Chinese dragon you can place in your room through the phone camera, with a greeting and fireworks. For New Year and Lunar New Year events. No app to install.' },
+  },
+  {
     path: '/app-design',
     priority: 0.7,
     th: {

@@ -57,6 +57,7 @@ npm run dev        # http://localhost:5173
 | `/tms`            | Transport Management (TMS) | Dispatch board for sample trucking trips on a simulated clock: live progress, delay alerts (30 min behind plan), ETA, on-time rate, status filter, route detail; sample data |
 | `/cold-room`      | Cold Room Locator | 2D floor plan of two sample cold rooms; pick a product and count to get a rule-based picking order (fewest moves first, oldest first on a tie); stock only drops on **Confirm dispatch**; sample stock |
 | `/gesture-vote`  | Gesture Vote Booth | Vote with a thumbs-up or down gesture, or use the buttons; votes stay in memory on screen only |
+| `/new-year-ar` | New Year Dragon AR | A red and gold Chinese dragon built from basic shapes by `npm run make:dragon` (CC0, ours); view in 3D or place in AR, with greetings and fireworks |
 | `/stamp-rally`   | Stamp Rally & Lead Capture | Visitors collect booth stamps (scan is simulated with buttons) and share details with consent; organizer view counts leads and exports CSV; all in memory |
 | `/live-qa` | Live Q&A | Audience asks and votes, host picks a question for the screen, word cloud (Thai and English); in memory |
 | `/lucky-draw` | Lucky Draw | Check-in plus a prize wheel; nobody wins twice; in memory |

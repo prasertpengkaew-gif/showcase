@@ -45,6 +45,7 @@ const ROUTES = [
   '/cold-room',
   '/gesture-vote',
   '/stamp-rally',
+  '/new-year-ar',
   '/live-qa',
   '/lucky-draw',
   '/photo-wall',
@@ -257,7 +258,7 @@ try {
   // --- Demos hub ---------------------------------------------------------------
   await go(B + '/demos');
   await page.locator('main article').first().waitFor();
-  ok((await page.locator('main article').count()) === 27, 'demos hub lists 27 demos');
+  ok((await page.locator('main article').count()) === 28, 'demos hub lists 28 demos');
   ok((await page.getByRole('link', { name: 'Demos' }).first().getAttribute('aria-current')) === 'page', 'Demos nav item is current');
 
   // --- Print AR --------------------------------------------------------------

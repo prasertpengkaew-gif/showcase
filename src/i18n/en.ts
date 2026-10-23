@@ -78,7 +78,7 @@ export const en = {
     openPlayground: 'Open the AR Playground',
     demosEyebrow: 'Live demos',
     demosTitle: 'Try AR, VR and camera tracking yourself',
-    demosText: 'Twenty-seven working demos that run in your browser — the same building blocks we use in client projects.',
+    demosText: 'Twenty-eight working demos that run in your browser — the same building blocks we use in client projects.',
     allDemos: 'All demos',
     servicesEyebrow: 'What we do',
     servicesTitle: 'From a single 3D model to a complete AR, VR and web app programme',
@@ -503,6 +503,7 @@ export const en = {
       cold: { title: 'Cold Room Locator', text: 'See where pallets sit in each cold room, and get the picking order that moves the fewest.', needs: 'Any screen · sample stock' },
       rag: { title: 'Enterprise AI Assistant', text: 'Ask a question and get an answer quoted from company documents, limited by role.', needs: 'Any screen · sample documents' },
       vote: { title: 'Gesture Vote Booth', text: 'Cast a vote with a thumbs-up or thumbs-down, or use the buttons.', needs: 'Laptop or tablet with a camera, or any screen with the buttons' },
+      newyear: { title: 'New Year Dragon AR', text: 'A red and gold Chinese dragon you can place in your room, with a greeting and fireworks.', needs: 'A recent iPhone or Android phone for AR; any screen for 3D' },
       qa: { title: 'Live Q&A and Word Cloud', text: 'The audience asks and votes from their phones; the host puts a question on the screen.', needs: 'Any phone, tablet or laptop' },
       draw: { title: 'Lucky Draw Wheel and Check-in', text: 'Guests check in and go on a prize wheel; nobody wins twice.', needs: 'Any phone, tablet or laptop' },
       wall: { title: 'Guestbook and Live Photo Wall', text: 'Guests post messages and photos; the host can hide any post.', needs: 'Any phone, tablet or laptop' },
@@ -1022,6 +1023,22 @@ export const en = {
     dayLegend: 'Choose a day', day: (n: number) => `Day ${n}`, totalLabel: 'Total check-ins', peakLabel: 'Busiest hour', peakCount: (n: number) => `${n} check-ins`, topLabel: 'Most popular activity', topShare: (n: number) => `${n}% of activity visits`,
     hourlyTitle: 'Check-ins by hour', activityTitle: 'Visits by activity', activities: { booth: 'Booth visits', photo: 'Photo corner', game: 'Games', talk: 'Talks', food: 'Food court' }, download: 'Download CSV',
     privacy: 'Sample data only. Nothing is collected from you.',
+  },
+
+  newYear: {
+    metaTitle: 'New Year Dragon AR', eyebrow: 'AR · New Year · events', title: 'A Chinese dragon in your room, for the New Year',
+    description: 'A red and gold Chinese dragon swims in an S curve beside a flaming pearl. Look at it in 3D, or place it in your room through the phone camera, with a greeting and fireworks.',
+    sampleTitle: 'Concept demo', sampleText: 'The dragon is a stylised model we built ourselves. AR opens from a link or a QR code, with no app to install.',
+    howEyebrow: 'A simple New Year idea', howTitle: 'How it works', howText: 'Guests scan a QR code at the venue or on a greeting card. The dragon appears on the floor at life size, and they can walk around it, take a photo, and send the greeting.',
+    goodTitle: 'Good to know', goodToKnow: [
+      { title: 'Works on most phones', text: 'AR runs on recent iPhone and Android phones. Other devices still see the dragon in 3D on screen.' },
+      { title: 'Made to order', text: 'We can match the dragon to your brand colours, add your logo on a banner, and change the greeting.' },
+      { title: 'Concept only', text: 'This demo has one dragon and a few greetings. A real campaign adds your brand, photo sharing and a landing page.' },
+    ],
+    ctaTitle: 'Planning a New Year or Lunar New Year event?', ctaText: 'Tell us the venue, the date and the mood. We will design an AR greeting for your guests.', ctaContact: 'Discuss your event',
+    greetingLegend: 'Choose a greeting', greetings: { th: 'สวัสดีปีใหม่', en: 'Happy New Year', zh: '新年快乐', fortune: '恭喜发财' },
+    celebrate: 'Fireworks!', celebrateStill: 'Show the greeting', arHint: 'On a phone, press “View in your space” to place the dragon in the room.',
+    privacy: 'The camera is used only while AR is open, and nothing is uploaded or saved.',
   },
 
   vote: {

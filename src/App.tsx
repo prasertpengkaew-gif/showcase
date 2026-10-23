@@ -30,6 +30,7 @@ const AppDesign = lazy(() => import('./pages/AppDesign'));
 const ColdRoom = lazy(() => import('./pages/ColdRoom'));
 const GestureVote = lazy(() => import('./pages/GestureVote'));
 const StampRally = lazy(() => import('./pages/StampRally'));
+const NewYearAR = lazy(() => import('./pages/NewYearAR'));
 const LiveQA = lazy(() => import('./pages/LiveQA'));
 const LuckyDraw = lazy(() => import('./pages/LuckyDraw'));
 const PhotoWall = lazy(() => import('./pages/PhotoWall'));
@@ -88,6 +89,7 @@ export default function App() {
           <Route path="tms" element={<Suspense fallback={<PageLoading />}><TMS /></Suspense>} />
           <Route path="cold-room" element={<Suspense fallback={<PageLoading />}><ColdRoom /></Suspense>} />
           <Route path="gesture-vote" element={<Suspense fallback={<PageLoading />}><GestureVote /></Suspense>} />
+          <Route path="new-year-ar" element={<Suspense fallback={<PageLoading />}><NewYearAR /></Suspense>} />
           <Route path="stamp-rally" element={<Suspense fallback={<PageLoading />}><StampRally /></Suspense>} />
           <Route path="live-qa" element={<Suspense fallback={<PageLoading />}><LiveQA /></Suspense>} />
           <Route path="lucky-draw" element={<Suspense fallback={<PageLoading />}><LuckyDraw /></Suspense>} />
