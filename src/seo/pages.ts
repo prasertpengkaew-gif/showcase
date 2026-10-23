@@ -171,6 +171,48 @@ export const staticPages: SeoPage[] = [
     en: { title: 'Stamp Rally and Lead Capture for Trade Shows', description: 'A sample stamp rally for multi-booth events. Visitors collect stamps and share details only with booths they choose; organizers see leads and download a CSV. Nothing is saved.' },
   },
   {
+    path: '/live-qa',
+    priority: 0.6,
+    th: { title: 'ถามตอบสดและเวิร์ดคลาวด์สำหรับงานสัมมนา', description: 'เดโมระบบถามตอบสดสำหรับงานสัมมนาและประชุมองค์กร ผู้ฟังถามและโหวตจากมือถือ ผู้ดำเนินรายการเลือกคำถามขึ้นจอ พร้อมเวิร์ดคลาวด์ ข้อมูลไม่ถูกบันทึก' },
+    en: { title: 'Live Q&A and Word Cloud for Seminars', description: 'A sample live Q&A for seminars and company meetings. The audience asks and votes on their phones, the host picks questions for the screen, and a word cloud shows the topics. Nothing is saved.' },
+  },
+  {
+    path: '/lucky-draw',
+    priority: 0.6,
+    th: { title: 'วงล้อลุ้นรางวัลและเช็กอินสำหรับงานปาร์ตี้', description: 'เดโมวงล้อลุ้นรางวัลและระบบเช็กอินสำหรับงานเลี้ยงและงานเปิดตัว แขกเช็กอินแล้วลุ้นรางวัลทันที ไม่มีใครได้ซ้ำ ข้อมูลไม่ถูกบันทึก' },
+    en: { title: 'Lucky Draw Wheel and Check-in for Parties', description: 'A sample prize wheel and check-in for parties and launches. Guests check in and go on the wheel, and nobody wins twice. Nothing is saved.' },
+  },
+  {
+    path: '/photo-wall',
+    priority: 0.6,
+    th: { title: 'สมุดอวยพรและผนังรูปสดสำหรับงานแต่งงานและคอนเสิร์ต', description: 'เดโมผนังข้อความและรูปสด แขกโพสต์จากมือถือขึ้นจอใหญ่ ผู้ดำเนินงานซ่อนโพสต์ได้ รูปไม่ถูกอัปโหลด' },
+    en: { title: 'Guestbook and Live Photo Wall for Weddings and Concerts', description: 'A sample live wall of messages and photos. Guests post from their phones to the big screen and the host can hide posts. Photos are not uploaded.' },
+  },
+  {
+    path: '/team-game',
+    priority: 0.6,
+    th: { title: 'เกมแข่งหลายคนบนมือถือสำหรับกิจกรรมทีมบิลดิ้ง', description: 'เดโมเกมแตะเร็วพร้อมกระดานคะแนนสดบนจอเวที สำหรับแอ็กติเวชันและทีมบิลดิ้ง ผู้เล่นอื่นเป็นตัวจำลอง' },
+    en: { title: 'Multiplayer Phone Game for Team Building', description: 'A sample tap-race with a live stage scoreboard for activations and team building. The other players are simulated.' },
+  },
+  {
+    path: '/event-assistant',
+    priority: 0.6,
+    th: { title: 'ผู้ช่วยงานอีเวนต์หลายภาษา ไทย อังกฤษ จีน', description: 'เดโมผู้ช่วยตอบคำถามงานประชุมนานาชาติ ถามเรื่องตารางงาน ที่จอดรถ อาหาร เป็นภาษาไทย อังกฤษ หรือจีน ไม่เรียกบริการ AI' },
+    en: { title: 'Multilingual Event Assistant: English, Thai, Chinese', description: 'A sample assistant for international conferences. Ask about the schedule, parking or food in English, Thai or Chinese. No AI service is called.' },
+  },
+  {
+    path: '/motion-wall',
+    priority: 0.6,
+    th: { title: 'ผนังโต้ตอบการเคลื่อนไหวด้วยกล้องสำหรับงานเปิดตัว', description: 'เดโมผนังที่ตอบสนองต่อการเคลื่อนไหวด้วยกล้อง สำหรับงานเปิดตัวและบูธใหญ่ วิดีโอประมวลผลบนเครื่อง ไม่บันทึก' },
+    en: { title: 'Camera Motion Wall for Launches and Big Booths', description: 'A sample wall that reacts to movement through the camera, for launches and big booths. Video is processed on the device and not saved.' },
+  },
+  {
+    path: '/event-dashboard',
+    priority: 0.6,
+    th: { title: 'แดชบอร์ดสรุปผลงานอีเวนต์สำหรับเอเจนซี่', description: 'เดโมรายงานผลงานอีเวนต์ เช็กอินรายชั่วโมง ช่วงที่คนเยอะ และกิจกรรมยอดนิยม พร้อมดาวน์โหลด CSV ใช้ข้อมูลตัวอย่าง' },
+    en: { title: 'Event Results Dashboard for Agencies', description: 'A sample event report with check-ins per hour, the busiest time and the favourite activity, plus a CSV download. Sample data.' },
+  },
+  {
     path: '/app-design',
     priority: 0.7,
     th: {

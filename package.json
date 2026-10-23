@@ -27,6 +27,7 @@
     "test:coldroom": "node tests/coldroom-logic.mjs",
     "test:vote": "node tests/vote-logic.mjs",
     "test:rally": "node tests/rally-logic.mjs",
+    "test:tools": "node tests/event-tools-logic.mjs",
     "test:seo": "node tests/seo.mjs"
   },
   "engines": {

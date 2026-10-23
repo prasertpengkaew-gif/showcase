@@ -104,6 +104,7 @@ export const services: Service[] = [
       'Accounts, roles and a database with access rules',
       'Admin tools for staff, with audit history and exports',
       'Kiosk and event modes that keep working on poor Wi-Fi',
+      'Event tools: live Q&A, stamp rally and lead capture, lucky draw, guestbook wall, team games and result reports',
       'One responsive app for desktop, tablet and phone',
     ],
     bestFor: 'Logistics, warehouses, factories, events and any team still running on spreadsheets.',

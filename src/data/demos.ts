@@ -1,7 +1,7 @@
 import type { ComponentType, SVGProps } from 'react';
 import { CameraIcon, CompassIcon, FlagIcon, FlaskIcon, GamepadIcon, LayersIcon, MapIcon, MapPinIcon, SearchIcon, TagIcon, CubeIcon, FaceIcon, FactoryIcon, HandIcon, HeadsetIcon, ScanIcon, ShirtIcon } from '../components/Icons';
 
-export type DemoId = 'ar' | 'print' | 'face' | 'tryon' | 'hands' | 'vr' | 'tour' | 'twin' | 'event' | 'hunt' | 'game' | 'chem' | 'cube' | 'tags' | 'map' | 'tms' | 'cold' | 'rag' | 'vote' | 'rally';
+export type DemoId = 'ar' | 'print' | 'face' | 'tryon' | 'hands' | 'vr' | 'tour' | 'twin' | 'event' | 'hunt' | 'game' | 'chem' | 'cube' | 'tags' | 'map' | 'tms' | 'cold' | 'rag' | 'vote' | 'rally' | 'qa' | 'draw' | 'wall' | 'team' | 'assist' | 'motion' | 'stats';
 
 export type DemoGroup = 'phone' | 'marker' | 'camera' | 'event' | 'space' | 'apps';
 export const demoGroups: DemoGroup[] = ['phone', 'marker', 'camera', 'event', 'space', 'apps'];
@@ -29,6 +29,13 @@ export const demos: Demo[] = [
   { id: 'hands', group: 'camera', to: '/hand-gestures', icon: HandIcon, image: '/images/hand-gestures.webp' },
   { id: 'vote', group: 'event', to: '/gesture-vote', icon: HandIcon, image: '/images/gesture-vote.webp' },
   { id: 'rally', group: 'event', to: '/stamp-rally', icon: FlagIcon },
+  { id: 'qa', group: 'event', to: '/live-qa', icon: SearchIcon },
+  { id: 'draw', group: 'event', to: '/lucky-draw', icon: TagIcon },
+  { id: 'wall', group: 'event', to: '/photo-wall', icon: CameraIcon },
+  { id: 'team', group: 'event', to: '/team-game', icon: GamepadIcon },
+  { id: 'assist', group: 'event', to: '/event-assistant', icon: HeadsetIcon },
+  { id: 'motion', group: 'event', to: '/motion-wall', icon: HandIcon },
+  { id: 'stats', group: 'event', to: '/event-dashboard', icon: LayersIcon },
   { id: 'event', group: 'event', to: '/event-booth', icon: CameraIcon, image: '/images/event-booth.webp' },
   { id: 'hunt', group: 'event', featured: true, to: '/ar-hunt', icon: FlagIcon, image: '/images/ar-hunt.webp' },
   { id: 'game', group: 'event', to: '/motion-game', icon: GamepadIcon, image: '/images/motion-game.webp' },

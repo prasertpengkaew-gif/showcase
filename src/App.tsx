@@ -30,6 +30,13 @@ const AppDesign = lazy(() => import('./pages/AppDesign'));
 const ColdRoom = lazy(() => import('./pages/ColdRoom'));
 const GestureVote = lazy(() => import('./pages/GestureVote'));
 const StampRally = lazy(() => import('./pages/StampRally'));
+const LiveQA = lazy(() => import('./pages/LiveQA'));
+const LuckyDraw = lazy(() => import('./pages/LuckyDraw'));
+const PhotoWall = lazy(() => import('./pages/PhotoWall'));
+const TeamGame = lazy(() => import('./pages/TeamGame'));
+const EventAssistant = lazy(() => import('./pages/EventAssistant'));
+const MotionWall = lazy(() => import('./pages/MotionWall'));
+const EventDashboard = lazy(() => import('./pages/EventDashboard'));
 const EnterpriseAI = lazy(() => import('./pages/EnterpriseAI'));
 const About = lazy(() => import('./pages/About'));
 const Contact = lazy(() => import('./pages/Contact'));
@@ -82,6 +89,13 @@ export default function App() {
           <Route path="cold-room" element={<Suspense fallback={<PageLoading />}><ColdRoom /></Suspense>} />
           <Route path="gesture-vote" element={<Suspense fallback={<PageLoading />}><GestureVote /></Suspense>} />
           <Route path="stamp-rally" element={<Suspense fallback={<PageLoading />}><StampRally /></Suspense>} />
+          <Route path="live-qa" element={<Suspense fallback={<PageLoading />}><LiveQA /></Suspense>} />
+          <Route path="lucky-draw" element={<Suspense fallback={<PageLoading />}><LuckyDraw /></Suspense>} />
+          <Route path="photo-wall" element={<Suspense fallback={<PageLoading />}><PhotoWall /></Suspense>} />
+          <Route path="team-game" element={<Suspense fallback={<PageLoading />}><TeamGame /></Suspense>} />
+          <Route path="event-assistant" element={<Suspense fallback={<PageLoading />}><EventAssistant /></Suspense>} />
+          <Route path="motion-wall" element={<Suspense fallback={<PageLoading />}><MotionWall /></Suspense>} />
+          <Route path="event-dashboard" element={<Suspense fallback={<PageLoading />}><EventDashboard /></Suspense>} />
           <Route path="app-design" element={<Suspense fallback={<PageLoading />}><AppDesign /></Suspense>} />
           <Route path="event-ar" element={<Suspense fallback={<PageLoading />}><EventAR /></Suspense>} />
           <Route path="web-apps" element={<Suspense fallback={<PageLoading />}><WebApps /></Suspense>} />

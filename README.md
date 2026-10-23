@@ -31,6 +31,7 @@ npm run dev        # http://localhost:5173
 | `npm run test:coldroom`   | Layout, picking-order and stock-control checks for the cold-room demo |
 | `npm run test:vote`       | Vote timing, cooldown and percentage-share checks for the gesture vote demo |
 | `npm run test:rally`      | Stamp, consent, duplicate and CSV-safety checks for the stamp rally demo |
+| `npm run test:tools`      | Logic checks for live Q&A, lucky draw, photo wall, team game, event assistant, motion wall and event dashboard |
 | `npm run render:media`    | Re-render posters, project images and videos from the GLBs       |
 | `npm run render:panoramas`| Re-render the 360° tour panoramas from the GLBs                  |
 | `npm run make:ar-card`    | Rebuild the printable AR card and its compiled MindAR target     |
@@ -57,6 +58,13 @@ npm run dev        # http://localhost:5173
 | `/cold-room`      | Cold Room Locator | 2D floor plan of two sample cold rooms; pick a product and count to get a rule-based picking order (fewest moves first, oldest first on a tie); stock only drops on **Confirm dispatch**; sample stock |
 | `/gesture-vote`  | Gesture Vote Booth | Vote with a thumbs-up or down gesture, or use the buttons; votes stay in memory on screen only |
 | `/stamp-rally`   | Stamp Rally & Lead Capture | Visitors collect booth stamps (scan is simulated with buttons) and share details with consent; organizer view counts leads and exports CSV; all in memory |
+| `/live-qa` | Live Q&A | Audience asks and votes, host picks a question for the screen, word cloud (Thai and English); in memory |
+| `/lucky-draw` | Lucky Draw | Check-in plus a prize wheel; nobody wins twice; in memory |
+| `/photo-wall` | Photo Wall | Guests post messages and photos, host hides posts; photos stay in the tab |
+| `/team-game` | Team Game | 15-second tap race with a live leaderboard; other players are simulated |
+| `/event-assistant` | Event Assistant | Event FAQ answered in English, Thai or Chinese from a keyword list; no AI service |
+| `/motion-wall` | Motion Wall | Camera frame differencing drives a particle wall; mouse or touch fallback |
+| `/event-dashboard` | Event Dashboard | Sample check-in and activity numbers with a CSV download |
 | `/enterprise-ai`  | Enterprise AI Assistant | Retrieval (BM25, Thai and English) over five made-up company documents with role-based access (employee / HR / finance); the answer quotes the best passage, no LLM is called |
 | `/event-ar`       | AR for events   | Ideas for six kinds of event (trade shows, launches, weddings, festivals, conferences, open houses), each marked as having a related live demo or being an idea only; demos to try, how an event runs, what to plan for |
 | `/web-apps`       | Web apps        | Showcase of the web-app work: the demos above, what a full system covers, and the stack |
