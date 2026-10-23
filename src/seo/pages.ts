@@ -219,6 +219,12 @@ export const staticPages: SeoPage[] = [
     en: { title: 'Chinese Dragon AR for the New Year', description: 'A red and gold 3D Chinese dragon you can place in your room through the phone camera, with a greeting and fireworks. For New Year and Lunar New Year events. No app to install.' },
   },
   {
+    path: '/halloween-gate',
+    priority: 0.7,
+    th: { title: 'ซุ้มฮาโลวีน AR ขนาดเท่าจริง จุดถ่ายรูปบนมือถือ', description: 'ซุ้มไม้สุดสยองพร้อมฟักทอง ใยแมงมุม และค้างคาว ขนาดเท่าจริง วางบนพื้นผ่านกล้องมือถือ ถ่ายรูปและบันทึกลงมือถือได้ เปิดจากลิงก์หรือ QR code ไม่ต้องติดตั้งแอป' },
+    en: { title: 'Life-Size Halloween Gate AR Photo Spot', description: 'A spooky wooden archway with pumpkins, cobwebs and bats at real size. Place it on the floor through your phone camera, take a photo and save it to your phone. No app to install.' },
+  },
+  {
     path: '/app-design',
     priority: 0.7,
     th: {

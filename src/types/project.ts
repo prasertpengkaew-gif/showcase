@@ -9,7 +9,7 @@ export const PROJECT_CATEGORIES = [
 
 export type ProjectCategory = (typeof PROJECT_CATEGORIES)[number];
 
-export type ModelId = 'chair' | 'robot' | 'car' | 'fox' | 'sofa' | 'sneaker' | 'dragon';
+export type ModelId = 'chair' | 'robot' | 'car' | 'fox' | 'sofa' | 'sneaker' | 'dragon' | 'gate';
 
 /** A 3D asset that can be shown in the viewer and placed in AR. */
 export interface ModelAsset {

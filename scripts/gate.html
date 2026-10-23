@@ -1,0 +1,27 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Halloween gate exporter</title>
+<script type="module">
+  // Exports the life-size Halloween gate as a GLB for AR viewers (iOS Quick Look, Android Scene Viewer, WebXR).
+  // Lights and glow sprites are dropped: glTF viewers light the model themselves and cannot draw sprites.
+  // Run through scripts/make-gate.mjs; the result lands in public/models/halloween-gate.glb.
+  import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
+  import { buildGate } from '/src/lib/halloweenGate.ts';
+
+  const { group } = buildGate('HAPPY HALLOWEEN');
+  const drop = [];
+  group.traverse((o) => { if (o.isLight || o.isSprite) drop.push(o); });
+  drop.forEach((o) => o.parent.remove(o));
+
+  new GLTFExporter().parse(
+    group,
+    (buffer) => {
+      let s = '';
+      const bytes = new Uint8Array(buffer);
+      for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+      window.__glb = btoa(s);
+    },
+    (e) => { window.__glbError = String(e); },
+    { binary: true },
+  );
+</script>

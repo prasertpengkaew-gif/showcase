@@ -29,6 +29,7 @@
     "test:rally": "node tests/rally-logic.mjs",
     "test:tools": "node tests/event-tools-logic.mjs",
     "make:dragon": "node scripts/make-dragon.mjs",
+    "make:gate": "node scripts/make-gate.mjs",
     "test:seo": "node tests/seo.mjs"
   },
   "engines": {

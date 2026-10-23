@@ -39,6 +39,22 @@ export const models: Record<ModelId, ModelAsset> = {
       notes: 'Built from basic shapes by scripts/make-dragon.mjs.',
     },
   },
+  gate: {
+    id: 'gate',
+    name: 'Halloween Gate',
+    src: '/models/halloween-gate.glb',
+    poster: '/images/posters/halloween-gate.webp',
+    alt: 'Spooky wooden archway with pumpkins, cobwebs, bats and a Happy Halloween sign',
+    dimensions: '220 × 60 × 300 cm',
+    cameraOrbit: '20deg 80deg auto',
+    credit: {
+      title: 'Halloween Gate',
+      author: 'TheNerdStudio',
+      license: 'CC0 1.0',
+      sourceUrl: 'https://github.com/prasertpengkaew-gif/showcase/blob/main/src/lib/halloweenGate.ts',
+      notes: 'Built from basic shapes by scripts/make-gate.mjs.',
+    },
+  },
   robot: {
     id: 'robot',
     name: 'Service Robot',

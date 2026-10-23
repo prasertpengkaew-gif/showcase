@@ -88,6 +88,19 @@ try {
   ok(st.peakHour(1).hour === 14 && st.peakHour(2).hour === 14, 'stats: busiest hour');
   ok(st.topActivity(1).activity === 'booth' && st.topActivity(2).activity === 'game', 'stats: top activity changes by day');
   ok(st.reportCsv(1, (x) => x).split('\n').length === 16, 'stats: CSV has every hour and activity');
+
+  // AR floor placement
+  const fl = await load('arFloor');
+  const down = fl.floorHit({ x: 0, y: -1, z: -1 }, 1.4);
+  ok(down.hit && Math.abs(down.z - -1.5) < 1e-9 && down.x === 0, 'floor: a 45 degree look-down puts the spot as far ahead as the phone is high, kept at 1.5 m minimum');
+  const far = fl.floorHit({ x: 0, y: -0.1, z: -1 }, 1.4, 1.5, 8);
+  ok(far.hit && far.z === -8, 'floor: a shallow look is capped at 8 m');
+  ok(!fl.floorHit({ x: 0, y: 0.5, z: -1 }, 1.4).hit && fl.floorHit({ x: 0, y: 0.5, z: -1 }, 1.4).z === -3, 'floor: looking above the horizon guesses 3 m ahead');
+  const side = fl.floorHit({ x: 1, y: -0.5, z: 0 }, 1.5);
+  ok(Math.abs(side.x - 3) < 1e-9 && Math.abs(side.z) < 1e-9, 'floor: sideways look keeps its direction');
+  ok(Math.abs(fl.yawFacingOrigin(0, -3)) < 1e-9 && Math.abs(fl.yawFacingOrigin(3, 0) - -Math.PI / 2) < 1e-9, 'floor: the gate turns to face the camera');
+  const cr = fl.coverRect(1920, 1080, 390, 800);
+  ok(Math.abs(cr.sw / cr.sh - 390 / 800) < 1e-9 && cr.sx > 0 && cr.sy === 0, 'cover: a wide video is cropped at the sides to fill a tall screen');
 } finally {
   await server.close();
 }
