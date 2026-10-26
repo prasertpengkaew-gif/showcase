@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '../i18n/Link';
 import type { FaceLandmarker, FaceLandmarkerResult, NormalizedLandmark } from '@mediapipe/tasks-vision';
 import { DemoShell } from '../components/DemoShell';
 import { Button, buttonClasses } from '../components/Button';

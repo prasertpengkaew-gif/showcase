@@ -5,11 +5,13 @@
  * sitemap and the structured data) and at run time (useDocumentTitle keeps the tab title and
  * the meta description in step when the visitor navigates or switches language).
  *
- * Thai is the primary language: crawlers get the Thai version (see src/i18n/index.tsx).
- * Keep titles under about 60 characters and descriptions under about 160.
+ * Thai is the primary language and keeps the unprefixed URLs. English is the same
+ * path under `/en` (see src/i18n/paths.ts). Keep titles under about 60 characters
+ * and descriptions under about 160.
  */
 import { projects } from '../data/projects';
 import { projectsTh } from '../i18n/content.th';
+import { stripLang } from '../i18n/paths';
 
 export type SeoLang = 'th' | 'en';
 export interface SeoText {
@@ -466,6 +468,6 @@ export const allPages: SeoPage[] = [...staticPages, ...projectPages];
 const byPath = new Map(allPages.map((p) => [p.path, p]));
 
 export function seoFor(path: string, lang: SeoLang): SeoText | undefined {
-  const normalized = path.length > 1 ? path.replace(/\/+$/, '') : path;
+  const normalized = stripLang(path.split(/[?#]/)[0] || '/');
   return byPath.get(normalized)?.[lang];
 }

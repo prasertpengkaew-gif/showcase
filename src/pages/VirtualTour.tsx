@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '../i18n/Link';
 import { createXRStore } from '@react-three/xr';
 import { PageHeader } from '../components/PageHeader';
 import { ErrorBoundary } from '../components/ErrorBoundary';
