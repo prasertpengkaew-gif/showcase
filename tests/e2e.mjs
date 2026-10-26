@@ -235,15 +235,16 @@ try {
     'the booth server adds only the mock Supabase origin',
   );
   // English pages use the same shell as Thai. Name a few so a violation points at /en.
-  for (const route of ['/en', '/en/projects/lounge-chair-configurator', '/en/season/halloween', '/en/new-year-ar']) {
+  // Skip pages that mount <model-viewer> here: leaving while that shared import is in
+  // flight rejects it for the rest of the run. The route sweep below still loads them.
+  for (const route of ['/en', '/en/projects/lounge-chair-configurator', '/en/about', '/en/season/halloween']) {
     const res = await fetch(B + route);
     ok(res.headers.get('content-security-policy') === cspHeader(), `${route} sends the enforced CSP`);
     ok(res.headers.get('x-frame-options') === 'SAMEORIGIN', `${route} sends X-Frame-Options SAMEORIGIN`);
+  }
+  for (const route of ['/en/about', '/en/season/halloween', '/en/contact']) {
     await go(B + route);
     await page.locator('footer').waitFor();
-    // Home starts the model-viewer import. Leaving before it finishes rejects the
-    // shared promise, and later pages then have no <model-viewer> at all.
-    if (route === '/en') await page.locator('model-viewer').first().waitFor({ timeout: 45000 });
     const before = cspViolations.length;
     await drainPage(page);
     ok(cspViolations.length === before, `no enforced CSP violations on ${route}`);
