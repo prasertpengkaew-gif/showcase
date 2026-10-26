@@ -49,7 +49,7 @@ npm run dev        # http://localhost:5173
 | `/projects/:slug`  | Project details | 3D viewer with finish/animation pickers, overview, technologies, image gallery with lightbox, demo video **or** a hands-on "Test it yourself" section with a QR code, related projects |
 | `/ar-playground`   | AR Playground   | Pick a chair, robot or car; rotate, zoom, change finish or animation; "View in your space" in AR |
 | `/vr-showroom`     | VR Showroom     | Real-scale virtual gallery: orbit in 3D on any screen, **Enter VR** on Meta Quest and other WebXR headsets (thumbstick movement) |
-| `/demos`           | Demos hub       | One page linking all nineteen live demos, grouped (AR on phones, AR with markers, face & body tracking, events, VR & digital twins, web apps for teams) (with a QR code to open it on a phone) |
+| `/demos`           | Demos hub       | One page linking every live demo, grouped (AR on phones, AR with markers, face & body tracking, events, VR & digital twins, web apps for teams), with a QR code to open it on a phone |
 | `/print-ar`        | Print AR        | Image tracking: point a phone at the printable sample card and a 3D chair stands up on it (MindAR) |
 | `/try-on`          | Virtual Try-On  | Body tracking (MediaPipe Pose): cap, necklace, watch and a simple 2D T-shirt follow the person; save photo; photo fallback |
 | `/hand-gestures`   | Hand gestures   | Camera hand tracking: 7 gestures (✋👍✌️☝️👎✊🤟) trigger robot animations; photo fallback (MediaPipe Gesture Recognizer) |
@@ -473,11 +473,16 @@ It exits non-zero on any failure, so it can run in CI. Each server reads its env
 
 ## Deployment
 
-`npm run build` outputs a static site to `dist/`. Because it's a single-page app, the host must serve `index.html` for unknown paths:
+`npm run build` outputs a static site to `dist/`. `scripts/prerender.mjs` writes each public page (including `index.html`, which is the homepage), `sitemap.xml` and `robots.txt`. It also writes two noindex shells that still load the app:
 
-- **Vercel:** `vercel.json` is included.
-- **Netlify:** `public/_redirects` is included.
-- **Others:** configure an SPA fallback to `/index.html`.
+- `404.html` — missing URLs. Vercel and Netlify serve this file with **HTTP 404**.
+- `spa.html` — `/booth/:slug` and `/p/:code` only. Those are real pages, so they stay **HTTP 200**, but they must not be indexed.
+
+Do not add a catch-all rewrite to `/index.html`. That file is the prerendered homepage (`canonical` `/`, `index, follow`), so unknown URLs would be soft 404s of the homepage.
+
+- **Vercel:** `vercel.json` rewrites only the booth and guest-photo paths to `/spa.html`. Anything else with no file falls through to `404.html`.
+- **Netlify:** `public/_redirects` has the same rewrites. Netlify serves `404.html` for every other miss.
+- **Others:** serve a file when one exists, rewrite `/booth/:slug` and `/p/:code` to `/spa.html` with status 200, and serve `/404.html` with status 404 otherwise.
 
 ## 3D asset credits
 

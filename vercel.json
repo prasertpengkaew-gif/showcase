@@ -1,5 +1,10 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+  "rewrites": [
+    { "source": "/booth/:slug", "destination": "/spa.html" },
+    { "source": "/booth/:slug/", "destination": "/spa.html" },
+    { "source": "/p/:code", "destination": "/spa.html" },
+    { "source": "/p/:code/", "destination": "/spa.html" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -12,6 +17,22 @@
           "value": "default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' blob:; connect-src 'self' data: blob: https: wss:; worker-src 'self' blob: data:; child-src 'self' blob: data:; frame-src 'self'; form-action 'self' https:"
         }
       ]
+    },
+    {
+      "source": "/booth/:slug",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/booth/:slug/",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/p/:code",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/p/:code/",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
     },
     {
       "source": "/assets/(.*)",

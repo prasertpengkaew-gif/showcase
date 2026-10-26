@@ -4,9 +4,15 @@
  * plain-text version of the page, then writes sitemap.xml and robots.txt.
  *
  * Why: the site is a single-page app, so without this every URL returns the same empty shell and
- * search engines have to run the JavaScript before they can read anything. Pages are served
- * as-is by Vercel/Netlify (files win over the catch-all rewrite). React replaces the text as
- * soon as the app starts.
+ * search engines have to run the JavaScript before they can read anything. Public pages are real
+ * files, so the host serves them as-is. React replaces the text as soon as the app starts.
+ *
+ * index.html is the homepage after this step. It must not be the fallback for other URLs: an
+ * unknown path would then be HTTP 200 with the homepage canonical and `index, follow` (a soft
+ * 404). Instead we also write:
+ *   - dist/404.html — noindex shell for missing paths (Vercel/Netlify serve it with status 404)
+ *   - dist/spa.html — the same kind of shell for /booth/:slug and /p/:code (rewritten, status 200)
+ * Both still load the built app, so the browser shows NotFound, the booth, or the guest photo.
  */
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
@@ -19,17 +25,61 @@ const env = loadEnv('production', root, 'VITE_');
 const SITE_URL = (env.VITE_SITE_URL || process.env.VITE_SITE_URL || 'https://www.thenerdstudio.space').replace(/\/+$/, '');
 
 const server = await createServer({ root, appType: 'custom', server: { middlewareMode: true }, logLevel: 'silent' });
-let pages, th, svc;
+let pages, th, svc, ui;
 try {
   pages = await server.ssrLoadModule('/src/seo/pages.ts');
   th = await server.ssrLoadModule('/src/i18n/content.th.ts');
   svc = await server.ssrLoadModule('/src/data/services.ts');
+  ui = await server.ssrLoadModule('/src/i18n/th.ts');
 } finally {
   await server.close();
 }
 
 const template = await readFile(join(dist, 'index.html'), 'utf8');
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+/** SPA shell with no homepage canonical and no `index, follow`. `rootInner` null keeps #root empty. */
+function noindexShell({ title, description, rootInner }) {
+  let html = template
+    .replace('<html lang="en">', '<html lang="th">')
+    .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(title)}</title>`)
+    .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${esc(description)}" />`)
+    .replace(/\n\s*<\/head>/, `\n    <meta name="robots" content="noindex, nofollow" />\n  </head>`)
+    .replace(
+      /<noscript>[\s\S]*?<\/noscript>/,
+      '<noscript>เว็บนี้ต้องเปิด JavaScript เพื่อแสดงเนื้อหา 3D และ AR แบบโต้ตอบ</noscript>',
+    );
+  if (rootInner != null) html = html.replace(/<div id="root"><\/div>/, `<div id="root">${rootInner}</div>`);
+  if (!html.includes('<meta name="robots" content="noindex, nofollow" />')) {
+    throw new Error('prerender: noindex shell is missing the robots tag');
+  }
+  if (html.includes('rel="canonical"') || html.includes('index, follow')) {
+    throw new Error('prerender: noindex shell must not advertise the homepage');
+  }
+  if (!html.includes('<script type="module"')) throw new Error('prerender: noindex shell is missing the app script');
+  return html;
+}
+
+const notFound = ui.th.notFound;
+await writeFile(
+  join(dist, '404.html'),
+  noindexShell({
+    title: `${notFound.title} — ${pages.SITE_NAME}`,
+    description: notFound.text,
+    rootInner:
+      `<div style="min-height:100vh;background:#0B1220;color:#e6ecf8;padding:24px;font-family:'Noto Sans Thai',Inter,system-ui,sans-serif;line-height:1.7">` +
+      `<main><h1>${esc(notFound.title)}</h1><p>${esc(notFound.text)}</p></main></div>`,
+  }),
+);
+// Booth and guest-photo URLs are real app routes, so they stay HTTP 200, but they are private.
+await writeFile(
+  join(dist, 'spa.html'),
+  noindexShell({
+    title: `หน้าส่วนตัว — ${pages.SITE_NAME}`,
+    description: 'หน้าส่วนตัวสำหรับตู้ถ่ายรูป AR และรูปของแขก ไม่แสดงในผลการค้นหา',
+    rootInner: null,
+  }),
+);
 const json = (o) => JSON.stringify(o).replace(/</g, '\\u003c');
 const url = (path) => SITE_URL + (path === '/' ? '/' : path);
 const shortName = (p) => p.th.title.split(/ [—|] /)[0];
@@ -198,5 +248,7 @@ await writeFile(
   join(dist, 'robots.txt'),
   `User-agent: *\nAllow: /\nDisallow: /booth/\nDisallow: /p/\n\nSitemap: ${SITE_URL}/sitemap.xml\n`,
 );
-console.log(`prerender: ${count} pages (${withSnapshots} with page text, ${withoutSnapshots} without), sitemap.xml and robots.txt for ${SITE_URL}`);
+console.log(
+  `prerender: ${count} pages (${withSnapshots} with page text, ${withoutSnapshots} without), 404.html, spa.html, sitemap.xml and robots.txt for ${SITE_URL}`,
+);
 if (process.env.REQUIRE_SNAPSHOTS === '1' && withoutSnapshots) process.exitCode = 1;
