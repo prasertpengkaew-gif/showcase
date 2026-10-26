@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { Link } from '../../i18n/Link';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { useNoIndex } from '../../hooks/useNoIndex';
 import { useLanguage, useT } from '../../i18n';

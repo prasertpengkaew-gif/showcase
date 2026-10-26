@@ -32,7 +32,7 @@ npm run dev        # http://localhost:5173
 | `npm run test:vote`       | Vote timing, cooldown and percentage-share checks for the gesture vote demo |
 | `npm run test:rally`      | Stamp, consent, duplicate and CSV-safety checks for the stamp rally demo |
 | `npm run test:tools`      | Logic checks for live Q&A, lucky draw, photo wall, team game, event assistant, motion wall and event dashboard |
-| `npm run snapshots`       | Captures each public page's readable Thai text from the built site into `src/seo/snapshots/`; `prerender` puts it in the static HTML so search engines see real content. Run `npm run build` first, and re-run after changing page text (use `MSYS_NO_PATHCONV=1` in Git Bash when passing paths) |
+| `npm run snapshots`       | Captures each public page's readable text from the built site into `src/seo/snapshots/` (add `--en` for the English pages). `prerender` puts it in the static HTML. Run `npm run build` first, and re-run after changing page text |
 | `npm run indexnow`        | After a deploy, tells Bing and other IndexNow search engines about every sitemap URL (key file in `public/`). Google does not support it; use Search Console |
 | `npm run render:media`    | Re-render posters, project images and videos from the GLBs       |
 | `npm run render:panoramas`| Re-render the 360° tour panoramas from the GLBs                  |
@@ -158,7 +158,7 @@ With `VITE_LINE_URL` set, the Contact page shows the LINE account and a **Chat o
 
 ## Languages (Thai / English)
 
-The **EN / TH** button in the header switches the language. The choice is saved in the browser, and first-time visitors whose browser language is Thai get Thai automatically. `<html lang>` changes too, so screen readers and fonts behave correctly. Thai text uses Noto Sans Thai.
+Thai stays on the existing URLs (`/projects`). English is the same page under `/en` (`/en/projects`, and `/en` for the home page). The **EN / TH** control in the header is a link to that other URL, so both versions can be crawled. `<html lang>` follows the URL. Booth and guest-photo pages have no translated URL; they keep the visitor's saved choice, or the event's language. Thai text uses Noto Sans Thai.
 
 - Interface text lives in `src/i18n/en.ts` and `src/i18n/th.ts`. TypeScript reports an error if a Thai key is missing.
 - Thai project, service and model copy lives in `src/i18n/content.th.ts`, keyed by project slug, service id and model id. Anything missing falls back to the English text in `src/data/*.ts`.
@@ -316,7 +316,7 @@ These apps open links in a built-in browser that often blocks the camera, WebXR 
 
 ## SEO (Thai first)
 
-Every public page has Thai and English search copy in `src/seo/pages.ts`. `npm run build` runs `scripts/prerender.mjs` afterwards, which writes a real HTML file per page (title, description, canonical, Open Graph, JSON-LD, plain-text content), plus `sitemap.xml` and `robots.txt`. Search crawlers get the Thai version (the app picks Thai for crawler user agents), while real visitors get their browser language.
+Every public page has Thai and English search copy in `src/seo/pages.ts`. `npm run build` runs `scripts/prerender.mjs` afterwards, which writes a real HTML file for both versions (Thai at the existing path, English under `/en`) with title, description, canonical, `hreflang` (`th`, `en`, `x-default`), Open Graph, JSON-LD and plain-text content, plus `sitemap.xml` (with `xhtml:link` alternates) and `robots.txt`. Pages that have a demo image or a project cover get a 1200×630 JPEG share image; the others keep `/og-image.png`. Unknown `/en/*` paths use the same 404 shell as any other missing URL.
 
 - Set `VITE_SITE_URL` to the public address (canonical links, sitemap). Defaults to `https://www.thenerdstudio.space`.
 - `npm run test:seo` checks the built `dist/`: one H1, unique titles and descriptions, canonical, JSON-LD, Thai for Googlebot.

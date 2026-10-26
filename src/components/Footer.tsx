@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from '../i18n/Link';
 import { navLinks, siteConfig } from '../config/site';
 import { Logo } from './Logo';
 import { useT } from '../i18n';

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from '../i18n/Link';
 import type { Project } from '../types/project';
 import { LazyImage } from './LazyImage';
 import { ArrowRightIcon } from './Icons';

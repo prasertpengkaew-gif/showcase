@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '../i18n/Link';
 import { PageHeader } from '../components/PageHeader';
 import { MarkerPanel } from '../components/MarkerPanel';
 import { MarkerImage } from '../components/MarkerImage';

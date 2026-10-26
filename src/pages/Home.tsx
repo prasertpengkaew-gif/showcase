@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from '../i18n/Link';
 import { HeroSection } from '../components/HeroSection';
 import { SectionHeading } from '../components/SectionHeading';
 import { ProjectGrid } from '../components/ProjectGrid';
