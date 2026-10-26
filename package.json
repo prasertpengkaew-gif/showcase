@@ -32,6 +32,7 @@
     "test:halloween": "node tests/halloween-logic.mjs",
     "test:rally": "node tests/rally-logic.mjs",
     "test:tools": "node tests/event-tools-logic.mjs",
+    "test:season": "node tests/season-logic.mjs",
     "make:dragon": "node scripts/make-dragon.mjs",
     "make:gate": "node scripts/make-gate.mjs",
     "test:seo": "node tests/seo.mjs"

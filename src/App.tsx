@@ -40,6 +40,7 @@ const TeamGame = lazy(() => import('./pages/TeamGame'));
 const EventAssistant = lazy(() => import('./pages/EventAssistant'));
 const MotionWall = lazy(() => import('./pages/MotionWall'));
 const EventDashboard = lazy(() => import('./pages/EventDashboard'));
+const Season = lazy(() => import('./pages/Season'));
 const EnterpriseAI = lazy(() => import('./pages/EnterpriseAI'));
 const About = lazy(() => import('./pages/About'));
 const Contact = lazy(() => import('./pages/Contact'));
@@ -104,6 +105,7 @@ export default function App() {
           <Route path="event-dashboard" element={<Suspense fallback={<PageLoading />}><EventDashboard /></Suspense>} />
           <Route path="app-design" element={<Suspense fallback={<PageLoading />}><AppDesign /></Suspense>} />
           <Route path="event-ar" element={<Suspense fallback={<PageLoading />}><EventAR /></Suspense>} />
+          <Route path="season/:id?" element={<Suspense fallback={<PageLoading />}><Season /></Suspense>} />
           <Route path="web-apps" element={<Suspense fallback={<PageLoading />}><WebApps /></Suspense>} />
           <Route path="about" element={<Suspense fallback={<PageLoading />}><About /></Suspense>} />
           <Route path="contact" element={<Suspense fallback={<PageLoading />}><Contact /></Suspense>} />

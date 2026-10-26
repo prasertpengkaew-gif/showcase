@@ -36,4 +36,5 @@ jobs:
           npm run test:halloween
           npm run test:rally
           npm run test:tools
+          npm run test:season
           npm run validate:models
