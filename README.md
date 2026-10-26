@@ -30,11 +30,13 @@ npm run dev        # http://localhost:5173
 | `npm run test:tms`        | Status, delay and KPI checks for the TMS demo                    |
 | `npm run test:coldroom`   | Layout, picking-order and stock-control checks for the cold-room demo |
 | `npm run test:vote`       | Vote timing, cooldown and percentage-share checks for the gesture vote demo |
+| `npm run test:halloween`  | Look, face-count and frame-layout checks for the Halloween face filter |
 | `npm run test:rally`      | Stamp, consent, duplicate and CSV-safety checks for the stamp rally demo |
 | `npm run test:tools`      | Logic checks for live Q&A, lucky draw, photo wall, team game, event assistant, motion wall and event dashboard |
 | `npm run snapshots`       | Captures each public page's readable Thai text from the built site into `src/seo/snapshots/`; `prerender` puts it in the static HTML so search engines see real content. Run `npm run build` first, and re-run after changing page text (use `MSYS_NO_PATHCONV=1` in Git Bash when passing paths) |
 | `npm run indexnow`        | After a deploy, tells Bing and other IndexNow search engines about every sitemap URL (key file in `public/`). Google does not support it; use Search Console |
 | `npm run render:media`    | Re-render posters, project images and videos from the GLBs       |
+| `npm run render:covers`   | Re-render the demo-card covers in `public/images` (page screenshots, plus the Halloween filter drawn by its own code) |
 | `npm run render:panoramas`| Re-render the 360° tour panoramas from the GLBs                  |
 | `npm run make:ar-card`    | Rebuild the printable AR card and its compiled MindAR target     |
 

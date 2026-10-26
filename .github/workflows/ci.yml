@@ -33,6 +33,7 @@ jobs:
           npm run test:tms
           npm run test:coldroom
           npm run test:vote
+          npm run test:halloween
           npm run test:rally
           npm run test:tools
           npm run validate:models
