@@ -470,7 +470,7 @@ export const en = {
   demos: {
     metaTitle: 'Live demos',
     eyebrow: 'Live demos',
-    title: 'Nineteen things you can try right now',
+    title: 'Thirty things you can try right now',
     description:
       'Every demo runs in the browser on your own device — no app, no sign-up. Pick one to try, or open this page on your phone for the camera-based demos.',
     groups: {
@@ -487,6 +487,7 @@ export const en = {
       ar: { title: 'AR Playground', text: 'Place a chair, robot or car in your room at real size.', needs: 'Phone or tablet' },
       print: { title: 'Print AR', text: 'Point your camera at a printed card and a 3D model stands up on it.', needs: 'Phone + printed or on-screen card' },
       face: { title: 'Face AR', text: 'Live face tracking with sunglasses, crown and face-mesh effects.', needs: 'Any device with a camera' },
+      halloweenFace: { title: 'Halloween Face Filters', text: 'Pumpkin, sugar skull, witch hat and vampire looks, with a frame and a photo to keep.', needs: 'Any device with a front camera' },
       tryon: { title: 'Virtual Try-On', text: 'Try on a cap, necklace, watch or tee with body tracking.', needs: 'Laptop or phone camera, 1.5–2 m away' },
       twin: { title: 'Factory Digital Twin', text: 'A 3D production line with live machine status, charts and alerts.', needs: 'Any screen · simulated data' },
       hands: { title: 'Hand gestures', text: 'Show a gesture and a 3D robot reacts — no touch needed.', needs: 'Laptop or phone with a camera' },
@@ -1071,6 +1072,53 @@ export const en = {
     realTitle: 'Place it on the floor with real tracking', realText: 'Press “View in your space” on your phone. The system AR finds the floor, keeps the gate at life size and has its own camera button that saves to your photos.',
     startTitle: 'Take a photo with the gate', startText: 'Our own camera page puts the gate in front of you and has a photo button that saves to your phone. Tap the floor to place it, stand back, and let a friend take the picture.',
     dialogLabel: 'Halloween gate AR camera', canvasLabel: 'Halloween gate placed on the floor', banner: 'HAPPY HALLOWEEN', photoCaption: 'Happy Halloween · TheNerdStudio', photoAlt: 'Your photo with the Halloween gate',
+    faceLink: 'Try the Halloween face filters',
+  },
+
+  halloweenFace: {
+    metaTitle: 'Halloween Face Filters',
+    eyebrow: 'Face AR · Halloween · photo',
+    title: 'Halloween face filters, ready for a selfie',
+    description:
+      'Open the front camera and switch between a pumpkin head, sugar-skull paint, a witch hat and vampire fangs. A Halloween frame is part of the photo, which you can save or share. No app to install.',
+    sampleTitle: 'Concept demo',
+    sampleText:
+      'The looks are drawn live on the face with the same on-device model as the Face AR page. Nothing is uploaded. For a real event we restyle the looks, the frame wording and the colours for your brand.',
+    howEyebrow: 'A photo corner for the party',
+    howTitle: 'Guests scan, choose a look and keep the photo',
+    howText:
+      'Put a QR code at the photo corner. Guests open the front camera, pick a look, and press the shutter or hold a smile. The picture, frame included, saves to the phone or shares from there.',
+    goodTitle: 'Good to know',
+    goodToKnow: [
+      { title: 'Made to run on a mid-range phone', text: 'Two faces at a time, drawn as flat artwork that follows the face. There is no extra 3D model to download, so the camera stays responsive.' },
+      { title: 'Front camera, with a photo fallback', text: 'It is built for selfies. If the camera is blocked, upload a photo of a face and the same looks still apply.' },
+      { title: 'Original art, ready for a sponsor', text: 'The pumpkin, skull paint, hat, fangs and frame are drawn by the page. No licensed characters. We can add your logo and event name on every photo.' },
+    ],
+    ctaTitle: 'Want a Halloween filter corner at your event?',
+    ctaText: 'Tell us the date, the venue and how many photo spots you need. We will match the looks and the frame to your brand.',
+    ctaContact: 'Plan your Halloween event',
+    stageLabel: 'Halloween face-filter camera',
+    lookLegend: 'Choose a look',
+    looks: { pumpkin: 'Pumpkin', skull: 'Sugar skull', witch: 'Witch hat', vampire: 'Vampire' },
+    idleTitle: 'The Halloween camera is off',
+    idleText: 'Press “Start camera” and allow the front camera. You can also upload a photo of a face to try the looks.',
+    shutter: 'Take photo',
+    download: 'Save photo',
+    share: 'Share',
+    retake: 'Retake',
+    photoAlt: 'Selfie with a Halloween face filter',
+    frameTitle: 'Happy Halloween',
+    frameLine: 'TheNerdStudio',
+    noFace: 'No face yet — look at the camera in good light.',
+    photoNoFace: 'No face was found in that photo. Try one where the face is clear.',
+    smileToSnap: 'Smile to snap',
+    smileToSnapText: 'Hold a smile and a 3-second countdown takes the photo. Useful when nobody is free to press the button.',
+    smileHint: 'Hold a smile to snap',
+    photosLabel: 'Photos this visit',
+    privacy: 'Processing stays on this device. A photo is saved only when you download or share it.',
+    gateLink: 'See the life-size Halloween gate',
+    trackingLink: 'See the face-tracking demo',
+    countLabel: 'Countdown',
   },
 
   vote: {
@@ -1272,6 +1320,7 @@ export const en = {
         ideas: [
           { title: 'A hunt around the venue', text: 'Posters in each zone, a stamp for every scan and a reward at the end.', to: '/ar-hunt' },
           { title: 'Face filters and props', text: 'Sunglasses, crowns and effects that follow the face, ready for a selfie.', to: '/face-ar' },
+          { title: 'Halloween face filters', text: 'Pumpkin, sugar skull, witch hat and vampire looks with a Halloween frame. Guests shoot on their own phone and save the photo.', to: '/halloween-face' },
           { title: 'A sponsor passport', text: 'Guests collect a stamp at each sponsor’s poster to enter a prize draw. Counting and handing out the prizes is built for your event.' },
           { title: 'Collectible AR cards', text: 'Guests collect printed cards with markers; holding up three together unlocks a reward. The related demo is the chemistry cards.', to: '/marker-chem' },
           { title: 'A tap race on every phone', text: 'Everyone plays at once and a live scoreboard shows on the stage screen.', to: '/team-game' },
