@@ -4,7 +4,18 @@ import { LazyImage } from './LazyImage';
 import { ArrowRightIcon } from './Icons';
 import { useT } from '../i18n';
 
-export function DemoCard({ demo, headingLevel: Heading = 'h3' }: { demo: Demo; headingLevel?: 'h2' | 'h3' }) {
+export function DemoCard({
+  demo,
+  headingLevel: Heading = 'h3',
+  badge,
+  priority = false,
+}: {
+  demo: Demo;
+  headingLevel?: 'h2' | 'h3';
+  /** Seasonal label drawn on the preview, for example "Halloween". */
+  badge?: string;
+  priority?: boolean;
+}) {
   const t = useT().demos;
   const item = t.items[demo.id];
   const Icon = demo.icon;
@@ -17,6 +28,7 @@ export function DemoCard({ demo, headingLevel: Heading = 'h3' }: { demo: Demo; h
             alt=""
             width={1440}
             height={960}
+            priority={priority}
             wrapperClassName="h-full"
             className="motion-safe:transition-transform motion-safe:duration-700 motion-safe:group-hover:scale-[1.04]"
           />
@@ -28,6 +40,11 @@ export function DemoCard({ demo, headingLevel: Heading = 'h3' }: { demo: Demo; h
         <span className="absolute top-3 left-3 grid h-10 w-10 place-items-center rounded-full bg-white/90 text-electric-700 shadow-sm">
           <Icon />
         </span>
+        {badge && (
+          <span className="absolute top-3 right-3 rounded-full bg-orange-600 px-2.5 py-1 text-[11px] font-bold tracking-wide text-white uppercase shadow-sm">
+            {badge}
+          </span>
+        )}
       </div>
       <div className="flex flex-1 flex-col p-6">
         <Heading className="font-display text-xl font-bold text-ink">

@@ -25,7 +25,7 @@ export const demos: Demo[] = [
   { id: 'cube', group: 'marker', to: '/ar-cube', icon: CubeIcon, image: '/images/ar-cube.webp' },
   { id: 'tags', group: 'marker', to: '/machine-tags', icon: TagIcon, image: '/images/machine-tags.webp' },
   { id: 'face', group: 'camera', featured: true, to: '/face-ar', icon: FaceIcon, image: '/images/face-ar.webp' },
-  { id: 'halloweenFace', group: 'camera', to: '/halloween-face', icon: FaceIcon },
+  { id: 'halloweenFace', group: 'camera', to: '/halloween-face', icon: FaceIcon, image: '/images/halloween-face.webp' },
   { id: 'tryon', group: 'camera', to: '/try-on', icon: ShirtIcon, image: '/images/try-on.webp' },
   { id: 'hands', group: 'camera', to: '/hand-gestures', icon: HandIcon, image: '/images/hand-gestures.webp' },
   { id: 'vote', group: 'event', to: '/gesture-vote', icon: HandIcon, image: '/images/gesture-vote.webp' },
@@ -51,3 +51,12 @@ export const demos: Demo[] = [
 ];
 
 export const demoPaths = ['/demos', ...demos.map((d) => d.to)];
+
+/**
+ * Halloween showcase window: 1 October through 1 November, in the visitor's local calendar.
+ * The demos page lifts the face-filter card into a spotlight for this window only.
+ */
+export function isHalloweenSeason(now = new Date()): boolean {
+  const month = now.getMonth();
+  return month === 9 || (month === 10 && now.getDate() === 1);
+}

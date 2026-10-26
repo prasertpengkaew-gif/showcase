@@ -483,6 +483,11 @@ export const en = {
     },
     open: 'Open demo',
     needs: 'Works best on',
+    season: {
+      badge: 'Halloween',
+      title: 'In season',
+      text: 'A face-filter booth for Halloween events. Guests open it on their phone, pick a look, and keep the photo.',
+    },
     items: {
       ar: { title: 'AR Playground', text: 'Place a chair, robot or car in your room at real size.', needs: 'Phone or tablet' },
       print: { title: 'Print AR', text: 'Point your camera at a printed card and a 3D model stands up on it.', needs: 'Phone + printed or on-screen card' },

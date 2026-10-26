@@ -261,6 +261,14 @@ try {
   await go(B + '/demos');
   await page.locator('main article').first().waitFor();
   ok((await page.locator('main article').count()) === 30, 'demos hub lists 30 demos');
+  ok((await page.getByRole('link', { name: 'Halloween Face Filters' }).count()) === 1, 'Halloween face demo is listed once');
+  ok((await page.locator('img[src="/images/halloween-face.webp"]').count()) === 1, 'Halloween face card has a thumbnail');
+  // Same window as isHalloweenSeason in src/data/demos.ts: 1 October through 1 November.
+  const seasonNow = new Date();
+  const halloweenSeason = seasonNow.getMonth() === 9 || (seasonNow.getMonth() === 10 && seasonNow.getDate() === 1);
+  if (halloweenSeason) {
+    ok((await page.getByText('Halloween', { exact: true }).count()) >= 1, 'seasonal Halloween badge is on the demos page');
+  }
   ok((await page.getByRole('link', { name: 'Demos' }).first().getAttribute('aria-current')) === 'page', 'Demos nav item is current');
 
   // --- Print AR --------------------------------------------------------------
