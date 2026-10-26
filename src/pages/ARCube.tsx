@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimationMixer, Box3, Group, Object3D, Vector3, type AnimationClip } from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { loadGlb } from '../lib/loadGlb';
 import { PageHeader } from '../components/PageHeader';
 import { MarkerPanel } from '../components/MarkerPanel';
 import { MarkerImage } from '../components/MarkerImage';
@@ -49,7 +49,7 @@ export default function ARCube() {
     if (!holder) return;
     let loaded = cacheRef.current.get(id);
     if (!loaded) {
-      const gltf = await new GLTFLoader().loadAsync(models[id].src);
+      const gltf = await loadGlb(models[id].src);
       const obj = gltf.scene;
       const box = new Box3().setFromObject(obj);
       const size = box.getSize(new Vector3());

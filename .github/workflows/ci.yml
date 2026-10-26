@@ -1,0 +1,38 @@
+# Typecheck, production build (including prerender), and headless logic tests.
+# Playwright suites (test:e2e, test:seo) need a browser download and are not run here.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Build
+        run: npm run build
+      - name: Logic tests
+        run: |
+          npm run test:sql
+          npm run test:admin
+          npm run test:map
+          npm run test:rag
+          npm run test:tms
+          npm run test:coldroom
+          npm run test:vote
+          npm run test:rally
+          npm run test:tools
+          npm run validate:models

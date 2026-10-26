@@ -10,6 +10,7 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { requestCamera, type CameraProblem } from '../lib/camera';
 import { models } from '../data/models';
+import { loadGlb } from '../lib/loadGlb';
 import { useT } from '../i18n';
 
 const CARD_PNG = '/ar-card/card.png';
@@ -53,10 +54,10 @@ export default function PrintAR() {
     }
     setStatus('loading');
     try {
-      const [{ MindARThree }, THREE, { GLTFLoader }] = await Promise.all([
+      const [{ MindARThree }, THREE, gltf] = await Promise.all([
         import('../vendor/mindar/mindar-image-three.prod.js'),
         import('three'),
-        import('three/examples/jsm/loaders/GLTFLoader.js'),
+        loadGlb(models.chair.src),
       ]);
       const ar = new MindARThree({
         container: containerRef.current!,
@@ -78,7 +79,6 @@ export default function PrintAR() {
 
       // The anchor spans the card: x from -0.5 to 0.5 (card width = 1), z points out of the card.
       const anchor = ar.addAnchor(0);
-      const gltf = await new GLTFLoader().loadAsync(models.chair.src);
       const chair = gltf.scene;
       const box = new THREE.Box3().setFromObject(chair);
       const size = box.getSize(new THREE.Vector3());

@@ -34,8 +34,20 @@ export interface ModelViewerProps {
   onStatusChange?: (status: ViewerStatus) => void;
 }
 
+const MESHOPT_DECODER_URL = '/meshopt-decoder.js';
+
 let moduleLoad: Promise<unknown> | null = null;
-const loadModelViewer = () => (moduleLoad ??= import('@google/model-viewer'));
+const loadModelViewer = () => {
+  // model-viewer ships a Meshopt decoder but leaves it off until this URL is set.
+  // The script is empty; the wasm is already in the model-viewer bundle. Set this
+  // before the first <model-viewer> is constructed (its constructor reads the URL).
+  const scope = globalThis as typeof globalThis & {
+    ModelViewerElement?: { meshoptDecoderLocation?: string };
+  };
+  scope.ModelViewerElement ??= {};
+  scope.ModelViewerElement.meshoptDecoderLocation ??= MESHOPT_DECODER_URL;
+  return (moduleLoad ??= import('@google/model-viewer'));
+};
 
 
 export function ModelViewer({

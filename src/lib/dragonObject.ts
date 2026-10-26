@@ -1,10 +1,10 @@
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { Placeable } from '../components/FloorAR';
+import { loadGlb } from './loadGlb';
 
 /** Loads the swimming dragon and lights it, for the floor AR camera. The model is about 2.5 m long, head to the right. */
 export async function buildDragon(): Promise<Placeable> {
-  const gltf = await new GLTFLoader().loadAsync('/models/dragon.glb');
+  const gltf = await loadGlb('/models/dragon.glb');
   const group = new THREE.Group();
   group.add(gltf.scene);
   group.add(new THREE.HemisphereLight(0xffffff, 0x9999aa, 3.2));

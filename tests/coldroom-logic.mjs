@@ -22,7 +22,13 @@ try {
   ok(new Set(spots).size === inv.length, 'no two pallets share a place');
   ok(new Set(inv.map((p) => p.id)).size === inv.length, 'pallet ids are unique');
   ok(inv.every((p) => p.row >= 1 && p.row <= c.ROWS_PER_SLOT && c.ROOMS.some((r) => c.slotsOf(r).includes(p.slot))), 'every pallet is inside a real slot and row');
-  const bySlot = Map.groupBy(inv, (p) => p.slot);
+  // Map.groupBy is Node 21+. Group by hand so this matches engines.node (>=20.19).
+  const bySlot = new Map();
+  for (const pallet of inv) {
+    const group = bySlot.get(pallet.slot);
+    if (group) group.push(pallet);
+    else bySlot.set(pallet.slot, [pallet]);
+  }
   ok([...bySlot.values()].every((ps) => ps.map((p) => p.row).sort().every((r, i) => r === i + 1)), 'each slot is filled from the door without gaps');
   ok(c.PRODUCT_IDS.every((id) => inv.some((p) => p.product === id) && c.PRODUCTS[id].th && c.PRODUCTS[id].en), 'every product is stocked and named in Thai and English');
 

@@ -9,6 +9,7 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { requestCamera, type CameraProblem } from '../lib/camera';
 import { models } from '../data/models';
+import { createGLTFLoader } from '../lib/loadGlb';
 import { useT } from '../i18n';
 
 const TARGETS = '/ar-hunt/hunt.mind';
@@ -108,10 +109,10 @@ export default function ARHunt() {
     }
     setStatus('loading');
     try {
-      const [{ MindARThree }, THREE, { GLTFLoader }] = await Promise.all([
+      const [{ MindARThree }, THREE, loader] = await Promise.all([
         import('../vendor/mindar/mindar-image-three.prod.js'),
         import('three'),
-        import('three/examples/jsm/loaders/GLTFLoader.js'),
+        createGLTFLoader(),
       ]);
       const ar = new MindARThree({
         container: containerRef.current!,
@@ -130,7 +131,6 @@ export default function ARHunt() {
       sun.position.set(0.5, 1, 1);
       scene.add(sun);
 
-      const loader = new GLTFLoader();
       const gltfs = await Promise.all(STATIONS.map((s) => loader.loadAsync(s.model)));
       const mixers: InstanceType<typeof THREE.AnimationMixer>[] = [];
       const spinners: InstanceType<typeof THREE.Object3D>[] = [];
