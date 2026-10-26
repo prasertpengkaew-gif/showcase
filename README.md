@@ -59,6 +59,7 @@ npm run dev        # http://localhost:5173
 | `/tms`            | Transport Management (TMS) | Dispatch board for sample trucking trips on a simulated clock: live progress, delay alerts (30 min behind plan), ETA, on-time rate, status filter, route detail; sample data |
 | `/cold-room`      | Cold Room Locator | 2D floor plan of two sample cold rooms; pick a product and count to get a rule-based picking order (fewest moves first, oldest first on a tie); stock only drops on **Confirm dispatch**; sample stock |
 | `/gesture-vote`  | Gesture Vote Booth | Vote with a thumbs-up or down gesture, or use the buttons; votes stay in memory on screen only |
+| `/season`, `/season/:id` | Seasonal landing | Data-driven festival page (`src/data/seasons.ts`). `/season` follows the Thailand calendar; `/season/halloween`, `/season/loy-krathong` and `/season/christmas` are fixed addresses. Each has a printable QR code, featured demos, floor AR and face filters, and a contact button |
 | `/halloween-gate` | Halloween Gate | A life-size Halloween gate: system AR with real floor tracking (`npm run make:gate` builds the GLB), plus our own camera page: it first tries the 8th Wall engine (SLAM world tracking, loaded from jsDelivr on demand, XR Engine License Agreement: free to use, not for paid products built on it), and falls back to the phone motion sensors when tracking does not start; photos save through the share sheet on iPhone or a download on Android |
 | `/new-year-ar` | New Year Dragon AR | A red and gold Chinese dragon built from basic shapes by `npm run make:dragon` (CC0, ours); view in 3D, place it with the system AR, or use our floor AR camera page (`src/components/FloorAR.tsx`, shared with `/halloween-gate`) that keeps the swimming animation and saves a photo; greetings and fireworks |
 | `/stamp-rally`   | Stamp Rally & Lead Capture | Visitors collect booth stamps (scan is simulated with buttons) and share details with consent; organizer view counts leads and exports CSV; all in memory |
@@ -239,6 +240,20 @@ To add your own effect, write a draw function in `src/lib/faceEffects.ts`, add i
 - **T-shirt:** a flat shape following the shoulders, elbows and hips. **It is not cloth simulation, and the page says so.**
 
 For real products, replace the drawn items with your product's photos (PNG with transparency) or 3D models, using the same anchor points.
+
+## Seasonal landings
+
+`/season` is one page for every festival booth. It reads `src/data/seasons.ts` and shows the season whose `MM-DD` window contains today in Thailand. If today falls in a gap, it shows the next season, so a printed link is never empty. `/season/<id>` stays on that season all year. The logic lives in `src/lib/season.ts` (`npm run test:season`).
+
+To add a season, copy an entry in `src/data/seasons.ts`:
+
+1. Set a new `id` (the URL), `startsOn` and `endsOn` as `MM-DD`. A window that crosses New Year has `endsOn` in January.
+2. Write the Thai and English hero, pitch, floor and face lines, frame text, contact draft, and `seo` title and description.
+3. Pick a `theme` (`halloween`, `loy`, `christmas`) and a `floor` (`gate`, `dragon`, `krathong`). Those reuse `src/lib/seasonFace.ts` and the floor builders (`halloweenGate`, `dragonObject`, `krathongObject`) through `FloorAR`. A new drawing needs a branch in `seasonFace.ts`; a new object needs a builder plus a `floor` id.
+4. List `demos` by id from `src/data/demos.ts`, and a booth `frame` (`neon`, `gold` or `fest`) from `src/lib/eventFrames.ts`.
+5. Run `npm run test:season` and `npm run build`. The route, sitemap and prerender follow the list. Then `npm run snapshots -- /season /season/<id>` and build again so the static HTML includes the new Thai text.
+
+The contact button opens `/contact?season=<id>`, which prefills the form with that season’s draft.
 
 ## Event AR Photo Booth
 
