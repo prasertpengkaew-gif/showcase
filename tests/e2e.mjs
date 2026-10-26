@@ -241,6 +241,9 @@ try {
     ok(res.headers.get('x-frame-options') === 'SAMEORIGIN', `${route} sends X-Frame-Options SAMEORIGIN`);
     await go(B + route);
     await page.locator('footer').waitFor();
+    // Home starts the model-viewer import. Leaving before it finishes rejects the
+    // shared promise, and later pages then have no <model-viewer> at all.
+    if (route === '/en') await page.locator('model-viewer').first().waitFor({ timeout: 45000 });
     const before = cspViolations.length;
     await drainPage(page);
     ok(cspViolations.length === before, `no enforced CSP violations on ${route}`);
