@@ -13,6 +13,7 @@ import { createServer } from 'vite';
 import { chromium, devices } from 'playwright';
 import { AxeBuilder } from '@axe-core/playwright';
 import { AR } from '../src/vendor/aruco/aruco.js';
+import { cspHeader } from '../scripts/csp.mjs';
 import { ANON_KEY, startMockSupabase } from './mock-supabase.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -119,24 +120,43 @@ const ok = (cond, msg) => {
 const passes = (promise) => promise.then(() => true, () => false);
 
 // Each server reads env from an empty directory so a developer's .env.local can't change results.
+// CSP_ENFORCE makes Vite send the production policy. HMR is off so Fast Refresh does not
+// inject an inline preamble. Mock origins are test-only extras; they are not in vercel.json.
 const emptyEnvDir = await mkdtemp(path.join(os.tmpdir(), 'e2e-env-'));
-async function startServer(env) {
+async function startServer(env, cspExtra = {}) {
   for (const key of Object.keys(process.env)) if (key.startsWith('VITE_')) delete process.env[key];
+  delete process.env.CSP_EXTRA_CONNECT;
+  delete process.env.CSP_EXTRA_IMG;
   Object.assign(process.env, env);
-  const server = await createServer({ root, envDir: emptyEnvDir, logLevel: 'error', server: { port: 0, host: '127.0.0.1' } });
+  process.env.CSP_ENFORCE = '1';
+  if (cspExtra.connect?.length) process.env.CSP_EXTRA_CONNECT = cspExtra.connect.join(' ');
+  if (cspExtra.img?.length) process.env.CSP_EXTRA_IMG = cspExtra.img.join(' ');
+  const server = await createServer({
+    root,
+    envDir: emptyEnvDir,
+    logLevel: 'error',
+    server: { port: 0, host: '127.0.0.1', hmr: false },
+  });
   await server.listen();
   return { server, url: server.resolvedUrls.local[0].replace(/\/$/, '') };
 }
 
 const plain = await startServer({});
-const configured = await startServer({
-  VITE_FORM_ENDPOINT: MOCK_ENDPOINT,
-  VITE_CONTACT_EMAIL: 'hello@example.test',
-  VITE_CONTACT_PHONE: '+66 2 123 4567',
-});
+const formOrigin = new URL(MOCK_ENDPOINT).origin;
+const configured = await startServer(
+  {
+    VITE_FORM_ENDPOINT: MOCK_ENDPOINT,
+    VITE_CONTACT_EMAIL: 'hello@example.test',
+    VITE_CONTACT_PHONE: '+66 2 123 4567',
+  },
+  { connect: [formOrigin] },
+);
 // A third server connected to a mock Supabase, for the photo booth platform.
 const mock = await startMockSupabase();
-const live = await startServer({ VITE_SUPABASE_URL: mock.url, VITE_SUPABASE_ANON_KEY: ANON_KEY, VITE_BOOTH_RETRY_MS: '400' });
+const live = await startServer(
+  { VITE_SUPABASE_URL: mock.url, VITE_SUPABASE_ANON_KEY: ANON_KEY, VITE_BOOTH_RETRY_MS: '400' },
+  { connect: [mock.url], img: [mock.url] },
+);
 const B = plain.url;
 /** English copy lives under /en. Booth and guest-photo URLs stay unprefixed. */
 const enPath = (path) => {
@@ -147,10 +167,43 @@ const enPath = (path) => {
   return (pathname === '/' ? '/en' : `/en${pathname}`) + rest;
 };
 
+const cspViolations = [];
+const recordCsp = (text) => {
+  const line = String(text).replace(/\s+/g, ' ').slice(0, 500);
+  if (line && !cspViolations.includes(line)) cspViolations.push(line);
+};
+const noteConsoleCsp = (text) => {
+  if (!/Content Security Policy/i.test(text) || /report-only/i.test(text)) return;
+  recordCsp(text);
+};
+async function armContext(context) {
+  await context.addInitScript(() => {
+    document.addEventListener('securitypolicyviolation', (event) => {
+      if (event.disposition && event.disposition !== 'enforce') return;
+      const list = (window.__cspViolations ??= []);
+      list.push(`${location.pathname} ${event.effectiveDirective} blocked ${event.blockedURI || 'inline'}`);
+    });
+  });
+  context.on('console', (msg) => {
+    if (msg.type() !== 'error' && msg.type() !== 'warning') return;
+    noteConsoleCsp(msg.text());
+  });
+  return context;
+}
+const openContext = async (browserLike, options = {}) => armContext(await browserLike.newContext(options));
+async function drainPage(pg) {
+  const found = await pg.evaluate(() => window.__cspViolations ?? []).catch(() => []);
+  for (const item of found) recordCsp(item);
+}
+async function closeContext(context) {
+  for (const pg of context.pages()) await drainPage(pg);
+  await context.close();
+}
+
 const browser = await chromium.launch({
   args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'],
 });
-const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+const context = await openContext(browser, { viewport: { width: 1280, height: 900 } });
 const page = await context.newPage();
 // Don't wait for third-party resources (web fonts) to finish; the app renders without them.
 const go = (url) => page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
@@ -166,6 +219,33 @@ const waitForModel = () =>
 const viewerProp = (prop) => page.evaluate((p) => document.querySelector('model-viewer')[p], prop);
 
 try {
+  const homeHeaders = await fetch(B + '/');
+  ok(homeHeaders.headers.get('content-security-policy') === cspHeader(), 'the test server sends the enforced production CSP');
+  ok(homeHeaders.headers.get('x-frame-options') === 'SAMEORIGIN', 'the test server sends X-Frame-Options SAMEORIGIN');
+  const spaHeaders = await fetch(B + '/does-not-exist');
+  ok(spaHeaders.headers.get('content-security-policy') === cspHeader(), 'unknown routes get the same CSP');
+  const formHeaders = await fetch(configured.url + '/contact');
+  ok(
+    formHeaders.headers.get('content-security-policy') === cspHeader({ connect: [formOrigin] }),
+    'the form server adds only the mock endpoint to connect-src',
+  );
+  const liveHeaders = await fetch(live.url + '/booth/acme-launch');
+  ok(
+    liveHeaders.headers.get('content-security-policy') === cspHeader({ connect: [mock.url], img: [mock.url] }),
+    'the booth server adds only the mock Supabase origin',
+  );
+  // English pages use the same shell as Thai. Name a few so a violation points at /en.
+  for (const route of ['/en', '/en/projects/lounge-chair-configurator', '/en/season/halloween', '/en/new-year-ar']) {
+    const res = await fetch(B + route);
+    ok(res.headers.get('content-security-policy') === cspHeader(), `${route} sends the enforced CSP`);
+    ok(res.headers.get('x-frame-options') === 'SAMEORIGIN', `${route} sends X-Frame-Options SAMEORIGIN`);
+    await go(B + route);
+    await page.locator('footer').waitFor();
+    const before = cspViolations.length;
+    await drainPage(page);
+    ok(cspViolations.length === before, `no enforced CSP violations on ${route}`);
+  }
+
   // --- AR Playground ---------------------------------------------------------
   await go(B + enPath('/ar-playground'));
   await viewer().scrollIntoViewIfNeeded();
@@ -286,6 +366,41 @@ try {
     await passes(page.getByRole('alert').filter({ hasText: /Camera access was blocked|No camera found/ }).waitFor({ timeout: 20000 })),
     'Print AR explains when the camera is unavailable',
   );
+  // A granted camera loads MindAR and its blob worker. Headless SwiftShader then throws inside
+  // TensorFlow's WebGL kernel (the same throw happens with CSP off), so the "scanning" line
+  // may never appear. The worker is the CSP check: worker-src blob: has to allow it.
+  const printCtx = await openContext(browser, { viewport: { width: 1280, height: 900 }, permissions: ['camera'] });
+  const printPage = await printCtx.newPage();
+  const mindWorker = printPage.waitForEvent('worker', { timeout: 60000 }).catch(() => null);
+  await fakeMarkerCamera(printPage, []);
+  await printPage.goto(B + enPath('/print-ar'), { waitUntil: 'domcontentloaded' });
+  await printPage.getByRole('button', { name: 'Start camera' }).click();
+  ok(
+    await passes(printPage.getByText('Loading the tracker and 3D model').waitFor({ timeout: 30000 })),
+    'Print AR loads MindAR after the camera is granted',
+  );
+  const worker = await mindWorker;
+  ok(Boolean(worker?.url().startsWith('blob:')), 'Print AR starts a MindAR blob worker');
+  await printPage.waitForTimeout(2000);
+  await closeContext(printCtx);
+
+  // Floor AR loads 8th Wall (xr.js, then xr-slam.js) and compiles its embedded Wasm.
+  const floorCtx = await openContext(browser, { viewport: { width: 390, height: 844 }, permissions: ['camera'] });
+  const floorPage = await floorCtx.newPage();
+  await fakeMarkerCamera(floorPage, []);
+  const slamResponse = floorPage.waitForResponse((response) => response.url().includes('xr-slam.js'), { timeout: 90000 }).catch(() => null);
+  await floorPage.goto(B + enPath('/new-year-ar'), { waitUntil: 'domcontentloaded' });
+  await floorPage.getByRole('button', { name: 'Start AR camera' }).click();
+  ok(
+    await passes(floorPage.getByRole('dialog', { name: 'New Year dragon AR camera' }).waitFor({ timeout: 20000 })),
+    'Floor AR opens the world-tracking camera',
+  );
+  const slam = await slamResponse;
+  ok(Boolean(slam?.ok()), '8th Wall SLAM chunk loads from jsDelivr');
+  ok(await passes(floorPage.waitForFunction(() => Boolean(window.XR8), null, { timeout: 20000 })), '8th Wall engine is on the page');
+  // Headless tracking falls back after about 12s. Stay up long enough for the embedded Wasm fetch.
+  await floorPage.waitForTimeout(6000);
+  await closeContext(floorCtx);
 
   // --- Hand gestures -----------------------------------------------------------
   await go(B + enPath('/hand-gestures'));
@@ -350,7 +465,7 @@ try {
   ok((await page.getByRole('region', { name: 'Open in your browser' }).count()) === 0, 'no in-app browser notice in a normal browser');
 
   // --- Marker AR (camera replaced by a canvas that draws real markers) ----------
-  const markerCtx = await browser.newContext({ viewport: { width: 1280, height: 900 }, acceptDownloads: true });
+  const markerCtx = await openContext(browser, { viewport: { width: 1280, height: 900 }, acceptDownloads: true });
   const chemPage = await markerCtx.newPage();
   // H, H and O cards touching, slightly tilted: a water molecule.
   await fakeMarkerCamera(chemPage, [
@@ -365,9 +480,9 @@ try {
   const chemDl = chemPage.waitForEvent('download');
   await chemPage.getByRole('button', { name: 'Download printable sheet' }).click();
   ok((await chemDl).suggestedFilename().endsWith('.png'), 'chemistry cards: printable sheet downloads');
-  await markerCtx.close();
+  await closeContext(markerCtx);
 
-  const cubeCtx = await browser.newContext({ viewport: { width: 1280, height: 900 }, acceptDownloads: true });
+  const cubeCtx = await openContext(browser, { viewport: { width: 1280, height: 900 }, acceptDownloads: true });
   const cubePage = await cubeCtx.newPage();
   await fakeMarkerCamera(cubePage, [{ id: 21, cx: 640, cy: 360, edge: 220, angle: 20 }]); // the cube's right face
   await cubePage.goto(B + enPath('/ar-cube'), { waitUntil: 'domcontentloaded' });
@@ -377,9 +492,9 @@ try {
   const cubeDl = cubePage.waitForEvent('download');
   await cubePage.getByRole('button', { name: 'Download printable sheet' }).click();
   ok((await cubeDl).suggestedFilename().endsWith('.png'), 'AR cube: printable net downloads');
-  await cubeCtx.close();
+  await closeContext(cubeCtx);
 
-  const tagCtx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const tagCtx = await openContext(browser, { viewport: { width: 1280, height: 900 } });
   const tagPage = await tagCtx.newPage();
   await fakeMarkerCamera(tagPage, [{ id: 33, cx: 640, cy: 420, edge: 200, angle: -6 }]); // sticker on the press
   await tagPage.goto(B + enPath('/machine-tags'), { waitUntil: 'domcontentloaded' });
@@ -388,7 +503,7 @@ try {
   ok(await passes(tagPage.getByRole('listitem').filter({ hasText: 'PRS-01' }).first().waitFor({ timeout: 60000 })), 'machine tags: the sticker is matched to its machine');
   await tagPage.getByRole('button', { name: 'Trigger a fault (demo)' }).click();
   ok(await passes(tagPage.getByRole('heading', { name: 'Service steps' }).waitFor({ timeout: 10000 })), 'machine tags: a fault shows service steps');
-  await tagCtx.close();
+  await closeContext(tagCtx);
 
   for (const route of ['/marker-chem', '/ar-cube', '/machine-tags']) {
     await go(B + enPath(route));
@@ -408,7 +523,7 @@ try {
     for (const v of found) console.log(`     [${v.impact}] ${v.id}: ${v.help} — ${v.nodes.slice(0, 3).map((n) => n.target.join(' ')).join(' | ')}`);
     return found;
   };
-  const boothCtx = await browser.newContext({ viewport: { width: 1180, height: 820 }, permissions: ['camera'] });
+  const boothCtx = await openContext(browser, { viewport: { width: 1180, height: 820 }, permissions: ['camera'] });
   const kiosk = await boothCtx.newPage();
   await fakeMarkerCamera(kiosk, []); // a plain camera picture; the shutter works without a face
   const ev = mock.event;
@@ -432,7 +547,7 @@ try {
   ok(bytes && bytes[0] === 0xff && bytes[1] === 0xd8, 'booth: the uploaded file is a JPEG');
   ok(linkText.startsWith(V + '/p/'), 'booth: the QR link points at the guest page');
 
-  const guestCtx = await browser.newContext({ ...devices['iPhone 13'] });
+  const guestCtx = await openContext(browser, { ...devices['iPhone 13'] });
   const guest = await guestCtx.newPage();
   await guest.goto(linkText, { waitUntil: 'domcontentloaded' });
   await guest.getByRole('link', { name: 'Download' }).waitFor({ timeout: 20000 });
@@ -491,11 +606,11 @@ try {
   await kiosk.getByRole('button', { name: 'Take photo' }).waitFor({ timeout: 90000 });
   await kiosk.keyboard.press('Shift+S');
   ok(await passes(kiosk.getByText(/custom frame could not be loaded/).waitFor({ timeout: 10000 })), 'booth: a frame that cannot be loaded is reported to staff');
-  await boothCtx.close();
-  await guestCtx.close();
+  await closeContext(boothCtx);
+  await closeContext(guestCtx);
 
   // Demo mode (no Supabase): photos stay on the device and the pages say so.
-  const demoCtx = await browser.newContext({ viewport: { width: 1180, height: 820 }, permissions: ['camera'] });
+  const demoCtx = await openContext(browser, { viewport: { width: 1180, height: 820 }, permissions: ['camera'] });
   const demo = await demoCtx.newPage();
   await fakeMarkerCamera(demo, []);
   await demo.goto(`${B}/booth/demo`, { waitUntil: 'domcontentloaded' });
@@ -510,11 +625,11 @@ try {
   ok(await passes(demo.getByText(/Demo mode: this photo exists only on the device/).waitFor({ timeout: 20000 })), 'demo guest page: says the photo exists only on this device');
   await demo.goto(`${B}/booth/other`, { waitUntil: 'domcontentloaded' });
   ok(await passes(demo.getByRole('heading', { name: 'This booth link doesn’t work' }).waitFor({ timeout: 10000 })), 'demo booth: other event names are not valid');
-  await demoCtx.close();
+  await closeContext(demoCtx);
 
   // --- In-app browsers -----------------------------------------------------------
   const lineUA = 'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0 Mobile Safari/537.36 Line/14.10.0';
-  const lineCtx = await browser.newContext({ userAgent: lineUA, viewport: { width: 390, height: 844 } });
+  const lineCtx = await openContext(browser, { userAgent: lineUA, viewport: { width: 390, height: 844 } });
   const lp = await lineCtx.newPage();
   await lp.goto(B + enPath('/face-ar'), { waitUntil: 'domcontentloaded' });
   const notice = lp.getByRole('region', { name: 'Open in your browser' });
@@ -522,8 +637,8 @@ try {
   ok((await notice.getByRole('link', { name: /Open in browser/ }).getAttribute('href'))?.includes('openExternalBrowser=1'), 'LINE link opens the external browser');
   await notice.getByRole('button', { name: 'Close' }).click();
   ok((await notice.count()) === 0, 'in-app notice can be dismissed');
-  await lineCtx.close();
-  const fbCtx = await browser.newContext({
+  await closeContext(lineCtx);
+  const fbCtx = await openContext(browser, {
     userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 [FBAN/FBIOS;FBAV/480.0]',
     viewport: { width: 390, height: 844 },
   });
@@ -532,7 +647,7 @@ try {
   const fbNotice = fp.getByRole('region', { name: 'Open in your browser' });
   ok(await passes(fbNotice.getByRole('button', { name: 'Copy link' }).waitFor()), 'Facebook on iPhone offers to copy the link');
   ok((await fbNotice.getByRole('link').count()) === 0, 'no broken "open" link on iOS Facebook');
-  await fbCtx.close();
+  await closeContext(fbCtx);
 
   // --- Digital twin ------------------------------------------------------------
   await go(B + enPath('/digital-twin'));
@@ -725,31 +840,33 @@ try {
   // Regression: `ar=""` was set as a property (false) by React 19, so AR never activated.
   // (iOS Quick Look needs real Safari's <a rel="ar"> support, so it can't be emulated here.)
   for (const [name, device] of [['Android', 'Pixel 7']]) {
-    const phone = await browser.newContext({ ...devices[device] });
+    const phone = await openContext(browser, { ...devices[device] });
     const pp = await phone.newPage();
     await pp.goto(B + enPath('/ar-playground'), { waitUntil: 'domcontentloaded' });
     ok(await passes(pp.getByText('AR is available on this device').waitFor({ timeout: 60000 })), `${name}: AR is offered`);
-    await phone.close();
+    await closeContext(phone);
   }
-  const anim = await browser.newPage();
+  const animCtx = await openContext(browser);
+  const anim = await animCtx.newPage();
   await anim.goto(B + enPath('/projects/interactive-brand-mascot'), { waitUntil: 'domcontentloaded' });
   await anim.waitForFunction(() => document.querySelector('model-viewer')?.loaded, null, { timeout: 45000 });
   ok(await anim.locator('model-viewer').evaluate((e) => e.autoplay === true), 'animated model autoplays');
-  await anim.close();
+  await closeContext(animCtx);
 
   // --- Reduced motion --------------------------------------------------------
-  const reduced = await browser.newContext({ reducedMotion: 'reduce' });
+  const reduced = await openContext(browser, { reducedMotion: 'reduce' });
   const rp = await reduced.newPage();
   await rp.goto(B + enPath('/ar-playground'));
   await rp.locator('model-viewer').scrollIntoViewIfNeeded();
   await rp.waitForFunction(() => document.querySelector('model-viewer')?.loaded, null, { timeout: 45000 });
   ok(!(await rp.locator('model-viewer').evaluate((e) => e.hasAttribute('auto-rotate'))), 'reduced motion: no auto-rotate');
   ok(await rp.getByRole('button', { name: /auto-rotate/ }).isDisabled(), 'reduced motion: auto-rotate toggle disabled');
-  await reduced.close();
+  await closeContext(reduced);
 
   // --- No WebGL fallback ----------------------------------------------------
   const noGL = await chromium.launch({ args: ['--disable-webgl', '--disable-3d-apis'] });
-  const np = await noGL.newPage();
+  const noGLCtx = await openContext(noGL);
+  const np = await noGLCtx.newPage();
   await np.goto(B + enPath('/'));
   await np.waitForTimeout(1500);
   ok((await np.locator('section[aria-labelledby="hero-title"] img').count()) === 1, 'no WebGL: hero shows a still image');
@@ -758,6 +875,7 @@ try {
   await np.goto(B + enPath('/map-3d'));
   ok(await passes(np.getByText(/3D graphics are not available/).waitFor({ timeout: 10000 })), 'no WebGL: the 3D map explains why it cannot be shown');
   ok((await np.getByRole('list', { name: 'Places' }).getByRole('button').count()) === 21, 'no WebGL: the list of places still works');
+  await closeContext(noGLCtx);
   await noGL.close();
 
   // --- Accessibility (axe-core, WCAG 2.2 A/AA) -------------------------------
@@ -777,10 +895,19 @@ try {
   }
 
   ok(pageErrors.length === 0, `no uncaught page errors or failed requests${pageErrors.length ? ':\n  ' + [...new Set(pageErrors)].join('\n  ') : ''}`);
+  await drainPage(page);
+  ok(
+    cspViolations.length === 0,
+    `no enforced CSP violations${cspViolations.length ? ':\n  ' + cspViolations.slice(0, 8).join('\n  ') : ''}`,
+  );
 } catch (err) {
   failures++;
   console.error('FAIL unexpected error:', err);
 } finally {
+  for (const ctx of browser.contexts()) {
+    for (const pg of ctx.pages()) await drainPage(pg);
+  }
+  if (cspViolations.length) console.error('CSP violations:\n  ' + cspViolations.slice(0, 12).join('\n  '));
   await browser.close();
   await plain.server.close();
   await configured.server.close();
