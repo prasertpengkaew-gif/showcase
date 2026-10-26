@@ -1,5 +1,6 @@
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from 'react';
-import { Link, type LinkProps } from 'react-router-dom';
+import type { LinkProps } from 'react-router-dom';
+import { Link } from '../i18n/Link';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'outline-light' | 'ghost';
 export type ButtonSize = 'md' | 'lg';

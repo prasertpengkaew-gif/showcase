@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { Link } from '../i18n/Link';
 import { categoryToParam } from '../lib/category';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { ModelExplorer } from '../components/ModelExplorer';

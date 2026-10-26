@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { en, type Dictionary } from './en';
 import { th } from './th';
 import { categoryTh, modelsTh, projectsTh, servicesTh } from './content.th';
@@ -6,22 +7,35 @@ import { projects as projectsEn } from '../data/projects';
 import { services as servicesEn, type Service } from '../data/services';
 import { models as modelsEn } from '../data/models';
 import type { ModelAsset, ModelId, Project, ProjectCategory } from '../types/project';
+import { isPrivatePath, langFromPath, withLang, type Lang } from './paths';
 
-export type Lang = 'en' | 'th';
+export type { Lang };
 
 const dictionaries: Record<Lang, Dictionary> = { en, th };
 const STORAGE_KEY = 'lang';
 
-function initialLang(): Lang {
+/**
+ * Language for private pages (`/booth`, `/p`), which have no translated URL.
+ * Public pages take their language from the path and do not read this.
+ * Crawlers announce English, so a booth URL they open still renders Thai.
+ */
+function privateLang(): Lang {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved === 'en' || saved === 'th') return saved;
   } catch {
     // Storage can be unavailable (private mode); fall through to the browser language.
   }
-  // Thai is the site's main language, and search crawlers announce English, so they get Thai too.
-  if (/bot|crawl|spider|slurp|lighthouse/i.test(navigator.userAgent)) return 'th';
+  if (typeof navigator !== 'undefined' && /bot|crawl|spider|slurp|lighthouse/i.test(navigator.userAgent)) return 'th';
   return navigator.language?.toLowerCase().startsWith('th') ? 'th' : 'en';
+}
+
+function remember(lang: Lang) {
+  try {
+    localStorage.setItem(STORAGE_KEY, lang);
+  } catch {
+    // Not persisted; the choice still applies for this visit.
+  }
 }
 
 interface LanguageContextValue {
@@ -33,18 +47,26 @@ interface LanguageContextValue {
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>(initialLang);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const privatePage = isPrivatePath(location.pathname);
+  // Booth and guest-photo pages keep a language of their own (the event's, or the visitor's).
+  const [boothLang, setBoothLang] = useState<Lang>(privateLang);
+  const lang = privatePage ? boothLang : langFromPath(location.pathname);
 
-  const setLang = useCallback((next: Lang) => {
-    setLangState(next);
-    try {
-      localStorage.setItem(STORAGE_KEY, next);
-    } catch {
-      // Not persisted; the choice still applies for this visit.
-    }
-  }, []);
+  const setLang = useCallback(
+    (next: Lang) => {
+      remember(next);
+      setBoothLang(next);
+      if (isPrivatePath(location.pathname)) return;
+      const here = `${location.pathname}${location.search}${location.hash}`;
+      const target = withLang(here, next);
+      if (target !== here) navigate(target);
+    },
+    [location.hash, location.pathname, location.search, navigate],
+  );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.documentElement.lang = lang;
   }, [lang]);
 

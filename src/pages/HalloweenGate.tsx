@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from '../i18n/Link';
 import { DemoShell } from '../components/DemoShell';
 import { FloorAR } from '../components/FloorAR';
 import { ArrowRightIcon } from '../components/Icons';

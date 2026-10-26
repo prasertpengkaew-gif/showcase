@@ -1,4 +1,5 @@
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { Link } from '../i18n/Link';
 import { ButtonLink } from '../components/Button';
 import { DemoCard } from '../components/DemoCard';
 import { FloorAR } from '../components/FloorAR';

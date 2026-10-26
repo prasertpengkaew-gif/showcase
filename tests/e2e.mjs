@@ -138,6 +138,14 @@ const configured = await startServer({
 const mock = await startMockSupabase();
 const live = await startServer({ VITE_SUPABASE_URL: mock.url, VITE_SUPABASE_ANON_KEY: ANON_KEY, VITE_BOOTH_RETRY_MS: '400' });
 const B = plain.url;
+/** English copy lives under /en. Booth and guest-photo URLs stay unprefixed. */
+const enPath = (path) => {
+  const splitAt = path.search(/[?#]/);
+  const pathname = splitAt === -1 ? path : path.slice(0, splitAt);
+  const rest = splitAt === -1 ? '' : path.slice(splitAt);
+  if (pathname === '/en' || pathname.startsWith('/en/') || pathname.startsWith('/booth') || pathname.startsWith('/p/')) return path;
+  return (pathname === '/' ? '/en' : `/en${pathname}`) + rest;
+};
 
 const browser = await chromium.launch({
   args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'],
@@ -159,7 +167,7 @@ const viewerProp = (prop) => page.evaluate((p) => document.querySelector('model-
 
 try {
   // --- AR Playground ---------------------------------------------------------
-  await go(B + '/ar-playground');
+  await go(B + enPath('/ar-playground'));
   await viewer().scrollIntoViewIfNeeded();
   await waitForModel();
   ok(await passes(page.waitForFunction(() => !document.querySelector('[role=toolbar] button')?.disabled)), 'viewer toolbar enables after load');
@@ -194,7 +202,7 @@ try {
     'wildlife-field-lesson': { animations: ['Survey', 'Walk', 'Run'] },
   };
   for (const [slug, expected] of Object.entries(expectations)) {
-    await go(`${B}/projects/${slug}`);
+    await go(`${B}${enPath(`/projects/${slug}`)}`);
     await viewer().scrollIntoViewIfNeeded();
     await waitForModel();
     if (expected.variants) {
@@ -209,7 +217,7 @@ try {
   }
 
   // --- Video and lightbox ----------------------------------------------------
-  await go(B + '/projects/robotic-workcell-preview');
+  await go(B + enPath('/projects/robotic-workcell-preview'));
   const video = page.locator('video');
   await video.scrollIntoViewIfNeeded();
   await video.evaluate((el) => {
@@ -226,24 +234,26 @@ try {
 
   // --- "Test it yourself" projects -------------------------------------------
   for (const slug of ['scale-model-showroom', 'interactive-brand-mascot', 'stem-robotics-lesson', 'velvet-sofa-product-page']) {
-    await go(`${B}/projects/${slug}`);
+    await go(`${B}${enPath(`/projects/${slug}`)}`);
     await page.getByText('Test it yourself').waitFor();
     ok((await page.locator('video').count()) === 0, `${slug}: shows "Test it yourself" instead of a video`);
     ok(await passes(page.locator('#try-title ~ * [aria-label^="QR code"] svg, section[aria-labelledby="try-title"] [aria-label^="QR code"] svg').first().waitFor()), `${slug}: QR code rendered`);
   }
   await page.getByRole('link', { name: /Go to the 3D viewer/ }).click();
-  await page.waitForTimeout(800);
-  ok(await page.evaluate(() => Math.abs(document.getElementById('viewer').getBoundingClientRect().top) < 120), '"Go to the 3D viewer" scrolls to the viewer');
+  ok(
+    await passes(page.waitForFunction(() => Math.abs(document.getElementById('viewer').getBoundingClientRect().top) < 120, null, { timeout: 5000 })),
+    '"Go to the 3D viewer" scrolls to the viewer',
+  );
 
   // --- VR Showroom -----------------------------------------------------------
-  await go(B + '/vr-showroom');
+  await go(B + enPath('/vr-showroom'));
   ok(await passes(page.locator('[aria-label^="Virtual showroom"] canvas').waitFor({ timeout: 20000 })), 'VR showroom renders a 3D canvas');
   ok(await passes(page.getByText('No VR headset detected').waitFor({ timeout: 10000 })), 'VR status explains no headset is present');
   ok(await page.getByRole('button', { name: 'Enter VR' }).isDisabled(), '"Enter VR" is disabled without a headset');
   ok(await passes(page.locator('[aria-label="QR code that opens the VR Showroom"] svg').waitFor()), 'VR page shows a QR code');
 
   // --- Face AR ---------------------------------------------------------------
-  await go(B + '/face-ar');
+  await go(B + enPath('/face-ar'));
   ok(await passes(page.getByText('Camera is off').waitFor()), 'Face AR starts with the camera off');
   // Headless Chromium has no camera permission: the page must explain, not fail silently.
   await page.getByRole('button', { name: 'Start camera' }).click();
@@ -262,13 +272,13 @@ try {
   ok(await passes(page.getByRole('button', { name: 'Full screen' }).waitFor()), 'Face AR leaves full screen');
 
   // --- Demos hub ---------------------------------------------------------------
-  await go(B + '/demos');
+  await go(B + enPath('/demos'));
   await page.locator('main article').first().waitFor();
   ok((await page.locator('main article').count()) === 30, 'demos hub lists 30 demos');
   ok((await page.getByRole('link', { name: 'Demos' }).first().getAttribute('aria-current')) === 'page', 'Demos nav item is current');
 
   // --- Print AR --------------------------------------------------------------
-  await go(B + '/print-ar');
+  await go(B + enPath('/print-ar'));
   ok(await passes(page.getByRole('img', { name: /Sample AR card/ }).waitFor()), 'Print AR shows the sample card');
   ok((await page.getByRole('link', { name: 'Download card (PNG)' }).getAttribute('download')) !== null, 'card can be downloaded');
   await page.getByRole('button', { name: 'Start camera' }).click();
@@ -278,7 +288,7 @@ try {
   );
 
   // --- Hand gestures -----------------------------------------------------------
-  await go(B + '/hand-gestures');
+  await go(B + enPath('/hand-gestures'));
   await page.getByRole('button', { name: 'Start camera' }).click();
   ok(
     await passes(page.getByRole('alert').filter({ hasText: /Camera access was blocked|No camera found/ }).waitFor({ timeout: 20000 })),
@@ -288,7 +298,7 @@ try {
   ok(await passes(page.getByText('No hand gesture was recognised').waitFor({ timeout: 90000 })), 'gesture model runs on a photo');
 
   // --- Virtual try-on ----------------------------------------------------------
-  await go(B + '/try-on');
+  await go(B + enPath('/try-on'));
   await page.getByRole('button', { name: 'Start camera' }).click();
   ok(
     await passes(page.getByRole('alert').filter({ hasText: /Camera access was blocked|No camera found/ }).waitFor({ timeout: 20000 })),
@@ -305,7 +315,7 @@ try {
   ok(await page.getByRole('radio', { name: 'Navy' }).isEnabled(), 'selecting the T-shirt enables colours');
 
   // --- Event photo booth -------------------------------------------------------
-  await go(B + '/event-booth');
+  await go(B + enPath('/event-booth'));
   ok(await page.getByRole('button', { name: 'Take photo' }).isDisabled(), 'booth shutter disabled before the camera starts');
   await page.locator('input[type=file]').setInputFiles(path.join(root, 'public/images/projects/lounge-chair-configurator/cover.webp'));
   await page.getByRole('button', { name: 'Take photo' }).and(page.locator(':enabled')).first().waitFor({ timeout: 90000 });
@@ -319,7 +329,7 @@ try {
   await page.getByRole('button', { name: 'Take another' }).click();
 
   // --- AR scavenger hunt --------------------------------------------------------
-  await go(B + '/ar-hunt');
+  await go(B + enPath('/ar-hunt'));
   await page.locator('a[download^="ar-hunt-poster-"]').first().waitFor();
   ok((await page.getByRole('img', { name: /Hunt poster, station/ }).count()) === 3, 'hunt shows three posters');
   ok((await page.locator('a[download^="ar-hunt-poster-"]').count()) === 3, 'hunt posters can be downloaded');
@@ -331,7 +341,7 @@ try {
   );
 
   // --- Motion game -------------------------------------------------------------
-  await go(B + '/motion-game');
+  await go(B + enPath('/motion-game'));
   await page.getByRole('button', { name: 'Play with mouse or touch' }).click();
   await page.getByRole('button', { name: 'Start round' }).first().click();
   ok(await passes(page.getByText(/^Time: 2\d$/).waitFor({ timeout: 10000 })), 'motion game round starts and the timer runs');
@@ -348,7 +358,7 @@ try {
     { id: 0, cx: 430, cy: 250, edge: 170, angle: -10 },
     { id: 1, cx: 850, cy: 250, edge: 170, angle: 15 },
   ]);
-  await chemPage.goto(B + '/marker-chem', { waitUntil: 'domcontentloaded' });
+  await chemPage.goto(B + enPath('/marker-chem'), { waitUntil: 'domcontentloaded' });
   await chemPage.getByRole('button', { name: 'Start camera' }).click();
   ok(await passes(chemPage.getByText('Water', { exact: true }).waitFor({ timeout: 60000 })), 'chemistry cards: H + H + O is recognised as water');
   ok((await chemPage.getByText('H₂O').count()) > 0, 'chemistry cards: the formula is shown');
@@ -360,7 +370,7 @@ try {
   const cubeCtx = await browser.newContext({ viewport: { width: 1280, height: 900 }, acceptDownloads: true });
   const cubePage = await cubeCtx.newPage();
   await fakeMarkerCamera(cubePage, [{ id: 21, cx: 640, cy: 360, edge: 220, angle: 20 }]); // the cube's right face
-  await cubePage.goto(B + '/ar-cube', { waitUntil: 'domcontentloaded' });
+  await cubePage.goto(B + enPath('/ar-cube'), { waitUntil: 'domcontentloaded' });
   await cubePage.getByRole('button', { name: 'Start camera' }).click();
   ok(await passes(cubePage.getByText('Right visible').waitFor({ timeout: 60000 })), 'AR cube: a single face is tracked');
   ok((await cubePage.getByText('Front not visible').count()) === 1, 'AR cube: other faces are reported as not visible');
@@ -372,7 +382,7 @@ try {
   const tagCtx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
   const tagPage = await tagCtx.newPage();
   await fakeMarkerCamera(tagPage, [{ id: 33, cx: 640, cy: 420, edge: 200, angle: -6 }]); // sticker on the press
-  await tagPage.goto(B + '/machine-tags', { waitUntil: 'domcontentloaded' });
+  await tagPage.goto(B + enPath('/machine-tags'), { waitUntil: 'domcontentloaded' });
   ok(await passes(tagPage.getByText('Simulated data').first().waitFor()), 'machine tags: data is labelled as simulated');
   await tagPage.getByRole('button', { name: 'Start camera' }).click();
   ok(await passes(tagPage.getByRole('listitem').filter({ hasText: 'PRS-01' }).first().waitFor({ timeout: 60000 })), 'machine tags: the sticker is matched to its machine');
@@ -381,7 +391,7 @@ try {
   await tagCtx.close();
 
   for (const route of ['/marker-chem', '/ar-cube', '/machine-tags']) {
-    await go(B + route);
+    await go(B + enPath(route));
     await page.getByRole('button', { name: 'Start camera' }).click();
     ok(
       await passes(page.getByRole('alert').filter({ hasText: /Camera access was blocked|No camera found/ }).waitFor({ timeout: 20000 })),
@@ -506,7 +516,7 @@ try {
   const lineUA = 'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0 Mobile Safari/537.36 Line/14.10.0';
   const lineCtx = await browser.newContext({ userAgent: lineUA, viewport: { width: 390, height: 844 } });
   const lp = await lineCtx.newPage();
-  await lp.goto(B + '/face-ar', { waitUntil: 'domcontentloaded' });
+  await lp.goto(B + enPath('/face-ar'), { waitUntil: 'domcontentloaded' });
   const notice = lp.getByRole('region', { name: 'Open in your browser' });
   ok(await passes(notice.waitFor()), 'LINE in-app browser shows the notice');
   ok((await notice.getByRole('link', { name: /Open in browser/ }).getAttribute('href'))?.includes('openExternalBrowser=1'), 'LINE link opens the external browser');
@@ -518,14 +528,14 @@ try {
     viewport: { width: 390, height: 844 },
   });
   const fp = await fbCtx.newPage();
-  await fp.goto(B + '/', { waitUntil: 'domcontentloaded' });
+  await fp.goto(B + enPath('/'), { waitUntil: 'domcontentloaded' });
   const fbNotice = fp.getByRole('region', { name: 'Open in your browser' });
   ok(await passes(fbNotice.getByRole('button', { name: 'Copy link' }).waitFor()), 'Facebook on iPhone offers to copy the link');
   ok((await fbNotice.getByRole('link').count()) === 0, 'no broken "open" link on iOS Facebook');
   await fbCtx.close();
 
   // --- Digital twin ------------------------------------------------------------
-  await go(B + '/digital-twin');
+  await go(B + enPath('/digital-twin'));
   ok(await passes(page.getByText('Simulated data').first().waitFor()), 'twin labels its data as simulated');
   ok(await passes(page.getByText('Line output').first().waitFor()), 'twin shows KPI tiles');
   const twinRows = page.locator('table tbody tr');
@@ -535,7 +545,7 @@ try {
   ok(await passes(page.getByRole('heading', { name: 'PCK-01 temperature, last 60 s' }).waitFor()), 'Inspect selects a machine');
 
   // --- 3D map ---------------------------------------------------------------------
-  await go(B + '/map-3d');
+  await go(B + enPath('/map-3d'));
   ok(await passes(page.getByText('Nerd City is made up').waitFor()), '3D map: says the city is a sample');
   await page.locator('canvas[aria-label]').waitFor({ timeout: 60000 });
   const places = page.getByRole('list', { name: 'Places' }).getByRole('button');
@@ -568,7 +578,7 @@ try {
   ok(await passes(page.locator('canvas[aria-label]').waitFor()), '3D map: the view can be zoomed, flattened and moved from the mini-map');
 
   // --- Virtual tour ------------------------------------------------------------
-  await go(B + '/virtual-tour');
+  await go(B + enPath('/virtual-tour'));
   const tour = page.locator('[aria-label^="Interactive 360° panorama"]');
   await tour.scrollIntoViewIfNeeded();
   ok(await passes(page.getByText('Loading panorama').waitFor({ state: 'hidden', timeout: 60000 })), 'tour panorama loads');
@@ -584,14 +594,18 @@ try {
   await page.getByRole('button', { name: /Car showroom/ }).last().click();
   ok(await passes(page.locator('[aria-label="Interactive 360° panorama: Car showroom"]').waitFor({ timeout: 10000 })), 'room list switches rooms');
 
-  // --- Language toggle -------------------------------------------------------
-  await go(B + '/projects');
-  await page.getByRole('button', { name: 'เปลี่ยนเป็นภาษาไทย' }).click();
-  ok((await page.evaluate(() => document.documentElement.lang)) === 'th', 'language toggle sets <html lang="th">');
+  // --- Language URLs ---------------------------------------------------------
+  await go(B + enPath('/projects'));
+  const toThai = page.getByRole('link', { name: 'เปลี่ยนเป็นภาษาไทย' });
+  ok((await toThai.getAttribute('href')) === '/projects', 'language switcher points at the Thai projects page');
+  await toThai.click();
+  await page.waitForURL(/\/projects$/);
+  await page.waitForFunction(() => document.documentElement.lang === 'th');
+  ok((await page.evaluate(() => document.documentElement.lang)) === 'th', 'Thai URL sets <html lang="th">');
   ok(await passes(page.getByRole('heading', { name: 'ผลงานที่เปิด หมุน และวางได้จริง' }).waitFor({ timeout: 5000 })), 'page text switches to Thai');
   ok(await passes(page.getByRole('button', { name: /อสังหาริมทรัพย์/ }).waitFor({ timeout: 5000 })), 'category filters are translated');
   await page.reload();
-  ok((await page.evaluate(() => document.documentElement.lang)) === 'th', 'language choice persists after reload');
+  ok(page.url().endsWith('/projects') && (await page.evaluate(() => document.documentElement.lang)) === 'th', 'Thai URL stays Thai after reload');
   for (const route of ['/', '/projects/interactive-brand-mascot', '/vr-showroom', '/contact']) {
     await go(B + route);
     await page.locator('footer').waitFor();
@@ -601,12 +615,16 @@ try {
     ok(serious.length === 0, `axe (Thai) ${route}: ${serious.length} serious/critical`);
     for (const v of serious) console.log(`     [${v.impact}] ${v.id}: ${v.nodes.slice(0, 3).map((n) => n.target.join(' ')).join(' | ')}`);
   }
-  await page.getByRole('button', { name: 'Switch to English' }).click();
-  ok((await page.evaluate(() => document.documentElement.lang)) === 'en', 'toggle switches back to English');
+  const toEnglish = page.getByRole('link', { name: 'Switch to English' });
+  ok((await toEnglish.getAttribute('href')) === '/en/contact', 'language switcher points at the English contact page');
+  await toEnglish.click();
+  await page.waitForURL(/\/en\/contact$/);
+  await page.waitForFunction(() => document.documentElement.lang === 'en');
+  ok((await page.evaluate(() => document.documentElement.lang)) === 'en', 'switcher returns to the English page');
 
   // --- Projects filter -------------------------------------------------------
   const cards = page.locator('main ul.grid > li');
-  await go(B + '/projects');
+  await go(B + enPath('/projects'));
   await cards.first().waitFor();
   ok((await cards.count()) === 9, 'all 9 projects listed');
   await page.getByRole('button', { name: /Real Estate/ }).click();
@@ -614,22 +632,22 @@ try {
   ok(page.url().includes('category=real-estate'), 'filter is saved in the URL');
   ok((await cards.count()) === 1, 'Real Estate filter shows 1 project');
   ok((await page.getByRole('button', { name: /Real Estate/ }).getAttribute('aria-pressed')) === 'true', 'active filter has aria-pressed');
-  await go(B + '/projects?category=education');
+  await go(B + enPath('/projects?category=education'));
   await cards.first().waitFor();
   ok((await cards.count()) === 2, 'deep link ?category=education shows 2 projects');
   await cards.first().locator('a').click();
   ok(await passes(page.waitForURL(/\/projects\/[a-z-]+$/)), 'project card opens its detail page');
 
   // --- 404s ------------------------------------------------------------------
-  await go(B + '/projects/does-not-exist');
+  await go(B + enPath('/projects/does-not-exist'));
   ok(await passes(page.getByRole('heading', { name: 'Project not found' }).waitFor()), 'unknown project shows not-found');
-  await go(B + '/does-not-exist');
+  await go(B + enPath('/does-not-exist'));
   ok(await passes(page.getByRole('heading', { name: 'Page not found' }).waitFor()), 'unknown route shows 404');
 
   // --- Internal links all resolve -------------------------------------------
   const links = new Set();
   for (const route of ROUTES.slice(0, -1)) {
-    await go(B + route);
+    await go(B + enPath(route));
     await page.locator('footer').waitFor();
     for (const href of await page.evaluate(() => [...document.querySelectorAll('a[href^="/"]')].map((a) => a.getAttribute('href')))) {
       links.add(href.split('#')[0].split('?')[0]);
@@ -645,7 +663,7 @@ try {
   }
 
   // --- Contact form: default email only (mailto) -----------------------------
-  await go(B + '/contact');
+  await go(B + enPath('/contact'));
   ok(await passes(page.getByText('How this form works').waitFor()), 'email-only form explains it opens the email app');
   ok(await page.locator('a[href="mailto:thenerdstudio@gmail.com"]').first().isVisible(), 'default contact email is shown');
   await page.getByLabel('Work email').fill('bad');
@@ -676,7 +694,7 @@ try {
     await page.getByLabel('Project type').selectOption('Product');
     await page.getByLabel('Project details').fill('We want a chair configurator with AR on our product pages.');
   };
-  await go(configured.url + '/contact');
+  await go(configured.url + enPath('/contact'));
   await page.getByRole('button', { name: 'Send message' }).click();
   ok(await page.getByText(/Please fix these 4 fields/).isVisible(), 'empty submit shows an error summary');
   ok((await page.evaluate(() => document.activeElement?.getAttribute('role'))) === 'alert', 'error summary receives focus');
@@ -692,13 +710,13 @@ try {
 
   // --- Mobile layout ---------------------------------------------------------
   await page.setViewportSize({ width: 390, height: 844 });
-  await go(B + '/services');
+  await go(B + enPath('/services'));
   await page.getByRole('button', { name: 'Open menu' }).click();
   ok(await page.locator('#mobile-menu').isVisible(), 'mobile menu opens');
   await page.keyboard.press('Escape');
   ok(await page.locator('#mobile-menu').isHidden(), 'mobile menu closes on Escape');
   for (const route of ROUTES) {
-    await go(B + route);
+    await go(B + enPath(route));
     await page.waitForTimeout(600);
     ok(!(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)), `no horizontal scroll at 390px: ${route}`);
   }
@@ -709,12 +727,12 @@ try {
   for (const [name, device] of [['Android', 'Pixel 7']]) {
     const phone = await browser.newContext({ ...devices[device] });
     const pp = await phone.newPage();
-    await pp.goto(B + '/ar-playground', { waitUntil: 'domcontentloaded' });
+    await pp.goto(B + enPath('/ar-playground'), { waitUntil: 'domcontentloaded' });
     ok(await passes(pp.getByText('AR is available on this device').waitFor({ timeout: 60000 })), `${name}: AR is offered`);
     await phone.close();
   }
   const anim = await browser.newPage();
-  await anim.goto(B + '/projects/interactive-brand-mascot', { waitUntil: 'domcontentloaded' });
+  await anim.goto(B + enPath('/projects/interactive-brand-mascot'), { waitUntil: 'domcontentloaded' });
   await anim.waitForFunction(() => document.querySelector('model-viewer')?.loaded, null, { timeout: 45000 });
   ok(await anim.locator('model-viewer').evaluate((e) => e.autoplay === true), 'animated model autoplays');
   await anim.close();
@@ -722,7 +740,7 @@ try {
   // --- Reduced motion --------------------------------------------------------
   const reduced = await browser.newContext({ reducedMotion: 'reduce' });
   const rp = await reduced.newPage();
-  await rp.goto(B + '/ar-playground');
+  await rp.goto(B + enPath('/ar-playground'));
   await rp.locator('model-viewer').scrollIntoViewIfNeeded();
   await rp.waitForFunction(() => document.querySelector('model-viewer')?.loaded, null, { timeout: 45000 });
   ok(!(await rp.locator('model-viewer').evaluate((e) => e.hasAttribute('auto-rotate'))), 'reduced motion: no auto-rotate');
@@ -732,12 +750,12 @@ try {
   // --- No WebGL fallback ----------------------------------------------------
   const noGL = await chromium.launch({ args: ['--disable-webgl', '--disable-3d-apis'] });
   const np = await noGL.newPage();
-  await np.goto(B + '/');
+  await np.goto(B + enPath('/'));
   await np.waitForTimeout(1500);
   ok((await np.locator('section[aria-labelledby="hero-title"] img').count()) === 1, 'no WebGL: hero shows a still image');
-  await np.goto(B + '/ar-playground');
+  await np.goto(B + enPath('/ar-playground'));
   ok(await passes(np.getByText(/WebGL turned off/).waitFor({ timeout: 10000 })), 'no WebGL: viewer explains why');
-  await np.goto(B + '/map-3d');
+  await np.goto(B + enPath('/map-3d'));
   ok(await passes(np.getByText(/3D graphics are not available/).waitFor({ timeout: 10000 })), 'no WebGL: the 3D map explains why it cannot be shown');
   ok((await np.getByRole('list', { name: 'Places' }).getByRole('button').count()) === 21, 'no WebGL: the list of places still works');
   await noGL.close();
@@ -745,7 +763,7 @@ try {
   // --- Accessibility (axe-core, WCAG 2.2 A/AA) -------------------------------
   await page.setViewportSize({ width: 1280, height: 900 });
   for (const route of ROUTES) {
-    await go(B + route);
+    await go(B + enPath(route));
     await page.locator('footer').waitFor();
     await page.waitForTimeout(1000);
     const { violations } = await new AxeBuilder({ page })

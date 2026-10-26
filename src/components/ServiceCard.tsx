@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from '../i18n/Link';
 import type { Service } from '../data/services';
 import { ArrowRightIcon, CheckIcon } from './Icons';
 import { useT } from '../i18n';

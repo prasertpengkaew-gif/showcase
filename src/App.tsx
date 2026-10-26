@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, type ReactNode } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import Home from './pages/Home';
@@ -59,60 +59,77 @@ function PageLoading() {
   );
 }
 
+function page(node: ReactNode) {
+  return <Suspense fallback={<PageLoading />}>{node}</Suspense>;
+}
+
+/** Public pages, relative to either `/` (Thai) or `/en` (English). */
+function publicPages() {
+  return (
+    <>
+      <Route index element={<Home />} />
+      <Route path="projects" element={page(<Projects />)} />
+      <Route path="projects/:slug" element={page(<ProjectDetail />)} />
+      <Route path="ar-playground" element={page(<ARPlayground />)} />
+      <Route path="vr-showroom" element={page(<VRShowroom />)} />
+      <Route path="face-ar" element={page(<FaceAR />)} />
+      <Route path="print-ar" element={page(<PrintAR />)} />
+      <Route path="virtual-tour" element={page(<VirtualTour />)} />
+      <Route path="hand-gestures" element={page(<HandGestures />)} />
+      <Route path="demos" element={page(<Demos />)} />
+      <Route path="try-on" element={page(<TryOn />)} />
+      <Route path="event-booth" element={page(<EventBooth />)} />
+      <Route path="ar-hunt" element={page(<ARHunt />)} />
+      <Route path="marker-chem" element={page(<MarkerChem />)} />
+      <Route path="ar-cube" element={page(<ARCube />)} />
+      <Route path="machine-tags" element={page(<MachineTags />)} />
+      <Route path="motion-game" element={page(<MotionGame />)} />
+      <Route path="map-3d" element={page(<Map3D />)} />
+      <Route path="digital-twin" element={page(<DigitalTwin />)} />
+      <Route path="services" element={page(<Services />)} />
+      <Route path="enterprise-ai" element={page(<EnterpriseAI />)} />
+      <Route path="tms" element={page(<TMS />)} />
+      <Route path="cold-room" element={page(<ColdRoom />)} />
+      <Route path="gesture-vote" element={page(<GestureVote />)} />
+      <Route path="halloween-gate" element={page(<HalloweenGate />)} />
+      <Route path="halloween-face" element={page(<HalloweenFace />)} />
+      <Route path="new-year-ar" element={page(<NewYearAR />)} />
+      <Route path="stamp-rally" element={page(<StampRally />)} />
+      <Route path="live-qa" element={page(<LiveQA />)} />
+      <Route path="lucky-draw" element={page(<LuckyDraw />)} />
+      <Route path="photo-wall" element={page(<PhotoWall />)} />
+      <Route path="team-game" element={page(<TeamGame />)} />
+      <Route path="event-assistant" element={page(<EventAssistant />)} />
+      <Route path="motion-wall" element={page(<MotionWall />)} />
+      <Route path="event-dashboard" element={page(<EventDashboard />)} />
+      <Route path="app-design" element={page(<AppDesign />)} />
+      <Route path="event-ar" element={page(<EventAR />)} />
+      <Route path="season/:id?" element={page(<Season />)} />
+      <Route path="web-apps" element={page(<WebApps />)} />
+      <Route path="about" element={page(<About />)} />
+      <Route path="contact" element={page(<Contact />)} />
+      <Route path="*" element={page(<NotFound />)} />
+    </>
+  );
+}
+
 export default function App() {
   return (
-    <LanguageProvider>
     <BrowserRouter>
+      <LanguageProvider>
       <Routes>
         {/* The booth and the guest's photo page are apps of their own: no site navigation around them. */}
-        <Route path="booth/:slug" element={<Suspense fallback={<PageLoading />}><BoothKiosk /></Suspense>} />
-        <Route path="p/:code" element={<Suspense fallback={<PageLoading />}><GuestPhoto /></Suspense>} />
+        <Route path="booth/:slug" element={page(<BoothKiosk />)} />
+        <Route path="p/:code" element={page(<GuestPhoto />)} />
+        {/* English keeps its own URLs. Thai stays on the paths that already exist. */}
+        <Route path="en" element={<Layout />}>
+          {publicPages()}
+        </Route>
         <Route element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path="projects" element={<Suspense fallback={<PageLoading />}><Projects /></Suspense>} />
-          <Route path="projects/:slug" element={<Suspense fallback={<PageLoading />}><ProjectDetail /></Suspense>} />
-          <Route path="ar-playground" element={<Suspense fallback={<PageLoading />}><ARPlayground /></Suspense>} />
-          <Route path="vr-showroom" element={<Suspense fallback={<PageLoading />}><VRShowroom /></Suspense>} />
-          <Route path="face-ar" element={<Suspense fallback={<PageLoading />}><FaceAR /></Suspense>} />
-          <Route path="print-ar" element={<Suspense fallback={<PageLoading />}><PrintAR /></Suspense>} />
-          <Route path="virtual-tour" element={<Suspense fallback={<PageLoading />}><VirtualTour /></Suspense>} />
-          <Route path="hand-gestures" element={<Suspense fallback={<PageLoading />}><HandGestures /></Suspense>} />
-          <Route path="demos" element={<Suspense fallback={<PageLoading />}><Demos /></Suspense>} />
-          <Route path="try-on" element={<Suspense fallback={<PageLoading />}><TryOn /></Suspense>} />
-          <Route path="event-booth" element={<Suspense fallback={<PageLoading />}><EventBooth /></Suspense>} />
-          <Route path="ar-hunt" element={<Suspense fallback={<PageLoading />}><ARHunt /></Suspense>} />
-          <Route path="marker-chem" element={<Suspense fallback={<PageLoading />}><MarkerChem /></Suspense>} />
-          <Route path="ar-cube" element={<Suspense fallback={<PageLoading />}><ARCube /></Suspense>} />
-          <Route path="machine-tags" element={<Suspense fallback={<PageLoading />}><MachineTags /></Suspense>} />
-          <Route path="motion-game" element={<Suspense fallback={<PageLoading />}><MotionGame /></Suspense>} />
-          <Route path="map-3d" element={<Suspense fallback={<PageLoading />}><Map3D /></Suspense>} />
-          <Route path="digital-twin" element={<Suspense fallback={<PageLoading />}><DigitalTwin /></Suspense>} />
-          <Route path="services" element={<Suspense fallback={<PageLoading />}><Services /></Suspense>} />
-          <Route path="enterprise-ai" element={<Suspense fallback={<PageLoading />}><EnterpriseAI /></Suspense>} />
-          <Route path="tms" element={<Suspense fallback={<PageLoading />}><TMS /></Suspense>} />
-          <Route path="cold-room" element={<Suspense fallback={<PageLoading />}><ColdRoom /></Suspense>} />
-          <Route path="gesture-vote" element={<Suspense fallback={<PageLoading />}><GestureVote /></Suspense>} />
-          <Route path="halloween-gate" element={<Suspense fallback={<PageLoading />}><HalloweenGate /></Suspense>} />
-          <Route path="halloween-face" element={<Suspense fallback={<PageLoading />}><HalloweenFace /></Suspense>} />
-          <Route path="new-year-ar" element={<Suspense fallback={<PageLoading />}><NewYearAR /></Suspense>} />
-          <Route path="stamp-rally" element={<Suspense fallback={<PageLoading />}><StampRally /></Suspense>} />
-          <Route path="live-qa" element={<Suspense fallback={<PageLoading />}><LiveQA /></Suspense>} />
-          <Route path="lucky-draw" element={<Suspense fallback={<PageLoading />}><LuckyDraw /></Suspense>} />
-          <Route path="photo-wall" element={<Suspense fallback={<PageLoading />}><PhotoWall /></Suspense>} />
-          <Route path="team-game" element={<Suspense fallback={<PageLoading />}><TeamGame /></Suspense>} />
-          <Route path="event-assistant" element={<Suspense fallback={<PageLoading />}><EventAssistant /></Suspense>} />
-          <Route path="motion-wall" element={<Suspense fallback={<PageLoading />}><MotionWall /></Suspense>} />
-          <Route path="event-dashboard" element={<Suspense fallback={<PageLoading />}><EventDashboard /></Suspense>} />
-          <Route path="app-design" element={<Suspense fallback={<PageLoading />}><AppDesign /></Suspense>} />
-          <Route path="event-ar" element={<Suspense fallback={<PageLoading />}><EventAR /></Suspense>} />
-          <Route path="season/:id?" element={<Suspense fallback={<PageLoading />}><Season /></Suspense>} />
-          <Route path="web-apps" element={<Suspense fallback={<PageLoading />}><WebApps /></Suspense>} />
-          <Route path="about" element={<Suspense fallback={<PageLoading />}><About /></Suspense>} />
-          <Route path="contact" element={<Suspense fallback={<PageLoading />}><Contact /></Suspense>} />
-          <Route path="*" element={<Suspense fallback={<PageLoading />}><NotFound /></Suspense>} />
+          {publicPages()}
         </Route>
       </Routes>
+      </LanguageProvider>
     </BrowserRouter>
-    </LanguageProvider>
   );
 }

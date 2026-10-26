@@ -63,6 +63,7 @@
     "@vitejs/plugin-react": "^6.1.2",
     "gltf-validator": "^2.0.0-dev.3.10",
     "playwright": "1.56",
+    "sharp": "^0.35.5",
     "tailwindcss": "^4.3.3",
     "typescript": "5.9",
     "vite": "^8.3.4"

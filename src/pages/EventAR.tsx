@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from '../i18n/Link';
 import { PageHeader } from '../components/PageHeader';
 import { SectionHeading } from '../components/SectionHeading';
 import { ButtonLink } from '../components/Button';

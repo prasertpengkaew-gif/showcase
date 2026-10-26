@@ -1,1 +1,8 @@
-/*    /index.html   200
+# Private per-user routes (Netlify, and Vercel reads this file too).
+# 200 keeps the URL and serves the noindex shell. Do not add "/* /index.html 200":
+# prerender overwrites index.html with the homepage, so that rule publishes
+# Home's canonical and index,follow on every unknown path.
+/booth/:slug     /spa.html   200
+/booth/:slug/    /spa.html   200
+/p/:code         /spa.html   200
+/p/:code/        /spa.html   200

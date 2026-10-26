@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { navLinks } from '../config/site';
 import { Logo } from './Logo';
 import { ButtonLink } from './Button';
 import { CloseIcon, MenuIcon } from './Icons';
 import { LanguageToggle } from './LanguageToggle';
 import { useT } from '../i18n';
+import { NavLink } from '../i18n/Link';
+import { stripLang } from '../i18n/paths';
 import { demoPaths } from '../data/demos';
 
 export function Navbar() {
@@ -15,7 +17,7 @@ export function Navbar() {
   const toggleRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const t = useT();
-  const onDemo = demoPaths.includes(location.pathname);
+  const onDemo = demoPaths.includes(stripLang(location.pathname));
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
