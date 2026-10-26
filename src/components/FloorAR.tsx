@@ -23,6 +23,8 @@ export interface FloorARProps {
   panelClass?: string;
   /** Nearest the object may be placed to the camera, in metres. Long objects need more room. */
   minDistance?: number;
+  /** Keep the object out of sight until the first tap, then pop it in; better for showing the placement on video. */
+  hideUntilPlaced?: boolean;
   dialogLabel: string;
   canvasLabel: string;
   photoCaption: string;
@@ -64,7 +66,7 @@ const motionPermissions = async () => {
 };
 
 /** Start panel plus a full-screen AR camera that stands an object on the floor and takes a photo to save. */
-export function FloorAR({ build, title, text, panelClass = 'from-[#1b0b2e] to-[#3a1650]', minDistance = 1.5, dialogLabel, canvasLabel, photoCaption, photoAlt }: FloorARProps) {
+export function FloorAR({ build, title, text, panelClass = 'from-[#1b0b2e] to-[#3a1650]', minDistance = 1.5, hideUntilPlaced = false, dialogLabel, canvasLabel, photoCaption, photoAlt }: FloorARProps) {
   const d = useT().floorAr;
   const [mode, setMode] = useState<Mode>('off');
   const [busy, setBusy] = useState(false);
@@ -143,7 +145,9 @@ export function FloorAR({ build, title, text, panelClass = 'from-[#1b0b2e] to-[#
     // The object may still be loading when the first tap lands, so the wanted spot is remembered and applied when it arrives.
     let object: Placeable | null = null;
     const spot = { x: 0, z: 0, yaw: 0 };
-    const applySpot = () => { if (object) { object.group.position.set(spot.x, floorY(), spot.z); object.group.rotation.y = spot.yaw; } };
+    let placed = !hideUntilPlaced;
+    let poppedAt = performance.now();
+    const applySpot = () => { if (object) { object.group.position.set(spot.x, floorY(), spot.z); object.group.rotation.y = spot.yaw; object.group.visible = placed; } };
     let cancelled = false;
     Promise.resolve(buildRef.current()).then((made) => {
       if (cancelled) { made.dispose(); return; }
@@ -161,8 +165,12 @@ export function FloorAR({ build, title, text, panelClass = 'from-[#1b0b2e] to-[#
       const p = floorHitFrom(camera.position, rayDir(ndc), floorY(), minDistance);
       spot.x = p.x; spot.z = p.z;
       spot.yaw = yawFacingOrigin(p.x, p.z, camera.position.x, camera.position.z);
+      placed = true;
+      poppedAt = performance.now();
       applySpot();
     };
+    // Automatic placements (start, tracking found, new phone height) only move an object that is already out.
+    const autoPlace = () => { if (!hideUntilPlaced || placed) place(DEFAULT_NDC); };
     pickRef.current = place;
 
     let xr8: XR8 | null = null;
@@ -176,11 +184,11 @@ export function FloorAR({ build, title, text, panelClass = 'from-[#1b0b2e] to-[#
     const originFor = (h: number) => ({ x: 0, y: h, z: 0 });
     heightRef.current = (h) => {
       run.height = h;
-      if (!world) { place(DEFAULT_NDC); return; }
+      if (!world) { autoPlace(); return; }
       if (!xr8) return;
       xr8.XrController.updateCameraProjectionMatrix({ origin: originFor(h), facing: IDENTITY });
       xr8.XrController.recenter();
-      place(DEFAULT_NDC);
+      autoPlace();
     };
 
     const resize = () => {
@@ -247,7 +255,7 @@ export function FloorAR({ build, title, text, panelClass = 'from-[#1b0b2e] to-[#
                 live.px = r.position.x; live.py = r.position.y; live.pz = r.position.z;
                 live.qx = r.rotation.x; live.qy = r.rotation.y; live.qz = r.rotation.z; live.qw = r.rotation.w;
                 live.proj = r.intrinsics;
-                if (!tracking) { tracking = true; setScanning(false); place(DEFAULT_NDC); }
+                if (!tracking) { tracking = true; setScanning(false); autoPlace(); }
               },
               onException: fail,
               onCameraStatusChange: ({ status }: { status: string }) => { if (status === 'failed') fail('camera status failed'); },
@@ -282,10 +290,16 @@ export function FloorAR({ build, title, text, panelClass = 'from-[#1b0b2e] to-[#
         else camera.quaternion.setFromEuler(new THREE.Euler(run.pitch, run.yaw, 0, 'YXZ'));
         camera.updateMatrixWorld();
       }
+      if (object && placed) {
+        // A short overshoot makes the object spring up when it is placed.
+        const t = Math.min(1, (performance.now() - poppedAt) / 450);
+        const back = 1 + 2.70158 * Math.pow(t - 1, 3) + 1.70158 * Math.pow(t - 1, 2);
+        object.group.scale.setScalar(Math.max(0.001, back));
+      }
       object?.update(clock.getElapsedTime());
       renderer.render(scene, camera);
     };
-    if (!world) place(DEFAULT_NDC);
+    if (!world) autoPlace();
     tick();
 
     const withCaption = (draw: (ctx: CanvasRenderingContext2D, w: number, h: number) => void, w: number, h: number) => {
@@ -343,7 +357,7 @@ export function FloorAR({ build, title, text, panelClass = 'from-[#1b0b2e] to-[#
       renderer.dispose();
       renderer.forceContextLoss();
     };
-  }, [mode, photoCaption, minDistance]);
+  }, [mode, photoCaption, minDistance, hideUntilPlaced]);
 
   // Changing the phone height moves the object (and, with the engine, restarts tracking from that height).
   useEffect(() => { rt.current.height = Number(height); heightRef.current(Number(height)); }, [height]);

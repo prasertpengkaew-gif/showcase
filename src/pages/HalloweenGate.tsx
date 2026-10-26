@@ -18,6 +18,7 @@ export default function HalloweenGate() {
     </div>
     <FloorAR
       build={() => buildGate(d.banner)}
+      hideUntilPlaced
       title={`🎃 ${d.startTitle}`}
       text={d.startText}
       dialogLabel={d.dialogLabel}
