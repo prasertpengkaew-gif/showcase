@@ -39,6 +39,7 @@ check(!/\/(booth|p)\//.test(sitemap), 'sitemap leaves out booth and guest-photo 
 
 const titles = new Set();
 const descriptions = new Set();
+const pageTexts = new Map();
 for (const path of paths) {
   const res = await fetch(base + path);
   const html = await res.text();
@@ -64,6 +65,16 @@ for (const path of paths) {
     problems.push(`JSON-LD: ${e.message}`);
   }
   if (!html.includes('og:image') || !html.includes('twitter:card')) problems.push('missing share tags');
+  if (!/^\/(?:booth|p)(?:\/|$)/.test(path)) {
+    const main = html.match(/<main>([\s\S]*?)<h2>เมนู<\/h2>/);
+    const pageText = (main?.[1] ?? '').replace(/<[^>]*>/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim();
+    const hasH2 = /<h[23]/.test(main?.[1] ?? '');
+    check(pageText.length >= 500, `page text before menu has at least 500 characters: ${path}${pageText.length < 500 ? ` (${pageText.length})` : ''}`);
+    check(hasH2, `page text before menu has a subheading (h2 or h3): ${path}`);
+    const previous = pageTexts.get(pageText);
+    check(!previous, `page text is unique: ${path}${previous ? ` duplicates ${previous}` : ''}`);
+    pageTexts.set(pageText, path);
+  }
   check(problems.length === 0, `static HTML ${path}${problems.length ? ' — ' + problems.join('; ') : ''}`);
 }
 const home = await (await fetch(base + '/')).text();

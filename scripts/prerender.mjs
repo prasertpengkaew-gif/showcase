@@ -14,6 +14,7 @@ import { createServer, loadEnv } from 'vite';
 
 const root = process.cwd();
 const dist = join(root, 'dist');
+const snapshots = join(root, 'src/seo/snapshots');
 const env = loadEnv('production', root, 'VITE_');
 const SITE_URL = (env.VITE_SITE_URL || process.env.VITE_SITE_URL || 'https://www.thenerdstudio.space').replace(/\/+$/, '');
 
@@ -32,6 +33,8 @@ const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, 
 const json = (o) => JSON.stringify(o).replace(/</g, '\\u003c');
 const url = (path) => SITE_URL + (path === '/' ? '/' : path);
 const shortName = (p) => p.th.title.split(/ [—|] /)[0];
+// Keep this filename rule in sync with scripts/snapshot-pages.mjs.
+const snapshotName = (path) => `${path === '/' ? 'home' : path.slice(1).replace(/\//g, '__')}.html`;
 const socials = ['VITE_FACEBOOK_URL', 'VITE_LINKEDIN_URL', 'VITE_INSTAGRAM_URL', 'VITE_GITHUB_URL', 'VITE_LINE_URL']
   .map((k) => env[k])
   .filter((v) => v && /^https:\/\//.test(v));
@@ -104,10 +107,16 @@ function structuredData(page) {
   return { '@context': 'https://schema.org', '@graph': graph };
 }
 
-function body(page) {
+async function body(page) {
   const links = (list) =>
     `<ul>${list.map((p) => `<li><a href="${p.path}">${esc(shortName(p))}</a></li>`).join('')}</ul>`;
   const nav = pages.staticPages.filter((p) => p.path !== page.path);
+  let snapshot = '';
+  try {
+    snapshot = await readFile(join(snapshots, snapshotName(page.path)), 'utf8');
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
   const projects = page.path === '/' || page.path === '/projects' ? `<h2>ผลงาน</h2>${links(pages.projectPages)}` : '';
   const services =
     page.path === '/' || page.path === '/services'
@@ -117,13 +126,13 @@ function body(page) {
       : '';
   return (
     `<div style="min-height:100vh;background:#0B1220;color:#e6ecf8;padding:24px;font-family:'Noto Sans Thai',Inter,system-ui,sans-serif;line-height:1.7">` +
-    `<main><h1>${esc(shortName(page))}</h1><p>${esc(page.th.description)}</p>${services}${projects}` +
+    `<main>${snapshot || `<h1>${esc(shortName(page))}</h1><p>${esc(page.th.description)}</p>${services}${projects}`}` +
     `<h2>เมนู</h2>${links(nav)}</main>` +
     `<noscript><p>เว็บนี้ต้องเปิด JavaScript เพื่อแสดงเนื้อหา 3D และ AR แบบโต้ตอบ</p></noscript></div>`
   );
 }
 
-function render(page) {
+async function render(page) {
   const text = page.th;
   const canonical = url(page.path);
   const head = [
@@ -152,16 +161,27 @@ function render(page) {
     .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(text.title)}</title>`)
     .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${esc(text.description)}" />`)
     .replace('</head>', `    ${head}\n  </head>`)
-    .replace(/<div id="root"><\/div>\s*<noscript>[\s\S]*?<\/noscript>/, `<div id="root">${body(page)}</div>`);
+    .replace(/<div id="root"><\/div>\s*<noscript>[\s\S]*?<\/noscript>/, `<div id="root">${await body(page)}</div>`);
   if (!html.includes('<h1>')) throw new Error(`prerender: could not place the page text for ${page.path}`);
   return html;
 }
 
 let count = 0;
+let withSnapshots = 0;
+let withoutSnapshots = 0;
 for (const page of pages.allPages) {
   const file = page.path === '/' ? join(dist, 'index.html') : join(dist, page.path, 'index.html');
   await mkdir(dirname(file), { recursive: true });
-  await writeFile(file, render(page));
+  const rendered = await render(page);
+  await writeFile(file, rendered);
+  try {
+    const snapshot = await readFile(join(snapshots, snapshotName(page.path)), 'utf8');
+    if (rendered.includes(snapshot)) withSnapshots++;
+    else withoutSnapshots++;
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    withoutSnapshots++;
+  }
   count++;
 }
 
@@ -178,4 +198,5 @@ await writeFile(
   join(dist, 'robots.txt'),
   `User-agent: *\nAllow: /\nDisallow: /booth/\nDisallow: /p/\n\nSitemap: ${SITE_URL}/sitemap.xml\n`,
 );
-console.log(`prerender: ${count} pages, sitemap.xml and robots.txt for ${SITE_URL}`);
+console.log(`prerender: ${count} pages (${withSnapshots} with page text, ${withoutSnapshots} without), sitemap.xml and robots.txt for ${SITE_URL}`);
+if (process.env.REQUIRE_SNAPSHOTS === '1' && withoutSnapshots) process.exitCode = 1;
