@@ -9,9 +9,11 @@
  * path under `/en` (see src/i18n/paths.ts). Keep titles under about 60 characters
  * and descriptions under about 160.
  */
+import { seasons } from '../data/seasons';
 import { projects } from '../data/projects';
 import { projectsTh } from '../i18n/content.th';
 import { stripLang } from '../i18n/paths';
+import { seasonPath } from '../lib/season';
 
 export type SeoLang = 'th' | 'en';
 export interface SeoText {
@@ -463,7 +465,31 @@ export const projectPages: SeoPage[] = projects.map((p) => {
   };
 });
 
-export const allPages: SeoPage[] = [...staticPages, ...projectPages];
+/** The calendar page plus one fixed address per entry in src/data/seasons.ts. */
+export const seasonPages: SeoPage[] = [
+  {
+    path: seasonPath(),
+    priority: 0.85,
+    th: {
+      title: 'หน้าแลนดิ้งตามฤดูกาลสำหรับงานอีเวนต์ | TheNerdStudio',
+      description:
+        'หน้าแลนดิ้งตามปฏิทินสำหรับบูธและงานอีเวนต์ เปิดฮาโลวีน ลอยกระทง หรือคริสต์มาสและปีใหม่ตามวันที่ พร้อม QR code สำหรับพิมพ์ เดโม AR และฟิลเตอร์หน้า',
+    },
+    en: {
+      title: 'Seasonal AR Landings for Booths and Events | TheNerdStudio',
+      description:
+        'A calendar landing for event booths. It opens Halloween, Loy Krathong, or Christmas and New Year by date, with a printable QR code, AR demos and face filters.',
+    },
+  },
+  ...seasons.map((season) => ({
+    path: seasonPath(season.id),
+    priority: 0.74,
+    th: season.seo.th,
+    en: season.seo.en,
+  })),
+];
+
+export const allPages: SeoPage[] = [...staticPages, ...seasonPages, ...projectPages];
 
 const byPath = new Map(allPages.map((p) => [p.path, p]));
 

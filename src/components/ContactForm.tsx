@@ -1,9 +1,11 @@
 import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { siteConfig } from '../config/site';
+import { seasons, seasonCopy } from '../data/seasons';
 import { PROJECT_CATEGORIES } from '../types/project';
 import { AlertIcon, CheckIcon, InfoIcon } from './Icons';
 import { Button } from './Button';
-import { useCategoryLabel, useT } from '../i18n';
+import { useCategoryLabel, useLanguage, useT } from '../i18n';
 import type { Dictionary } from '../i18n/en';
 
 interface FormValues {
@@ -86,6 +88,8 @@ export function ContactForm() {
   const summaryRef = useRef<HTMLDivElement>(null);
   const formId = useId();
   const f = useT().form;
+  const { lang } = useLanguage();
+  const [params] = useSearchParams();
   const categoryLabel = useCategoryLabel();
   const otherLabels: Record<(typeof OTHER_TYPES)[number], string> = {
     'VR experience': f.vrType,
@@ -111,6 +115,16 @@ export function ContactForm() {
   useEffect(() => {
     if (summaryFocusKey > 0) summaryRef.current?.focus();
   }, [summaryFocusKey]);
+
+  // A season landing links here with ?season=<id> so the enquiry already names the festival.
+  useEffect(() => {
+    const seasonId = params.get('season');
+    if (!seasonId) return;
+    const season = seasons.find((item) => item.id === seasonId);
+    if (!season) return;
+    const draft = seasonCopy(season, lang).contactDraft;
+    setValues((current) => (current.message ? current : { ...current, projectType: current.projectType || 'Marketing', message: draft }));
+  }, [params, lang]);
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();

@@ -40,6 +40,7 @@ const TeamGame = lazy(() => import('./pages/TeamGame'));
 const EventAssistant = lazy(() => import('./pages/EventAssistant'));
 const MotionWall = lazy(() => import('./pages/MotionWall'));
 const EventDashboard = lazy(() => import('./pages/EventDashboard'));
+const Season = lazy(() => import('./pages/Season'));
 const EnterpriseAI = lazy(() => import('./pages/EnterpriseAI'));
 const About = lazy(() => import('./pages/About'));
 const Contact = lazy(() => import('./pages/Contact'));
@@ -103,6 +104,7 @@ function publicPages() {
       <Route path="event-dashboard" element={page(<EventDashboard />)} />
       <Route path="app-design" element={page(<AppDesign />)} />
       <Route path="event-ar" element={page(<EventAR />)} />
+      <Route path="season/:id?" element={page(<Season />)} />
       <Route path="web-apps" element={page(<WebApps />)} />
       <Route path="about" element={page(<About />)} />
       <Route path="contact" element={page(<Contact />)} />

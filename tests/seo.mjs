@@ -230,7 +230,7 @@ const enHome = await (await fetch(base + '/en')).text();
 check(enHome.includes('"@type":"ProfessionalService"') && enHome.includes('"inLanguage":"en"'), 'English home has Organization and WebSite data');
 check((await (await fetch(base + '/services')).text()).includes('"@type":"Service"'), 'services page lists Service data');
 check(shareByPage.get('/')?.endsWith('/og-image.png'), 'home keeps the default share image');
-check(shareByPage.get('/stamp-rally')?.endsWith('/og-image.png'), 'a demo without its own image keeps the default share image');
+check(shareByPage.get('/about')?.endsWith('/og-image.png'), 'a page without its own image keeps the default share image');
 check(shareByPage.get('/ar-playground')?.endsWith('.jpg') && !shareByPage.get('/ar-playground')?.endsWith('/og-image.png'), 'AR playground uses its own share image');
 check(shareByPage.get('/projects/lounge-chair-configurator')?.endsWith('.jpg'), 'a project page uses its cover as the share image');
 check(!/404\.html|spa\.html/.test(sitemap), 'sitemap omits the noindex shells');
