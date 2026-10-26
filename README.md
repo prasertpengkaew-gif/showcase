@@ -486,7 +486,7 @@ npm run test:e2e
 - **Fallbacks:** reduced motion and no-WebGL
 - **Accessibility:** an axe-core WCAG 2.2 AA scan of every page
 
-It exits non-zero on any failure, so it can run in CI. Each server reads its environment from an empty directory, so your `.env.local` doesn't affect the results.
+It exits non-zero on any failure, so it can run in CI. Each server reads its environment from an empty directory, so your `.env.local` doesn't affect the results. The servers send the enforced Content-Security-Policy (with HMR off) and the run fails on `securitypolicyviolation` events or CSP console errors. Print AR is started against a fake camera until MindAR's blob worker exists, and the New Year floor demo loads the 8th Wall engine, so blob workers and Wasm are exercised.
 
 ## Deployment
 
@@ -500,6 +500,8 @@ Do not add a catch-all rewrite to `/index.html`. That file is the prerendered ho
 - **Vercel:** `vercel.json` rewrites only the booth and guest-photo paths to `/spa.html`. Anything else with no file falls through to `404.html`.
 - **Netlify:** `public/_redirects` has the same rewrites. Netlify serves `404.html` for every other miss.
 - **Others:** serve a file when one exists, rewrite `/booth/:slug` and `/p/:code` to `/spa.html` with status 200, and serve `/404.html` with status 404 otherwise.
+
+Every response, including `/en/*`, `/og/*.jpg`, `404.html` and `spa.html`, sends the enforced Content-Security-Policy from `scripts/csp.mjs` (copied into `vercel.json` and `public/_headers`) plus `X-Frame-Options: SAMEORIGIN`. `npm run dev` leaves the policy off so React Fast Refresh can keep its inline preamble. `vite preview` and the e2e servers enforce it. If you set `VITE_FORM_ENDPOINT` or `VITE_TWIN_WS_URL`, add that origin to `connect-src` in `scripts/csp.mjs` before deploying, or the browser will block the request.
 
 ## 3D asset credits
 

@@ -6,6 +6,7 @@ import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { extname, join, normalize, sep } from 'node:path';
 import { chromium } from 'playwright';
+import { cspHeader, securityHeaders } from '../scripts/csp.mjs';
 
 let failed = 0;
 const check = (ok, msg) => {
@@ -42,6 +43,31 @@ check(
   '_redirects rewrites only the private routes to /spa.html (no catch-all to /index.html)',
 );
 
+const enforcedCsp = cspHeader();
+const expectedSecurity = securityHeaders();
+const catchAll = (vercel.headers ?? []).find((block) => block.source === '/(.*)');
+check(catchAll?.headers?.length === expectedSecurity.length, 'vercel.json catch-all has the security headers');
+for (const header of expectedSecurity) {
+  const value = catchAll?.headers?.find((item) => item.key === header.key)?.value;
+  check(value === header.value, `vercel.json ${header.key} matches scripts/csp.mjs`);
+}
+check(
+  !catchAll?.headers?.some((header) => header.key === 'Content-Security-Policy-Report-Only'),
+  'vercel.json does not leave the policy as report-only',
+);
+const scriptSrc = enforcedCsp.split('; ').find((part) => part.startsWith('script-src '));
+check(scriptSrc?.split(' ').includes("'wasm-unsafe-eval'"), 'script-src allows Wasm compilation');
+check(!scriptSrc?.split(' ').includes("'unsafe-eval'"), 'script-src does not allow unsafe-eval');
+check(!scriptSrc?.split(' ').includes("'unsafe-inline'"), 'script-src does not allow unsafe-inline');
+for (const part of enforcedCsp.split('; ')) {
+  const sources = part.split(' ').slice(1);
+  check(!sources.includes('*') && !sources.includes('https:') && !sources.includes('http:') && !sources.includes('wss:'), `${part.split(' ')[0]} has no blanket scheme or host`);
+}
+const netlifyHeaders = await readFile('public/_headers', 'utf8');
+check(netlifyHeaders.includes(`Content-Security-Policy: ${enforcedCsp}`), 'Netlify _headers sends the same enforced CSP');
+check(netlifyHeaders.includes('X-Frame-Options: SAMEORIGIN'), 'Netlify _headers sends X-Frame-Options SAMEORIGIN');
+check(netlifyHeaders.includes('/*'), 'Netlify _headers apply to every file, including 404.html and spa.html');
+
 // Keep these patterns in sync with the sources above. Files win, then these rewrites, then 404.html.
 const privateRoutes = [
   [/^\/booth\/[^/]+$/, true],
@@ -50,7 +76,7 @@ const privateRoutes = [
   [/^\/p\/[^/]+\/$/, true],
 ];
 const distRoot = join(process.cwd(), 'dist');
-const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.json': 'application/json', '.xml': 'application/xml', '.txt': 'text/plain', '.wasm': 'application/wasm' };
+const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.json': 'application/json', '.xml': 'application/xml', '.txt': 'text/plain', '.wasm': 'application/wasm' };
 
 async function existingFile(pathname) {
   const rel = pathname === '/' ? '' : normalize(pathname).replace(/^[/\\]+/, '');
@@ -71,7 +97,8 @@ const server = createServer(async (req, res) => {
   const pathname = decodeURIComponent(new URL(req.url, 'http://x').pathname);
   const file = await existingFile(pathname);
   const send = async (status, bodyFile, extra = {}) => {
-    res.writeHead(status, { 'content-type': types[extname(bodyFile)] ?? 'application/octet-stream', ...extra });
+    const headers = Object.fromEntries(expectedSecurity.map((header) => [header.key, header.value]));
+    res.writeHead(status, { 'content-type': types[extname(bodyFile)] ?? 'application/octet-stream', ...headers, ...extra });
     res.end(await readFile(bodyFile));
   };
   if (file) return send(200, file);
@@ -152,6 +179,7 @@ for (const path of paths) {
   if (path === '/') {
     homeTitle = title;
     homeHtml = html;
+    checkSecurityHeaders('/', res);
   }
   const english = isEnglish(path);
   const bare = contentPath(path);
@@ -235,8 +263,17 @@ check(shareByPage.get('/ar-playground')?.endsWith('.jpg') && !shareByPage.get('/
 check(shareByPage.get('/projects/lounge-chair-configurator')?.endsWith('.jpg'), 'a project page uses its cover as the share image');
 check(!/404\.html|spa\.html/.test(sitemap), 'sitemap omits the noindex shells');
 
+function checkSecurityHeaders(path, res) {
+  const problems = [];
+  if (res.headers.get('content-security-policy') !== enforcedCsp) problems.push('CSP');
+  if (res.headers.get('x-frame-options') !== 'SAMEORIGIN') problems.push('X-Frame-Options');
+  if (!res.headers.get('content-security-policy')?.includes("frame-ancestors 'self'")) problems.push('frame-ancestors');
+  check(problems.length === 0, `${path} sends the enforced CSP and clickjacking headers${problems.length ? ' — ' + problems.join(', ') : ''}`);
+}
+
 async function unindexed(path, status, { robotsHeader = false } = {}) {
   const res = await fetch(base + path);
+  checkSecurityHeaders(path, res);
   const html = await res.text();
   const title = html.match(/<title>([^<]*)<\/title>/)?.[1] ?? '';
   const robots = [...html.matchAll(/<meta name="robots" content="([^"]*)"/g)].map((m) => m[1]);
@@ -268,7 +305,20 @@ await unindexed('/p/abcdefghijkl', 200, { robotsHeader: true });
 await unindexed('/p/abcdefghijkl/', 200, { robotsHeader: true });
 const shell = await unindexed('/spa.html', 200);
 check(!shell.includes('rel="canonical"'), 'spa.html itself has no canonical');
-const notFoundFile = await (await fetch(base + '/404.html')).text();
+const notFoundRes = await fetch(base + '/404.html');
+checkSecurityHeaders('/404.html', notFoundRes);
+const enPage = await fetch(base + '/en');
+checkSecurityHeaders('/en', enPage);
+const enProject = await fetch(base + '/en/projects/lounge-chair-configurator');
+checkSecurityHeaders('/en/projects/lounge-chair-configurator', enProject);
+const ogPath = shareByPage.get('/ar-playground')?.replace(site, '') ?? '';
+check(ogPath.startsWith('/og/') && ogPath.endsWith('.jpg'), `AR playground share image is an /og JPEG (${ogPath})`);
+if (ogPath.startsWith('/og/')) {
+  const ogRes = await fetch(base + ogPath);
+  checkSecurityHeaders(ogPath, ogRes);
+  check(ogRes.status === 200 && (ogRes.headers.get('content-type') ?? '').includes('image/jpeg'), `${ogPath} is served as a JPEG`);
+}
+const notFoundFile = await notFoundRes.text();
 check(
   notFoundFile.includes('noindex, nofollow') && !notFoundFile.includes('rel="canonical"'),
   '404.html itself is noindex and has no canonical',
@@ -278,6 +328,20 @@ const browser = await chromium.launch();
 const crawler = await browser.newContext({
   userAgent: 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
   locale: 'en-US',
+});
+const cspViolations = [];
+await crawler.addInitScript(() => {
+  document.addEventListener('securitypolicyviolation', (event) => {
+    if (event.disposition && event.disposition !== 'enforce') return;
+    const list = (window.__cspViolations ??= []);
+    list.push(`${location.pathname} ${event.effectiveDirective} ${event.blockedURI}`);
+  });
+});
+crawler.on('console', (msg) => {
+  const text = msg.text();
+  if ((msg.type() === 'error' || msg.type() === 'warning') && /Content Security Policy/i.test(text) && !/report-only/i.test(text)) {
+    cspViolations.push(text.slice(0, 400));
+  }
 });
 const page = await crawler.newPage();
 const errors = [];
@@ -358,17 +422,36 @@ const boothState = await page.evaluate(() => ({
 check(boothState.title !== homeTitle, 'booth link does not keep the homepage title');
 check(boothState.canonical === '', 'booth link has no canonical after the app starts');
 check(boothState.robots.length > 0 && boothState.robots.every((value) => value.includes('noindex')), 'booth link stays noindex after the app starts');
+const pageCsp = await page.evaluate(() => window.__cspViolations ?? []).catch(() => []);
+check(cspViolations.length + pageCsp.length === 0, `no enforced CSP violations on the built pages${cspViolations.length || pageCsp.length ? ': ' + [...cspViolations, ...pageCsp].slice(0, 4).join(' | ') : ''}`);
 check(errors.length === 0, `no page errors${errors.length ? ': ' + errors[0] : ''}`);
 
 // The URL chooses the language. An English browser still sees Thai at the existing URLs.
 const en = await browser.newContext({ locale: 'en-US' });
+await en.addInitScript(() => {
+  document.addEventListener('securitypolicyviolation', (event) => {
+    if (event.disposition && event.disposition !== 'enforce') return;
+    const list = (window.__cspViolations ??= []);
+    list.push(`${location.pathname} ${event.effectiveDirective} ${event.blockedURI}`);
+  });
+});
+en.on('console', (msg) => {
+  const text = msg.text();
+  if ((msg.type() === 'error' || msg.type() === 'warning') && /Content Security Policy/i.test(text) && !/report-only/i.test(text)) {
+    cspViolations.push(text.slice(0, 400));
+  }
+});
 const ep = await en.newPage();
 await ep.goto(base + '/', { waitUntil: 'domcontentloaded' });
 await ep.waitForSelector('#root header, #root nav', { timeout: 60000 });
 check((await ep.evaluate(() => document.documentElement.lang)) === 'th', 'English browsers still get Thai at /');
+const rootCsp = await ep.evaluate(() => window.__cspViolations ?? []).catch(() => []);
 await ep.goto(base + '/en', { waitUntil: 'domcontentloaded' });
 await ep.waitForSelector('#root header, #root nav', { timeout: 60000 });
 check((await ep.evaluate(() => document.documentElement.lang)) === 'en', 'English browsers get English at /en');
+const enCsp = await ep.evaluate(() => window.__cspViolations ?? []).catch(() => []);
+const localeCsp = [...rootCsp, ...enCsp];
+check(localeCsp.length === 0 && cspViolations.length === 0, `no enforced CSP violations on / or /en${localeCsp.length || cspViolations.length ? ': ' + [...localeCsp, ...cspViolations].slice(0, 4).join(' | ') : ''}`);
 await browser.close();
 server.close();
 console.log(failed ? `\n${failed} check(s) failed.` : '\nAll SEO checks passed.');
