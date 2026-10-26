@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
+import { Link } from 'react-router-dom';
 import type { FaceLandmarker, FaceLandmarkerResult } from '@mediapipe/tasks-vision';
 import { PageHeader } from '../components/PageHeader';
 import { Button, buttonClasses } from '../components/Button';
 import { OptionChips } from '../components/OptionChips';
 import { CameraStage, StageChip } from '../components/CameraStage';
-import { AlertIcon, CheckIcon, InfoIcon } from '../components/Icons';
+import { AlertIcon, ArrowRightIcon, CheckIcon, InfoIcon } from '../components/Icons';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { drawFaces, headRoll, type FaceEffect, type MeshConnections } from '../lib/faceEffects';
 import { useT } from '../i18n';
@@ -430,6 +431,11 @@ export default function FaceAR() {
           </ul>
           <p className="mt-8 flex items-start gap-2 text-sm text-muted">
             <InfoIcon className="mt-0.5 shrink-0" width={18} height={18} /> {f.note}
+          </p>
+          <p className="mt-4">
+            <Link to="/halloween-face" className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-electric-700 hover:underline">
+              {t.halloween.faceLink} <ArrowRightIcon width={16} height={16} />
+            </Link>
           </p>
         </div>
       </section>

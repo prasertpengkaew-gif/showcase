@@ -225,6 +225,20 @@ export const staticPages: SeoPage[] = [
     en: { title: 'Life-Size Halloween Gate AR Photo Spot', description: 'A spooky wooden archway with pumpkins, cobwebs and bats at real size. Place it on the floor through your phone camera, take a photo and save it to your phone. No app to install.' },
   },
   {
+    path: '/halloween-face',
+    priority: 0.8,
+    th: {
+      title: 'ฟิลเตอร์หน้าฮาโลวีน ฟักทอง กะโหลก แม่มด แวมไพร์',
+      description:
+        'ลองฟิลเตอร์ใบหน้าฮาโลวีนผ่านกล้องหน้า หัวฟักทอง เพนต์หน้ากะโหลก หมวกแม่มด และเขี้ยวแวมไพร์ พร้อมกรอบรูป บันทึกหรือแชร์จากมือถือได้ ไม่ต้องติดตั้งแอป',
+    },
+    en: {
+      title: 'Halloween Face Filters — Pumpkin, Skull, Witch and Vampire',
+      description:
+        'Halloween face filters for the front camera: pumpkin, sugar skull, witch hat and vampire fangs, with a frame. Save or share from your phone, no app to install.',
+    },
+  },
+  {
     path: '/app-design',
     priority: 0.7,
     th: {
