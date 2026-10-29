@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { GestureRecognizer, NormalizedLandmark } from '@mediapipe/tasks-vision';
+import type { GestureRecognizer } from '@mediapipe/tasks-vision';
 import questions from '../data/quizQuestions.json';
 import { Button } from '../components/Button';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
@@ -18,6 +18,7 @@ const SUBJECT_ART: Record<string, { icon: string; color: string; hint: string }>
 };
 type Question = { grade: number; subject: string; question: string; choices: string[]; answer: number };
 type Status = 'idle' | 'loading' | 'starting-camera' | 'running' | CameraProblem;
+type HandPointer = { x: number; y: number; progress: number; target: string };
 const allQuestions = questions as Question[];
 const formatMath = (text: string) => text
   .replaceAll('$', '')
@@ -46,31 +47,9 @@ function playSound(kind: 'correct' | 'wrong' | 'next' | 'win') {
   window.setTimeout(() => void ctx.close(), 900);
 }
 
-function drawHand(ctx: CanvasRenderingContext2D, landmarks: NormalizedLandmark[][]) {
-  const points = landmarks[0];
-  if (!points) return;
-  const width = ctx.canvas.width;
-  const height = ctx.canvas.height;
-  const links = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [5, 9], [9, 10], [10, 11], [11, 12], [9, 13], [13, 14], [14, 15], [15, 16], [13, 17], [17, 18], [18, 19], [19, 20], [0, 17]];
-  ctx.strokeStyle = '#a7f3d0';
-  ctx.lineWidth = Math.max(3, width / 180);
-  ctx.lineCap = 'round';
-  for (const [start, end] of links) {
-    ctx.beginPath();
-    ctx.moveTo(points[start].x * width, points[start].y * height);
-    ctx.lineTo(points[end].x * width, points[end].y * height);
-    ctx.stroke();
-  }
-  ctx.fillStyle = '#ffffff';
-  ctx.beginPath();
-  ctx.arc(points[8].x * width, points[8].y * height, Math.max(7, width / 55), 0, Math.PI * 2);
-  ctx.fill();
-}
-
 export default function QuizGame() {
   useDocumentTitle('เกมตอบคำถามด้วยมือ | TheNerdStudio');
   const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const recognizerRef = useRef<GestureRecognizer | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const rafRef = useRef(0);
@@ -81,7 +60,7 @@ export default function QuizGame() {
   const [grade, setGrade] = useState(1);
   const [subject, setSubject] = useState('');
   const [started, setStarted] = useState(false);
-  const [position, setPosition] = useState<number | null>(null);
+  const [pointer, setPointer] = useState<HandPointer | null>(null);
   const [status, setStatus] = useState<Status>(() => typeof window !== 'undefined' && !window.isSecureContext ? 'insecure' : 'idle');
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -89,14 +68,13 @@ export default function QuizGame() {
   const [sounds, setSounds] = useState(true);
   const [streak, setStreak] = useState(0);
   const [hold, setHold] = useState(0);
-  const startedRef = useRef(started);
+  const [handVisible, setHandVisible] = useState(false);
 
   const list = useMemo(() => allQuestions.filter((item) => item.grade === grade && subject && item.subject.startsWith(subject)), [grade, subject]);
   const question = list[questionIndex % Math.max(1, list.length)];
   questionRef.current = question;
   selectedRef.current = selected;
   soundRef.current = sounds;
-  startedRef.current = started;
 
   const answer = useCallback((index: number) => {
     const currentQuestion = questionRef.current;
@@ -116,7 +94,8 @@ export default function QuizGame() {
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
     if (videoRef.current) videoRef.current.srcObject = null;
-    setPosition(null);
+    document.querySelector('.hand-hovered')?.classList.remove('hand-hovered');
+    setPointer(null);
     setHold(0);
   }, []);
 
@@ -149,8 +128,10 @@ export default function QuizGame() {
       await video.play();
       setStatus('running');
       let lastVideoTime = -1;
-      let candidate = -1;
+      let candidateTarget: HTMLElement | null = null;
       let candidateSince = 0;
+      let activationLocked = false;
+      let highlighted: HTMLElement | null = null;
       let lastQuestionVersion = questionVersionRef.current;
       let lastUi = 0;
       const tick = () => {
@@ -160,27 +141,51 @@ export default function QuizGame() {
         const now = performance.now();
         if (lastQuestionVersion !== questionVersionRef.current) {
           lastQuestionVersion = questionVersionRef.current;
-          candidate = -1;
+          candidateTarget = null;
           candidateSince = 0;
+          activationLocked = false;
         }
         const result = recognizerRef.current!.recognizeForVideo(video, now);
-        const canvas = canvasRef.current!;
-        if (canvas.width !== video.videoWidth) { canvas.width = video.videoWidth; canvas.height = video.videoHeight; }
-        const ctx = canvas.getContext('2d')!;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawHand(ctx, result.landmarks);
         const tip = result.landmarks[0]?.[8];
-        const next = tip ? Math.min(2, Math.floor((1 - tip.x) * 3)) : -1;
-        if (next < 0) { candidate = -1; candidateSince = 0; }
-        else if (next !== candidate) { candidate = next; candidateSince = now; }
+        if (!tip) {
+          setHandVisible(false);
+          candidateTarget = null;
+          candidateSince = 0;
+          activationLocked = false;
+          highlighted?.classList.remove('hand-hovered');
+          highlighted = null;
+        }
         if (now - lastUi > 80) {
           lastUi = now;
-          setPosition(next >= 0 ? next : null);
-          const elapsed = next >= 0 ? now - candidateSince : 0;
-          setHold(Math.min(1, elapsed / 1100));
-          if (elapsed > 1100 && startedRef.current) {
-            answer(next);
-            candidateSince = now + 100000;
+          if (!tip) {
+            setPointer(null);
+            setHold(0);
+          } else {
+            setHandVisible(true);
+            const x = Math.max(0, Math.min(window.innerWidth - 1, (1 - tip.x) * window.innerWidth));
+            const y = Math.max(0, Math.min(window.innerHeight - 1, tip.y * window.innerHeight));
+            const hit = document.elementFromPoint(x, y);
+            const target = hit?.closest<HTMLElement>('button, a, [role="button"], [data-hand-control]') ?? null;
+            const usableTarget = target && !target.matches(':disabled, [aria-disabled="true"]') ? target : null;
+            if (usableTarget !== candidateTarget) {
+              candidateTarget = usableTarget;
+              candidateSince = now;
+            }
+            if (highlighted !== usableTarget) {
+              highlighted?.classList.remove('hand-hovered');
+              highlighted = usableTarget;
+              highlighted?.classList.add('hand-hovered');
+            }
+            if (!usableTarget) activationLocked = false;
+            const elapsed = usableTarget ? now - candidateSince : 0;
+            const progress = usableTarget ? Math.min(1, elapsed / 900) : 0;
+            const label = usableTarget?.innerText?.replace(/\s+/g, ' ').trim().slice(0, 42) ?? '';
+            setPointer({ x, y, progress, target: label });
+            setHold(progress);
+            if (usableTarget && progress >= 1 && !activationLocked) {
+              activationLocked = true;
+              usableTarget.click();
+            }
           }
         }
       };
@@ -198,7 +203,7 @@ export default function QuizGame() {
     setQuestionIndex((value) => value + 1);
     selectedRef.current = null;
     setSelected(null);
-    setPosition(null);
+    setPointer(null);
     setHold(0);
     if (status === 'running') playSound('next');
   };
@@ -206,7 +211,7 @@ export default function QuizGame() {
   const changeSubject = (value: string) => { questionVersionRef.current += 1; setSubject(value); setQuestionIndex(0); setSelected(null); selectedRef.current = null; setScore(0); setStreak(0); };
   const chooseAnotherSubject = () => { questionVersionRef.current += 1; setStarted(false); changeSubject(''); };
   const cameraStatus: Partial<Record<Status, string>> = {
-    idle: 'กดเปิดกล้อง แล้วขยับนิ้วชี้ซ้าย–ขวาเพื่อเลือกคำตอบ',
+    idle: 'กดเปิดการควบคุมด้วยมือ แล้วชี้นิ้วไปที่ปุ่มบนหน้าจอ',
     loading: 'กำลังเตรียมระบบตรวจจับมือ…',
     'starting-camera': 'กำลังเปิดกล้อง…',
     denied: 'ยังไม่ได้รับอนุญาตใช้กล้อง · อนุญาตกล้องจากการตั้งค่าเบราว์เซอร์แล้วลองอีกครั้ง',
@@ -233,25 +238,16 @@ export default function QuizGame() {
           <button type="button" onClick={() => setSounds((value) => !value)} className="rounded-full border-2 border-[#e8d9b9] bg-white/80 px-4 py-2 font-bold shadow-sm" aria-pressed={sounds}>{sounds ? '🔊 เสียงเปิด' : '🔇 ปิดเสียง'}</button>
         </header>
 
-        <section className="mx-auto mb-5 max-w-4xl overflow-hidden rounded-[2rem] border-4 border-white bg-[#263044] shadow-[0_16px_40px_rgba(38,48,68,.2)]" aria-label="กล้องตรวจจับมือ">
-          <div className="relative aspect-video overflow-hidden bg-[radial-gradient(ellipse_at_50%_120%,#365c68,#17263e_70%)]">
-            <video ref={videoRef} muted playsInline className={`absolute inset-0 h-full w-full object-cover ${status === 'running' ? 'scale-x-[-1]' : 'hidden'}`} />
-            <canvas ref={canvasRef} aria-hidden className={`pointer-events-none absolute inset-0 h-full w-full object-cover ${status === 'running' ? 'scale-x-[-1]' : 'hidden'}`} />
-            {status !== 'running' && <div className="absolute inset-0 grid place-items-center text-center text-white"><div>
-              <span className="text-6xl" aria-hidden>🖐️</span>
-              <p className="mt-3 max-w-lg px-5 font-bold">{cameraStatus[status]}</p>
-              {(status === 'idle' || status === 'denied' || status === 'error' || status === 'no-camera') && <button type="button" onClick={startCamera} className="mt-5 rounded-full bg-[#f4a742] px-6 py-3 font-black text-[#382a18] shadow-lg transition hover:scale-105">{status === 'idle' ? 'เปิดกล้องเพื่อตรวจจับมือ 📷' : 'ลองเปิดกล้องอีกครั้ง'}</button>}
-            </div></div>}
-            {status === 'running' && started && <div className="absolute inset-x-0 bottom-0 grid grid-cols-3 gap-1 p-2 sm:gap-2 sm:p-3" aria-hidden>
-              {question?.choices.map((choice, index) => <div key={index} className={`min-h-14 rounded-xl border-2 px-2 py-2 text-center text-sm font-black shadow-lg backdrop-blur-sm sm:text-base ${position === index ? 'scale-[1.03] border-[#ffdf75] bg-[#ffdf75]/90 text-[#3b321e]' : 'border-white/50 bg-[#152036]/75 text-white'}`}><span className="mr-1 inline-grid h-6 w-6 place-items-center rounded-full bg-white/90 text-xs text-[#17263e]">{LETTERS[index]}</span>{formatMath(choice)}</div>)}
-            </div>}
-            {status === 'running' && <div className="absolute left-1/2 top-3 -translate-x-1/2 rounded-full bg-[#101a2c]/75 px-4 py-1.5 text-center text-sm font-bold text-white">{started ? (position === null ? 'ขยับมือซ้ายหรือขวาเพื่อชี้คำตอบ' : `กำลังเลือกข้อ ${LETTERS[position]}…`) : 'ตรวจจับมือแล้ว · เลือกชั้นเรียนและวิชาได้เลย'}</div>}
+        <section className="mx-auto mb-5 flex max-w-4xl flex-wrap items-center justify-between gap-4 rounded-2xl border-2 border-white bg-white/85 px-4 py-3 shadow-sm" aria-label="สถานะการตรวจจับมือ">
+          <video ref={videoRef} muted playsInline aria-hidden tabIndex={-1} className="pointer-events-none fixed -left-2 top-0 h-px w-px opacity-0" />
+          <div className="flex items-center gap-3">
+            <span className={`grid h-11 w-11 place-items-center rounded-full text-xl ${status === 'running' && handVisible ? 'bg-emerald-100' : 'bg-[#fff0c9]'}`} aria-hidden>🖐️</span>
+            <div>
+              <p className="font-extrabold">{status === 'running' ? (handVisible ? 'ตรวจจับมือแล้ว · ภาพกล้องซ่อนไว้' : 'เปิดกล้องแล้ว · กำลังหามือ…') : status === 'idle' ? 'ควบคุมเมนูและเกมด้วยมือได้' : cameraStatus[status]}</p>
+              <p className="text-sm text-[#667085]">{status === 'running' ? 'ชี้นิ้วไปยังปุ่ม แล้วค้างไว้เพื่อเลือก' : 'เปิดกล้องครั้งแรกด้วยปุ่มนี้ แล้วใช้ปลายนิ้วชี้ควบคุมหน้าจอ'}</p>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center justify-between gap-3 bg-white px-4 py-3">
-            <p className="text-sm font-semibold text-[#667085]">{status === 'running' ? (started ? 'ค้างนิ้วชี้ที่คำตอบเพื่อยืนยัน' : 'กล้องทำงานอยู่บนหน้าเลือกวิชาแล้ว') : 'เปิดกล้องได้เลย ก่อนเลือกชั้นเรียนและวิชา'}</p>
-            {status === 'running' && <button type="button" onClick={() => { stopCamera(); setStatus('idle'); }} className="rounded-full bg-[#f4eee2] px-4 py-2 text-sm font-bold">ปิดกล้อง</button>}
-            {status === 'running' && started && <div className="flex items-center gap-2 text-sm font-bold"><span>ค้างเพื่อเลือก</span><div className="h-2 w-24 overflow-hidden rounded-full bg-[#f3efe5]"><div className="h-full rounded-full bg-gradient-to-r from-[#58c891] to-[#f3bf4c]" style={{ width: `${hold * 100}%` }} /></div></div>}
-          </div>
+          {status === 'running' ? <button type="button" onClick={() => { stopCamera(); setStatus('idle'); setHandVisible(false); }} className="rounded-full bg-[#f4eee2] px-4 py-2 text-sm font-bold">ปิดกล้อง</button> : (status === 'idle' || status === 'denied' || status === 'error' || status === 'no-camera') && <button type="button" onClick={startCamera} className="rounded-full bg-[#f4a742] px-5 py-2.5 font-black text-[#382a18] shadow-sm">{status === 'idle' ? 'เปิดการควบคุมด้วยมือ' : 'ลองเปิดกล้องอีกครั้ง'}</button>}
         </section>
 
         {!started ? (
@@ -290,11 +286,7 @@ export default function QuizGame() {
         ) : (
         <>
         <section className="mb-5 flex flex-wrap gap-3 rounded-3xl border border-white/90 bg-white/80 p-4 shadow-[0_8px_30px_rgba(76,67,48,.08)] backdrop-blur sm:p-5" aria-label="ตั้งค่าเกม">
-          <label className="flex items-center gap-2 text-sm font-bold">ชั้นเรียน
-            <select value={grade} onChange={(event) => changeGrade(Number(event.target.value))} className="rounded-xl border-2 border-[#e8d9b9] bg-white px-3 py-2 text-base">
-              {[1, 2, 3].map((item) => <option key={item} value={item}>ป.{item}</option>)}
-            </select>
-          </label>
+          <div className="flex items-center gap-2 text-sm font-bold"><span>ชั้นเรียน</span>{[1, 2, 3].map((item) => <button key={item} type="button" onClick={() => changeGrade(item)} aria-pressed={grade === item} className={`rounded-xl border-2 px-3 py-2 ${grade === item ? 'border-[#f1aa3b] bg-[#fff0c9]' : 'border-[#e8d9b9] bg-white'}`}>ป.{item}</button>)}</div>
           <div className="flex items-center gap-2 rounded-xl bg-[#e8f7ee] px-3 py-2 font-bold text-[#23845e]">{SUBJECT_ART[subject]?.icon} {subject.replace('วิชา', '')}</div>
           <button type="button" onClick={chooseAnotherSubject} className="rounded-xl border-2 border-[#e8d9b9] bg-white px-3 py-2 text-sm font-bold">เปลี่ยนวิชา</button>
           <div className="ml-auto flex items-center gap-4 rounded-xl bg-[#fff2d9] px-4 py-2 font-bold"><span>ข้อ {(questionIndex % list.length) + 1}/{list.length}</span><span>⭐ {score} คะแนน</span></div>
@@ -320,13 +312,20 @@ export default function QuizGame() {
               <li className="flex gap-3"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#e9e3ff] font-black text-[#624ab0]">3</span><span>ค้างที่คำตอบประมาณ 1 วินาที เพื่อยืนยัน</span></li>
               <li className="flex gap-3"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#ffdfdc] font-black text-[#a83d39]">4</span><span>ตอบครบแล้วกด “ข้อต่อไป” หรือแตะตัวเลือกบนจอได้</span></li>
             </ol>
-            {status === 'running' && <div className="mt-6 rounded-2xl bg-[#f3efe5] p-4"><div className="mb-2 flex justify-between text-sm font-bold"><span>ค้างเพื่อเลือก</span><span>{position === null ? '—' : `${Math.round(hold * 100)}%`}</span></div><div className="h-3 overflow-hidden rounded-full bg-white"><div className="h-full rounded-full bg-gradient-to-r from-[#58c891] to-[#f3bf4c] transition-[width] duration-100" style={{ width: `${hold * 100}%` }} /></div></div>}
+            {status === 'running' && <div className="mt-6 rounded-2xl bg-[#f3efe5] p-4"><div className="mb-2 flex justify-between text-sm font-bold"><span>{pointer?.target ? `กำลังชี้: ${pointer.target}` : 'ชี้ไปยังปุ่มเพื่อเลือก'}</span><span>{pointer?.target ? `${Math.round(hold * 100)}%` : '—'}</span></div><div className="h-3 overflow-hidden rounded-full bg-white"><div className="h-full rounded-full bg-gradient-to-r from-[#58c891] to-[#f3bf4c] transition-[width] duration-100" style={{ width: `${hold * 100}%` }} /></div></div>}
             <p className="mt-5 border-t border-[#eee4d1] pt-4 text-xs leading-relaxed text-[#8991a0]">ใช้กล้องเพื่อประมวลผลท่ามือบนอุปกรณ์ของคุณ ภาพจากกล้องไม่ได้ถูกบันทึก</p>
           </aside>
         </section>
         </>
         )}
       </div>
+      {status === 'running' && pointer && <div className="pointer-events-none fixed z-[100] -translate-x-1/2 -translate-y-1/2" style={{ left: pointer.x, top: pointer.y }} aria-hidden>
+        <div className="grid h-12 w-12 place-items-center rounded-full p-[4px] shadow-xl" style={{ background: `conic-gradient(#ffb938 ${pointer.progress * 360}deg, rgba(255,255,255,.88) 0deg)` }}>
+          <div className="grid h-full w-full place-items-center rounded-full border-2 border-[#263044] bg-[#fff9e9] text-xl">👆</div>
+        </div>
+        <div className="absolute left-7 top-8 max-w-56 rounded-xl bg-[#263044]/95 px-3 py-2 text-xs font-bold text-white shadow-lg">{pointer.target ? `ค้างเพื่อเลือก · ${pointer.target}` : 'ชี้ไปยังปุ่มที่ต้องการ'}</div>
+      </div>}
+      <style>{`.hand-hovered{outline:4px solid #f4a742!important;outline-offset:4px;box-shadow:0 0 0 8px rgba(244,167,66,.22)!important;}`}</style>
     </main>
   );
 }
