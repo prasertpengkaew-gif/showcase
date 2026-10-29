@@ -13,6 +13,7 @@ const FaceAR = lazy(() => import('./pages/FaceAR'));
 const PrintAR = lazy(() => import('./pages/PrintAR'));
 const VirtualTour = lazy(() => import('./pages/VirtualTour'));
 const HandGestures = lazy(() => import('./pages/HandGestures'));
+const QuizGame = lazy(() => import('./pages/QuizGame'));
 const Demos = lazy(() => import('./pages/Demos'));
 const TryOn = lazy(() => import('./pages/TryOn'));
 const EventBooth = lazy(() => import('./pages/EventBooth'));
@@ -83,6 +84,7 @@ function publicPages() {
       <Route path="marker-chem" element={page(<MarkerChem />)} />
       <Route path="ar-cube" element={page(<ARCube />)} />
       <Route path="machine-tags" element={page(<MachineTags />)} />
+      <Route path="quiz-game" element={page(<QuizGame />)} />
       <Route path="motion-game" element={page(<MotionGame />)} />
       <Route path="map-3d" element={page(<Map3D />)} />
       <Route path="digital-twin" element={page(<DigitalTwin />)} />
