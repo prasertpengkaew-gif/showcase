@@ -19,7 +19,15 @@ const SUBJECT_ART: Record<string, { icon: string; color: string; hint: string }>
 type Question = { grade: number; subject: string; question: string; choices: string[]; answer: number };
 type Status = 'idle' | 'loading' | 'starting-camera' | 'running' | CameraProblem;
 type HandPointer = { x: number; y: number; progress: number; target: string };
+type Screen = 'home' | 'grade' | 'subject' | 'question';
 const allQuestions = questions as Question[];
+const SUBJECT_MOTIFS: Record<string, string[]> = {
+  'วิชาวิทยาศาสตร์': ['🌱', '🪐', '⚡'],
+  'วิชาคณิตศาสตร์': ['➕', '🔺', '🔢'],
+  'วิชาภาษาไทย': ['ก', 'ข', '📚'],
+  'วิชาสังคมศึกษา': ['🌏', '🧭', '🏛️'],
+  'วิชาภาษาอังกฤษ': ['A', 'B', 'C'],
+};
 const formatMath = (text: string) => text
   .replaceAll('$', '')
   .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '$1/$2')
@@ -47,6 +55,21 @@ function playSound(kind: 'correct' | 'wrong' | 'next' | 'win') {
   window.setTimeout(() => void ctx.close(), 900);
 }
 
+function SubjectAnimation({ subject, compact = false }: { subject: string; compact?: boolean }) {
+  const art = SUBJECT_ART[subject];
+  const motifs = SUBJECT_MOTIFS[subject] ?? ['🚀', '🪐', '⭐'];
+  return (
+    <div className={`relative grid place-items-center ${compact ? 'h-36 w-36' : 'h-64 w-full max-w-md'}`} aria-hidden>
+      <div className="absolute h-[72%] aspect-square rounded-full bg-white/60 shadow-[0_20px_60px_rgba(81,150,175,.17)]" />
+      <span className="quiz-orbit absolute left-[12%] top-[15%] text-3xl sm:text-4xl">{motifs[0]}</span>
+      <span className="quiz-orbit-slow absolute right-[10%] top-[23%] text-2xl sm:text-3xl">{motifs[1]}</span>
+      <span className="quiz-orbit absolute bottom-[14%] right-[18%] text-3xl sm:text-4xl">{motifs[2]}</span>
+      <span className="quiz-subject-bob relative grid h-28 w-28 place-items-center rounded-[2rem] border-4 border-white bg-white text-6xl shadow-xl sm:h-36 sm:w-36 sm:text-7xl">{art?.icon ?? '🌌'}</span>
+      {!compact && <span className="absolute bottom-0 rounded-full bg-white/80 px-4 py-1.5 text-sm font-bold text-[#56707c]">{art?.hint ?? 'ออกสำรวจจักรวาลความรู้กัน!'}</span>}
+    </div>
+  );
+}
+
 export default function QuizGame() {
   useDocumentTitle('เกมตอบคำถามด้วยมือ | TheNerdStudio');
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -59,7 +82,7 @@ export default function QuizGame() {
   const questionVersionRef = useRef(0);
   const [grade, setGrade] = useState(1);
   const [subject, setSubject] = useState('');
-  const [started, setStarted] = useState(false);
+  const [screen, setScreen] = useState<Screen>('home');
   const [pointer, setPointer] = useState<HandPointer | null>(null);
   const [status, setStatus] = useState<Status>(() => typeof window !== 'undefined' && !window.isSecureContext ? 'insecure' : 'idle');
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -67,14 +90,41 @@ export default function QuizGame() {
   const [score, setScore] = useState(0);
   const [sounds, setSounds] = useState(true);
   const [streak, setStreak] = useState(0);
-  const [hold, setHold] = useState(0);
   const [handVisible, setHandVisible] = useState(false);
+  const backgroundSubject = Math.max(0, SUBJECTS.indexOf(subject));
+  const subjectPalettes = [
+    { outer: '#111735', panel: '#fffaf0', glow: '#6654ba', accent: '#ffd79a' },
+    { outer: '#18344b', panel: '#f2fbff', glow: '#62c7d8', accent: '#ffd36e' },
+    { outer: '#46304d', panel: '#fff8eb', glow: '#f3a85e', accent: '#e97e83' },
+    { outer: '#183d4a', panel: '#f1fbf4', glow: '#55b9a2', accent: '#f6ce72' },
+    { outer: '#26395f', panel: '#f4f7ff', glow: '#83a9ef', accent: '#e6a8d5' },
+  ];
+  const palette = subjectPalettes[backgroundSubject];
+  const backgroundSymbols = [[], ['＋', '÷', '△', '○', '123'], ['ก', 'ข', 'ค', '📖', '✎'], ['🌏', '🧭', '🏛', '◎'], ['A', 'B', 'C', 'ABC', '✎']][backgroundSubject];
 
   const list = useMemo(() => allQuestions.filter((item) => item.grade === grade && subject && item.subject.startsWith(subject)), [grade, subject]);
   const question = list[questionIndex % Math.max(1, list.length)];
   questionRef.current = question;
   selectedRef.current = selected;
   soundRef.current = sounds;
+
+  const readQuestion = useCallback(() => {
+    if (!question || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const spokenChoices = question.choices
+      .map((choice, index) => `ตัวเลือก ${LETTERS[index]} ${formatMath(choice)}`)
+      .join(' ... ');
+    const utterance = new SpeechSynthesisUtterance(`โจทย์ ${formatMath(question.question)} ... ${spokenChoices}`);
+    utterance.lang = 'th-TH';
+    utterance.rate = 0.88;
+    window.speechSynthesis.speak(utterance);
+  }, [question]);
+
+  useEffect(() => {
+    if (screen !== 'question' || !question) return;
+    const timer = window.setTimeout(readQuestion, 350);
+    return () => window.clearTimeout(timer);
+  }, [screen, question, readQuestion]);
 
   const answer = useCallback((index: number) => {
     const currentQuestion = questionRef.current;
@@ -96,19 +146,20 @@ export default function QuizGame() {
     if (videoRef.current) videoRef.current.srcObject = null;
     document.querySelector('.hand-hovered')?.classList.remove('hand-hovered');
     setPointer(null);
-    setHold(0);
   }, []);
 
   useEffect(() => () => {
     stopCamera();
+    window.speechSynthesis?.cancel();
     recognizerRef.current?.close();
     recognizerRef.current = null;
   }, [stopCamera]);
 
-  const startCamera = async () => {
+  const startCamera = async (): Promise<boolean> => {
+    if (status === 'running') return true;
     if (!navigator.mediaDevices?.getUserMedia) {
       setStatus(window.isSecureContext ? 'no-camera' : 'insecure');
-      return;
+      return false;
     }
     try {
       setStatus('starting-camera');
@@ -159,7 +210,6 @@ export default function QuizGame() {
           lastUi = now;
           if (!tip) {
             setPointer(null);
-            setHold(0);
           } else {
             setHandVisible(true);
             const x = Math.max(0, Math.min(window.innerWidth - 1, (1 - tip.x) * window.innerWidth));
@@ -181,7 +231,6 @@ export default function QuizGame() {
             const progress = usableTarget ? Math.min(1, elapsed / 900) : 0;
             const label = usableTarget?.innerText?.replace(/\s+/g, ' ').trim().slice(0, 42) ?? '';
             setPointer({ x, y, progress, target: label });
-            setHold(progress);
             if (usableTarget && progress >= 1 && !activationLocked) {
               activationLocked = true;
               usableTarget.click();
@@ -190,26 +239,45 @@ export default function QuizGame() {
         }
       };
       tick();
+      return true;
     } catch (error) {
       stopCamera();
       const problem = cameraProblem(error);
       if (problem === 'error') console.error('Quiz camera failed to start', error);
       setStatus(problem);
+      return false;
     }
   };
 
-  const nextQuestion = () => {
+  const beginGame = async () => {
+    if (status !== 'running') await startCamera();
+    setGrade(1);
+    setSubject('');
+    setQuestionIndex(0);
+    setSelected(null);
+    selectedRef.current = null;
+    setScore(0);
+    setStreak(0);
+    setScreen('grade');
+  };
+
+  const nextQuestion = useCallback(() => {
     questionVersionRef.current += 1;
     setQuestionIndex((value) => value + 1);
     selectedRef.current = null;
     setSelected(null);
     setPointer(null);
-    setHold(0);
     if (status === 'running') playSound('next');
-  };
+  }, [status]);
+
+  useEffect(() => {
+    if (screen !== 'question' || selected === null) return;
+    const timer = window.setTimeout(nextQuestion, 1400);
+    return () => window.clearTimeout(timer);
+  }, [screen, selected, questionIndex, nextQuestion]);
   const changeGrade = (value: number) => { questionVersionRef.current += 1; setGrade(value); setQuestionIndex(0); setSelected(null); selectedRef.current = null; setScore(0); setStreak(0); };
   const changeSubject = (value: string) => { questionVersionRef.current += 1; setSubject(value); setQuestionIndex(0); setSelected(null); selectedRef.current = null; setScore(0); setStreak(0); };
-  const chooseAnotherSubject = () => { questionVersionRef.current += 1; setStarted(false); changeSubject(''); };
+  const chooseAnotherSubject = () => { questionVersionRef.current += 1; setScreen('subject'); };
   const cameraStatus: Partial<Record<Status, string>> = {
     idle: 'กดเปิดการควบคุมด้วยมือ แล้วชี้นิ้วไปที่ปุ่มบนหน้าจอ',
     loading: 'กำลังเตรียมระบบตรวจจับมือ…',
@@ -221,111 +289,139 @@ export default function QuizGame() {
   };
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#fff8e9] pb-16 text-[#263044]">
-      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -left-24 top-24 h-64 w-64 rounded-full bg-[#ffca75]/40 blur-3xl" />
-        <div className="absolute -right-24 top-72 h-80 w-80 rounded-full bg-[#9fe6d0]/50 blur-3xl" />
-        <div className="absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-[#c4b5fd]/30 blur-3xl" />
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(0deg,#c7eac4_0%,#c7eac4_20%,transparent_20%)]" />
-      </div>
-      <div className="relative mx-auto max-w-6xl px-4 pb-8 pt-28 sm:px-6 sm:pt-32">
-        <header className="mb-7 flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-extrabold uppercase tracking-[.18em] text-[#f08b35]">ห้องเรียนแสนสนุก</p>
-            <h1 className="mt-1 font-display text-3xl font-black sm:text-5xl">เกมตอบคำถาม <span aria-hidden>🌈</span></h1>
-            <p className="mt-2 text-sm text-[#596579] sm:text-base">ยกมือหน้ากล้อง ชี้คำตอบ แล้วค้างไว้เพื่อเลือก</p>
-          </div>
-          <button type="button" onClick={() => setSounds((value) => !value)} className="rounded-full border-2 border-[#e8d9b9] bg-white/80 px-4 py-2 font-bold shadow-sm" aria-pressed={sounds}>{sounds ? '🔊 เสียงเปิด' : '🔇 ปิดเสียง'}</button>
-        </header>
+    <main className="fixed inset-0 z-[60] overflow-hidden text-[#16213c]" style={{ backgroundColor: palette.outer }}>
+      <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden>
+        <defs>
+          <radialGradient id="quiz-nebula">
+            <stop offset="0%" stopColor={palette.glow} stopOpacity=".72" />
+            <stop offset="100%" stopColor={palette.glow} stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id="quiz-planet"><stop offset="0%" stopColor="#ffd79a" /><stop offset="100%" stopColor="#f58c75" /></radialGradient>
+          <linearGradient id="quiz-planet-ring"><stop offset="0%" stopColor="#b5dfff" /><stop offset="50%" stopColor="#e5c1ff" /><stop offset="100%" stopColor="#83d6e4" /></linearGradient>
+        </defs>
+        <rect width="1600" height="900" fill={palette.outer} />
+        {backgroundSubject === 0 ? <>
+        <ellipse cx="370" cy="240" rx="540" ry="410" fill="url(#quiz-nebula)" />
+        <ellipse cx="1420" cy="690" rx="470" ry="390" fill="url(#quiz-nebula)" opacity=".62" />
+        <g fill="#fff8d9">
+          <circle cx="102" cy="120" r="2.8" /><circle cx="262" cy="385" r="2" /><circle cx="481" cy="96" r="2.4" />
+          <circle cx="720" cy="229" r="1.8" /><circle cx="875" cy="112" r="2.5" /><circle cx="1100" cy="316" r="2" />
+          <circle cx="1284" cy="96" r="2.4" /><circle cx="1510" cy="214" r="2" /><circle cx="118" cy="695" r="2" />
+          <circle cx="450" cy="782" r="2.4" /><circle cx="960" cy="755" r="1.8" /><circle cx="1465" cy="605" r="2.5" />
+        </g>
+        <g fill="none" stroke="#d8d8ff" strokeOpacity=".32" strokeWidth="2">
+          <path d="M135 200l72 43 63-58 69 35" /><path d="M1160 193l55-45 65 35 61-57" />
+        </g>
+        <g className="quiz-planet-float">
+          <ellipse cx="1335" cy="286" rx="122" ry="38" transform="rotate(-18 1335 286)" fill="none" stroke="url(#quiz-planet-ring)" strokeWidth="12" />
+          <circle cx="1335" cy="286" r="63" fill="url(#quiz-planet)" />
+          <path d="M1290 275c25 10 53 11 83 1M1306 307c20 7 39 7 57 0" fill="none" stroke="#dc766f" strokeOpacity=".35" strokeWidth="7" strokeLinecap="round" />
+        </g>
+        <g className="quiz-moon-float"><circle cx="245" cy="680" r="45" fill="#b7a8ff" /><circle cx="260" cy="664" r="43" fill="#20224b" /><circle cx="205" cy="670" r="5" fill="#fff8d9" /></g>
+        <g fill="#fff8d9" opacity=".8">
+          <path d="M690 360l5 13 13 5-13 5-5 13-5-13-13-5 13-5z" /><path d="M1080 565l4 10 10 4-10 4-4 10-4-10-10-4 10-4z" />
+        </g>
+        </> : <g fontFamily="sans-serif" fontWeight="800" fill="#fff" opacity=".76">
+          {backgroundSymbols.map((symbol, index) => {
+            const positions = [[150, 190], [390, 700], [730, 155], [1090, 715], [1460, 245]];
+            const [x, y] = positions[index];
+            return <g key={symbol + index} transform={`rotate(${index % 2 ? -12 : 12} ${x} ${y})`}>
+              <circle cx={x} cy={y} r="62" fill={palette.glow} opacity=".22" />
+              <text x={x} y={y + 16} textAnchor="middle" fontSize={symbol.length > 2 ? 34 : 54}>{symbol}</text>
+            </g>;
+          })}
+          <circle cx="1310" cy="410" r="190" fill="none" stroke={palette.accent} strokeWidth="3" opacity=".38" />
+          <circle cx="1310" cy="410" r="232" fill="none" stroke={palette.glow} strokeWidth="2" opacity=".32" />
+        </g>}
+      </svg>
 
-        <section className="mx-auto mb-5 flex max-w-4xl flex-wrap items-center justify-between gap-4 rounded-2xl border-2 border-white bg-white/85 px-4 py-3 shadow-sm" aria-label="สถานะการตรวจจับมือ">
-          <video ref={videoRef} muted playsInline aria-hidden tabIndex={-1} className="pointer-events-none fixed -left-2 top-0 h-px w-px opacity-0" />
-          <div className="flex items-center gap-3">
-            <span className={`grid h-11 w-11 place-items-center rounded-full text-xl ${status === 'running' && handVisible ? 'bg-emerald-100' : 'bg-[#fff0c9]'}`} aria-hidden>🖐️</span>
-            <div>
-              <p className="font-extrabold">{status === 'running' ? (handVisible ? 'ตรวจจับมือแล้ว · ภาพกล้องซ่อนไว้' : 'เปิดกล้องแล้ว · กำลังหามือ…') : status === 'idle' ? 'ควบคุมเมนูและเกมด้วยมือได้' : cameraStatus[status]}</p>
-              <p className="text-sm text-[#667085]">{status === 'running' ? 'ชี้นิ้วไปยังปุ่ม แล้วค้างไว้เพื่อเลือก' : 'เปิดกล้องครั้งแรกด้วยปุ่มนี้ แล้วใช้ปลายนิ้วชี้ควบคุมหน้าจอ'}</p>
-            </div>
-          </div>
-          {status === 'running' ? <button type="button" onClick={() => { stopCamera(); setStatus('idle'); setHandVisible(false); }} className="rounded-full bg-[#f4eee2] px-4 py-2 text-sm font-bold">ปิดกล้อง</button> : (status === 'idle' || status === 'denied' || status === 'error' || status === 'no-camera') && <button type="button" onClick={startCamera} className="rounded-full bg-[#f4a742] px-5 py-2.5 font-black text-[#382a18] shadow-sm">{status === 'idle' ? 'เปิดการควบคุมด้วยมือ' : 'ลองเปิดกล้องอีกครั้ง'}</button>}
-        </section>
+      <div className="absolute left-5 top-3 z-10 text-xs font-black tracking-[.24em] text-white/75 sm:left-10 sm:top-4 sm:text-sm">✦ LITTLE ORBIT · LEARNING GAME</div>
+      <section className="absolute inset-x-3 bottom-3 top-12 overflow-hidden rounded-[30px] border border-white/80 shadow-[0_24px_100px_rgba(0,0,0,.45)] backdrop-blur-xl sm:inset-x-7 sm:bottom-6 sm:top-14 md:inset-x-[5.2vw]" style={{ backgroundColor: palette.panel }}>
+        <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: `radial-gradient(ellipse at 100% 0%, ${palette.accent}35, transparent 38%), radial-gradient(ellipse at 0% 100%, ${palette.glow}35, transparent 45%)` }} />
+        <div aria-hidden className="pointer-events-none absolute right-[8%] top-[20%] h-24 w-24 rounded-full border sm:h-40 sm:w-40" style={{ borderColor: `${palette.glow}55` }} />
+        <div aria-hidden className="pointer-events-none absolute right-[10%] top-[23%] h-16 w-16 rounded-full border sm:h-32 sm:w-32" style={{ borderColor: `${palette.accent}66` }} />
+        <div className="absolute left-[6%] top-[6%] z-10">
+          <p className="text-xs font-black tracking-[.18em] text-[#4f6872] sm:text-sm">ห้องเรียนแสนสนุก</p>
+          <h1 className="mt-1 text-3xl font-black leading-none sm:text-5xl">{screen === 'home' ? 'เกมตอบคำถาม' : screen === 'grade' ? 'เลือกชั้นเรียน' : screen === 'subject' ? 'เลือกวิชา' : 'พร้อมลุยโจทย์!'}</h1>
+          {screen !== 'home' && <p className="mt-2 text-sm font-bold text-[#4f6872] sm:text-base">{screen === 'grade' ? 'เลือกชั้นที่กำลังเรียนอยู่' : screen === 'subject' ? 'เลือกวิชาที่อยากผจญภัย' : subject.replace('วิชา', '') + ' · ป.' + grade}</p>}
+        </div>
 
-        {!started ? (
-        <section className="mx-auto max-w-4xl rounded-[2rem] border-4 border-white bg-white/90 p-5 shadow-[0_14px_40px_rgba(76,67,48,.1)] sm:p-8" aria-label="เลือกวิชาและชั้นเรียน">
-          <div className="text-center">
-            <p className="text-sm font-extrabold uppercase tracking-[.16em] text-[#f08b35]">เตรียมตัวให้พร้อม</p>
-            <h2 className="mt-2 text-2xl font-black sm:text-3xl">เลือกชั้นเรียนและวิชาที่อยากเล่น</h2>
-            <p className="mt-2 text-sm text-[#667085]">แต่ละวิชามีคำถาม 10 ข้อ พร้อมแล้วค่อยเริ่มเกม</p>
-          </div>
-          <div className="mt-7">
-            <h3 className="mb-3 text-center text-base font-extrabold">เลือกชั้นเรียน</h3>
-            <div className="mx-auto grid max-w-lg grid-cols-3 gap-3">
-              {[1, 2, 3].map((item) => <button key={item} type="button" onClick={() => changeGrade(item)} aria-pressed={grade === item} className={`rounded-2xl border-2 px-4 py-3 text-lg font-black transition hover:-translate-y-0.5 ${grade === item ? 'border-[#f1aa3b] bg-[#fff0c9] text-[#60451c] shadow-md' : 'border-[#eee4d1] bg-white text-[#667085]'}`}>ป.{item}</button>)}
-            </div>
-          </div>
-          <div className="mt-7">
-            <h3 className="mb-3 text-center text-base font-extrabold">เลือกวิชา</h3>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {SUBJECTS.map((item) => {
-                const art = SUBJECT_ART[item];
-                const active = subject === item;
-                return <button key={item} type="button" onClick={() => changeSubject(item)} aria-pressed={active} className={`flex items-center gap-4 rounded-2xl border-2 p-4 text-left transition hover:-translate-y-0.5 ${art.color} ${active ? 'border-[#e7a42c] ring-2 ring-[#f6d58c]' : ''}`}>
-                  <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white text-3xl shadow-sm" aria-hidden>{art.icon}</span>
-                  <span><span className="block font-black">{item.replace('วิชา', '')}</span><span className="mt-1 block text-sm text-[#667085]">{art.hint}</span></span>
-                  {active && <span className="ml-auto text-xl" aria-label="เลือกแล้ว">✓</span>}
-                </button>;
-              })}
-            </div>
-          </div>
-          <div className="mt-7 text-center">
-            <Button size="lg" disabled={!subject} onClick={() => { questionVersionRef.current += 1; setQuestionIndex(0); setSelected(null); selectedRef.current = null; setScore(0); setStreak(0); setStarted(true); }}>
-              เริ่มทำแบบฝึกหัด {subject ? `· ${subject.replace('วิชา', '')}` : ''} →
-            </Button>
-          </div>
-        </section>
-        ) : (
-        <>
-        <section className="mb-5 flex flex-wrap gap-3 rounded-3xl border border-white/90 bg-white/80 p-4 shadow-[0_8px_30px_rgba(76,67,48,.08)] backdrop-blur sm:p-5" aria-label="ตั้งค่าเกม">
-          <div className="flex items-center gap-2 text-sm font-bold"><span>ชั้นเรียน</span>{[1, 2, 3].map((item) => <button key={item} type="button" onClick={() => changeGrade(item)} aria-pressed={grade === item} className={`rounded-xl border-2 px-3 py-2 ${grade === item ? 'border-[#f1aa3b] bg-[#fff0c9]' : 'border-[#e8d9b9] bg-white'}`}>ป.{item}</button>)}</div>
-          <div className="flex items-center gap-2 rounded-xl bg-[#e8f7ee] px-3 py-2 font-bold text-[#23845e]">{SUBJECT_ART[subject]?.icon} {subject.replace('วิชา', '')}</div>
-          <button type="button" onClick={chooseAnotherSubject} className="rounded-xl border-2 border-[#e8d9b9] bg-white px-3 py-2 text-sm font-bold">เปลี่ยนวิชา</button>
-          <div className="ml-auto flex items-center gap-4 rounded-xl bg-[#fff2d9] px-4 py-2 font-bold"><span>ข้อ {(questionIndex % list.length) + 1}/{list.length}</span><span>⭐ {score} คะแนน</span></div>
-        </section>
+        <div className="absolute right-[5%] top-[5%] z-20 flex max-w-[55%] flex-wrap items-center justify-end gap-2">
+          <button type="button" onClick={() => setSounds(value => !value)} aria-pressed={sounds} className="rounded-full border border-white/80 bg-white/65 px-3 py-2 text-xs font-extrabold shadow-sm backdrop-blur sm:text-sm">{sounds ? '🔊 เสียงเปิด' : '🔇 ปิดเสียง'}</button>
+          {status === 'running'
+            ? <button type="button" onClick={() => { stopCamera(); setStatus('idle'); setHandVisible(false); }} className="rounded-full border border-white/80 bg-white/65 px-3 py-2 text-xs font-extrabold shadow-sm backdrop-blur sm:text-sm">{handVisible ? '🟢 มือพร้อม · ปิดกล้อง' : '🟡 กำลังหามือ · ปิดกล้อง'}</button>
+            : (status === 'idle' || status === 'denied' || status === 'error' || status === 'no-camera')
+              ? <button type="button" onClick={() => void startCamera()} className="rounded-full border border-white/80 bg-white/65 px-3 py-2 text-xs font-extrabold shadow-sm backdrop-blur sm:text-sm">📷 เปิดควบคุมด้วยมือ</button>
+              : <span className="rounded-full bg-white/65 px-3 py-2 text-xs font-bold shadow-sm">{cameraStatus[status]}</span>}
+        </div>
 
-        {question && <section className="mb-5 rounded-[2rem] border-4 border-white bg-white/90 p-5 shadow-[0_14px_40px_rgba(76,67,48,.1)] sm:p-8" aria-live="polite">
-          <div className="mb-3 flex items-center justify-between gap-2"><span className="rounded-full bg-[#e8f7ee] px-3 py-1 text-sm font-bold text-[#23845e]">{question.subject.replace(/ \(ป\.\d\)/, '')}</span><span className="text-sm font-bold text-[#8892a2]">🔥 ต่อเนื่อง {streak} ข้อ</span></div>
-          <h2 className="text-balance text-xl font-black leading-relaxed sm:text-3xl">{formatMath(question.question)}</h2>
-          <div className="mt-5 grid gap-3 sm:grid-cols-3">
-            {question.choices.map((choice, index) => <button key={`${index}-${choice}`} type="button" onClick={() => answer(index)} disabled={selected !== null} className={`min-h-16 rounded-2xl border-2 px-4 py-3 text-left text-lg font-bold transition duration-200 disabled:cursor-default ${selected === index ? (index === question.answer ? 'border-[#4bb88b] bg-[#d9f7e8] text-[#176c4b]' : 'border-[#f28b82] bg-[#ffebe8] text-[#a83d39]') : selected !== null && index === question.answer ? 'border-[#4bb88b] bg-[#d9f7e8]' : 'border-[#eee4d1] bg-[#fffdf8] hover:-translate-y-0.5 hover:border-[#efb14c]'}`}>
-              <span className="mr-3 inline-grid h-9 w-9 place-items-center rounded-full bg-[#fff0c9] text-base">{LETTERS[index]}</span>{formatMath(choice)}
+        {screen === 'home' && <div className="absolute inset-0 flex flex-col items-center justify-center px-5 pb-[3%] pt-24 text-center">
+          <SubjectAnimation subject="" />
+          <p className="-mt-3 max-w-lg text-base font-bold text-[#415b67] sm:text-xl">เลือกวิชา ตอบคำถาม แล้วสะสมดาวให้ครบ!</p>
+          <Button size="lg" onClick={() => void beginGame()} className="mt-5 border-2 border-white bg-gradient-to-r from-[#ffb879] to-[#ffd66e] text-xl font-black text-[#392949] shadow-[0_12px_30px_rgba(224,139,82,.3)] hover:brightness-105">
+            เริ่มเกม
+          </Button>
+        </div>}
+
+        {screen === 'grade' && <div className="absolute inset-x-[6%] bottom-[12%] top-[24%] flex flex-col items-center justify-center text-center">
+          <p className="mb-8 text-lg font-bold text-[#49636e] sm:text-2xl">วันนี้อยากเล่นโจทย์ระดับไหนเอ่ย?</p>
+          <div className="grid w-full max-w-5xl grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-7">
+            {[1, 2, 3].map(item => <button key={item} type="button" onClick={() => { changeGrade(item); setScreen('subject'); }} className={'min-h-24 rounded-[2rem] border-2 border-white/90 px-5 py-5 text-2xl font-black shadow-[0_10px_25px_rgba(68,65,120,.14)] transition hover:-translate-y-1 hover:brightness-105 sm:min-h-32 sm:text-4xl ' + (item === 1 ? 'bg-[#dcecff]' : item === 2 ? 'bg-[#ffe5d7]' : 'bg-[#e6e0ff]')}>ป.{item}</button>)}
+          </div>
+          <button type="button" onClick={() => setScreen('home')} className="absolute bottom-0 left-0 rounded-full border-2 border-white bg-[#e8e5f5] px-7 py-3 text-lg font-black shadow-md transition hover:bg-white">ย้อนกลับ</button>
+        </div>}
+
+        {screen === 'subject' && <div className="absolute inset-x-[5%] bottom-[10%] top-[23%] grid items-center gap-2 overflow-y-auto sm:grid-cols-[1.2fr_.8fr] sm:gap-6">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-6 sm:gap-4">
+            {SUBJECTS.map((item, index) => {
+              const art = SUBJECT_ART[item];
+              const placement = index < 3 ? 'sm:col-span-2' : 'sm:col-span-3';
+              return <button key={item} type="button" onClick={() => { changeSubject(item); setScreen('question'); }} className={'flex min-h-20 items-center justify-center gap-3 rounded-[2rem] border-2 border-white/90 px-3 py-4 text-center text-lg font-black shadow-[0_8px_20px_rgba(68,65,120,.12)] transition hover:-translate-y-1 hover:brightness-105 sm:min-h-24 sm:text-xl ' + art.color + ' ' + placement}>
+                <span className="text-3xl" aria-hidden>{art.icon}</span><span>{item.replace('วิชา', '')}</span>
+              </button>;
+            })}
+          </div>
+          <div className="hidden justify-self-center sm:flex"><SubjectAnimation subject={subject || SUBJECTS[0]} /></div>
+          <button type="button" onClick={() => setScreen('grade')} className="absolute bottom-0 left-0 rounded-full border-2 border-white bg-[#e8e5f5] px-7 py-3 text-lg font-black shadow-md transition hover:bg-white">ย้อนกลับ</button>
+        </div>}
+
+        {screen === 'question' && question && <div className="absolute inset-x-[5%] bottom-[8%] top-[22%] flex flex-col">
+          <div className="flex min-h-0 flex-1 items-center gap-2 sm:gap-8">
+            <div className="min-w-0 flex-1">
+              <div className="mb-4 flex flex-wrap items-center gap-3">
+                <span className="rounded-full border border-white bg-white/65 px-4 py-1.5 text-sm font-extrabold text-[#42606b]">{question.subject.replace(/ \(ป\.\d\)/, '')} · ข้อ {(questionIndex % list.length) + 1}/{list.length}</span>
+                <span className="rounded-full border border-white bg-white/65 px-4 py-1.5 text-sm font-extrabold text-[#7c5e12]">⭐ {score} คะแนน</span>
+                <button type="button" onClick={readQuestion} className="rounded-full border border-white bg-white/70 px-4 py-2 font-bold shadow-sm hover:bg-white">🔊 ฟังโจทย์และตัวเลือก</button>
+              </div>
+              <h2 className="max-w-4xl text-balance text-2xl font-black leading-snug sm:text-4xl lg:text-5xl">{formatMath(question.question)}</h2>
+              {selected !== null && <p className={'mt-4 text-lg font-black sm:text-2xl ' + (selected === question.answer ? 'text-[#176c4b]' : 'text-[#a83d39]')}>{selected === question.answer ? 'เก่งมาก! ตอบถูกแล้ว 🎉' : 'ยังไม่ใช่นะ · คำตอบคือ ' + LETTERS[question.answer] + ' ' + formatMath(question.choices[question.answer])}</p>}
+            </div>
+            <div className="hidden shrink-0 sm:flex"><SubjectAnimation subject={subject} /></div>
+          </div>
+          <div className="grid grid-cols-1 gap-3 pb-16 sm:grid-cols-3 sm:gap-5">
+            {question.choices.map((choice, index) => <button key={String(questionIndex) + '-' + String(index)} type="button" onClick={() => answer(index)} disabled={selected !== null} className={'min-h-16 rounded-[2rem] border-2 border-white/90 px-4 py-4 text-left text-lg font-black shadow-md transition hover:-translate-y-1 sm:min-h-20 sm:px-6 sm:text-2xl disabled:cursor-default ' + (selected === index ? (index === question.answer ? 'bg-[#c5f0d8] text-[#176c4b]' : 'bg-[#ffe0dc] text-[#a83d39]') : selected !== null && index === question.answer ? 'bg-[#c5f0d8]' : index === 0 ? 'bg-[#dcecff] hover:bg-white' : index === 1 ? 'bg-[#ffedc9] hover:bg-white' : 'bg-[#eee4ff] hover:bg-white')}>
+              <span className="mr-3 inline-grid h-10 w-10 place-items-center rounded-full bg-white/80 text-base">{LETTERS[index]}</span>{formatMath(choice)}
             </button>)}
           </div>
-          {selected !== null && <div className="mt-5 flex flex-wrap items-center justify-between gap-3"><p className={`font-extrabold ${selected === question.answer ? 'text-[#23845e]' : 'text-[#af584f]'}`}>{selected === question.answer ? 'เก่งมาก! ตอบถูกแล้ว 🎉' : `ยังไม่ใช่นะ คำตอบคือ ${LETTERS[question.answer]} · ${question.choices[question.answer]}`}</p><Button onClick={nextQuestion}>ข้อต่อไป →</Button></div>}
-        </section>}
+          <div className="absolute bottom-0 left-0 right-0 flex justify-between">
+            <button type="button" onClick={chooseAnotherSubject} className="rounded-full border-2 border-white bg-[#e8e5f5] px-7 py-3 text-lg font-black shadow-md transition hover:bg-white">ย้อนกลับ</button>
+            <button type="button" onClick={nextQuestion} className="rounded-full border-2 border-white bg-gradient-to-r from-[#ffc47c] to-[#ffe18b] px-8 py-3 text-lg font-black shadow-md transition hover:brightness-105">{questionIndex % list.length === list.length - 1 ? 'เล่นข้อแรกอีกครั้ง' : 'ไปต่อ →'}</button>
+          </div>
+        </div>}
 
-        <section className="grid items-start gap-5">
-          <aside className="rounded-[2rem] border-2 border-white bg-[#fffdf7]/90 p-5 shadow-[0_10px_30px_rgba(76,67,48,.08)] sm:p-6">
-            <h2 className="text-xl font-black">วิธีเล่น <span aria-hidden>✨</span></h2>
-            <ol className="mt-4 space-y-3 text-sm leading-relaxed text-[#596579] sm:text-base">
-              <li className="flex gap-3"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#ffe6ad] font-black text-[#79521a]">1</span><span>อนุญาตใช้กล้อง แล้วนั่งห่างกล้องพอให้เห็นมือ</span></li>
-              <li className="flex gap-3"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#d9f7e8] font-black text-[#176c4b]">2</span><span>เลื่อนนิ้วชี้ซ้าย–ขวาในภาพ เพื่อชี้คำตอบ ก · ข · ค</span></li>
-              <li className="flex gap-3"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#e9e3ff] font-black text-[#624ab0]">3</span><span>ค้างที่คำตอบประมาณ 1 วินาที เพื่อยืนยัน</span></li>
-              <li className="flex gap-3"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#ffdfdc] font-black text-[#a83d39]">4</span><span>ตอบครบแล้วกด “ข้อต่อไป” หรือแตะตัวเลือกบนจอได้</span></li>
-            </ol>
-            {status === 'running' && <div className="mt-6 rounded-2xl bg-[#f3efe5] p-4"><div className="mb-2 flex justify-between text-sm font-bold"><span>{pointer?.target ? `กำลังชี้: ${pointer.target}` : 'ชี้ไปยังปุ่มเพื่อเลือก'}</span><span>{pointer?.target ? `${Math.round(hold * 100)}%` : '—'}</span></div><div className="h-3 overflow-hidden rounded-full bg-white"><div className="h-full rounded-full bg-gradient-to-r from-[#58c891] to-[#f3bf4c] transition-[width] duration-100" style={{ width: `${hold * 100}%` }} /></div></div>}
-            <p className="mt-5 border-t border-[#eee4d1] pt-4 text-xs leading-relaxed text-[#8991a0]">ใช้กล้องเพื่อประมวลผลท่ามือบนอุปกรณ์ของคุณ ภาพจากกล้องไม่ได้ถูกบันทึก</p>
-          </aside>
-        </section>
-        </>
-        )}
-      </div>
+        <div className="absolute bottom-[3%] left-[6%] z-10 flex items-center gap-2 text-xs font-extrabold text-[#49636e] sm:text-sm">
+          <span className={'h-2.5 w-2.5 rounded-full ' + (status === 'running' && handVisible ? 'bg-emerald-500' : 'bg-white shadow')} />
+          {status === 'running' ? handVisible ? 'ชี้นิ้วค้างบนปุ่มเพื่อเลือก' : 'กล้องซ่อนภาพไว้ · กำลังตรวจจับมือ' : 'ใช้เมาส์หรือแตะหน้าจอได้ด้วย'}
+        </div>
+      </section>
+
       {status === 'running' && pointer && <div className="pointer-events-none fixed z-[100] -translate-x-1/2 -translate-y-1/2" style={{ left: pointer.x, top: pointer.y }} aria-hidden>
-        <div className="grid h-12 w-12 place-items-center rounded-full p-[4px] shadow-xl" style={{ background: `conic-gradient(#ffb938 ${pointer.progress * 360}deg, rgba(255,255,255,.88) 0deg)` }}>
+        <div className="grid h-12 w-12 place-items-center rounded-full p-[4px] shadow-xl" style={{ background: 'conic-gradient(#ffb938 ' + String(pointer.progress * 360) + 'deg, rgba(255,255,255,.88) 0deg)' }}>
           <div className="grid h-full w-full place-items-center rounded-full border-2 border-[#263044] bg-[#fff9e9] text-xl">👆</div>
         </div>
-        <div className="absolute left-7 top-8 max-w-56 rounded-xl bg-[#263044]/95 px-3 py-2 text-xs font-bold text-white shadow-lg">{pointer.target ? `ค้างเพื่อเลือก · ${pointer.target}` : 'ชี้ไปยังปุ่มที่ต้องการ'}</div>
+        {pointer.target && <div className="absolute left-7 top-8 max-w-56 rounded-xl bg-[#263044]/95 px-3 py-2 text-xs font-bold text-white shadow-lg">ค้างเพื่อเลือก · {pointer.target}</div>}
       </div>}
-      <style>{`.hand-hovered{outline:4px solid #f4a742!important;outline-offset:4px;box-shadow:0 0 0 8px rgba(244,167,66,.22)!important;}`}</style>
+      <style>{'.hand-hovered{outline:4px solid #f4a742!important;outline-offset:4px;box-shadow:0 0 0 8px rgba(244,167,66,.22)!important;} .quiz-subject-bob{animation:quiz-bob 2.6s ease-in-out infinite;} .quiz-orbit{animation:quiz-bob 3.4s ease-in-out infinite;} .quiz-orbit-slow{animation:quiz-bob 4.3s ease-in-out infinite;} .quiz-planet-float{animation:quiz-bob 7s ease-in-out infinite;transform-origin:1335px 286px;} .quiz-moon-float{animation:quiz-bob 8s ease-in-out infinite reverse;transform-origin:245px 680px;} @keyframes quiz-bob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-12px) rotate(3deg)}} @media (prefers-reduced-motion:reduce){.quiz-subject-bob,.quiz-orbit,.quiz-orbit-slow,.quiz-planet-float,.quiz-moon-float{animation:none!important}}'}</style>
     </main>
   );
 }
