@@ -100,7 +100,8 @@ export default function QuizGame() {
     { outer: '#26395f', panel: '#f4f7ff', glow: '#83a9ef', accent: '#e6a8d5' },
   ];
   const palette = subjectPalettes[backgroundSubject];
-  const backgroundSymbols = [[], ['＋', '÷', '△', '○', '123'], ['ก', 'ข', 'ค', '📖', '✎'], ['🌏', '🧭', '🏛', '◎'], ['A', 'B', 'C', 'ABC', '✎']][backgroundSubject];
+  const backgroundSymbols = [['✦', '🪐', '☄', '✧', '🌙'], ['＋', '÷', '△', '○', '123'], ['ก', 'ข', 'ค', '📖', '✎'], ['🌏', '🧭', '🏛', '◎'], ['A', 'B', 'C', 'ABC', '✎']][backgroundSubject];
+  const panelMotifPositions = [[70, 170], [250, 110], [430, 195], [610, 125], [810, 185], [1010, 115], [1200, 190], [1430, 130], [1550, 280], [95, 365], [290, 450], [510, 340], [730, 470], [920, 350], [1130, 450], [1350, 335], [1530, 510], [85, 620], [280, 760], [500, 625], [700, 790], [920, 640], [1120, 775], [1330, 630], [1510, 760]];
 
   const list = useMemo(() => allQuestions.filter((item) => item.grade === grade && subject && item.subject.startsWith(subject)), [grade, subject]);
   const question = list[questionIndex % Math.max(1, list.length)];
@@ -340,6 +341,16 @@ export default function QuizGame() {
         <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: `radial-gradient(ellipse at 100% 0%, ${palette.accent}35, transparent 38%), radial-gradient(ellipse at 0% 100%, ${palette.glow}35, transparent 45%)` }} />
         <div aria-hidden className="pointer-events-none absolute right-[8%] top-[20%] h-24 w-24 rounded-full border sm:h-40 sm:w-40" style={{ borderColor: `${palette.glow}55` }} />
         <div aria-hidden className="pointer-events-none absolute right-[10%] top-[23%] h-16 w-16 rounded-full border sm:h-32 sm:w-32" style={{ borderColor: `${palette.accent}66` }} />
+        <svg className="pointer-events-none absolute inset-0 z-0 h-full w-full" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden>
+          {panelMotifPositions.map(([x, y], index) => {
+            const symbol = backgroundSymbols[index % backgroundSymbols.length];
+            const radius = 24 + (index % 4) * 8;
+            return <g key={`panel-motif-${index}`} className={`quiz-background-symbol quiz-background-symbol-${backgroundSubject}`} style={{ animationDelay: `${index * -0.55}s` }} transform={`rotate(${index % 2 ? -10 : 10} ${x} ${y})`} opacity={index % 3 === 0 ? '.2' : '.12'}>
+              <circle cx={x} cy={y} r={radius} fill={palette.glow} opacity=".16" />
+              <text x={x} y={y + 9} textAnchor="middle" fontSize={symbol.length > 2 ? 23 : 36} fontWeight="800" fill={index % 2 ? palette.accent : palette.glow}>{symbol}</text>
+            </g>;
+          })}
+        </svg>
         <div className="absolute left-[6%] top-[6%] z-10">
           <p className="text-xs font-black tracking-[.18em] text-[#4f6872] sm:text-sm">ห้องเรียนแสนสนุก</p>
           <h1 className="mt-1 text-3xl font-black leading-none sm:text-5xl">{screen === 'home' ? 'เกมตอบคำถาม' : screen === 'grade' ? 'เลือกชั้นเรียน' : screen === 'subject' ? 'เลือกวิชา' : 'พร้อมลุยโจทย์!'}</h1>
