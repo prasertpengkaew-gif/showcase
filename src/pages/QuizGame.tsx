@@ -325,13 +325,13 @@ export default function QuizGame() {
           {backgroundSymbols.map((symbol, index) => {
             const positions = [[150, 190], [390, 700], [730, 155], [1090, 715], [1460, 245]];
             const [x, y] = positions[index];
-            return <g key={symbol + index} transform={`rotate(${index % 2 ? -12 : 12} ${x} ${y})`}>
+            return <g key={symbol + index} className={`quiz-background-symbol quiz-background-symbol-${backgroundSubject}`} style={{ animationDelay: `${index * -0.8}s` }} transform={`rotate(${index % 2 ? -12 : 12} ${x} ${y})`}>
               <circle cx={x} cy={y} r="62" fill={palette.glow} opacity=".22" />
               <text x={x} y={y + 16} textAnchor="middle" fontSize={symbol.length > 2 ? 34 : 54}>{symbol}</text>
             </g>;
           })}
-          <circle cx="1310" cy="410" r="190" fill="none" stroke={palette.accent} strokeWidth="3" opacity=".38" />
-          <circle cx="1310" cy="410" r="232" fill="none" stroke={palette.glow} strokeWidth="2" opacity=".32" />
+          <circle className={backgroundSubject === 3 ? 'quiz-world-orbit' : undefined} cx="1310" cy="410" r="190" fill="none" stroke={palette.accent} strokeWidth="3" opacity=".38" />
+          <circle className={backgroundSubject === 3 ? 'quiz-world-orbit quiz-world-orbit-slow' : undefined} cx="1310" cy="410" r="232" fill="none" stroke={palette.glow} strokeWidth="2" opacity=".32" />
         </g>}
       </svg>
 
@@ -421,7 +421,7 @@ export default function QuizGame() {
         </div>
         {pointer.target && <div className="absolute left-7 top-8 max-w-56 rounded-xl bg-[#263044]/95 px-3 py-2 text-xs font-bold text-white shadow-lg">ค้างเพื่อเลือก · {pointer.target}</div>}
       </div>}
-      <style>{'.hand-hovered{outline:4px solid #f4a742!important;outline-offset:4px;box-shadow:0 0 0 8px rgba(244,167,66,.22)!important;} .quiz-subject-bob{animation:quiz-bob 2.6s ease-in-out infinite;} .quiz-orbit{animation:quiz-bob 3.4s ease-in-out infinite;} .quiz-orbit-slow{animation:quiz-bob 4.3s ease-in-out infinite;} .quiz-planet-float{animation:quiz-bob 7s ease-in-out infinite;transform-origin:1335px 286px;} .quiz-moon-float{animation:quiz-bob 8s ease-in-out infinite reverse;transform-origin:245px 680px;} @keyframes quiz-bob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-12px) rotate(3deg)}} @media (prefers-reduced-motion:reduce){.quiz-subject-bob,.quiz-orbit,.quiz-orbit-slow,.quiz-planet-float,.quiz-moon-float{animation:none!important}}'}</style>
+      <style>{'.hand-hovered{outline:4px solid #f4a742!important;outline-offset:4px;box-shadow:0 0 0 8px rgba(244,167,66,.22)!important;} .quiz-subject-bob{animation:quiz-bob 2.6s ease-in-out infinite;} .quiz-orbit{animation:quiz-bob 3.4s ease-in-out infinite;} .quiz-orbit-slow{animation:quiz-bob 4.3s ease-in-out infinite;} .quiz-planet-float{animation:quiz-bob 7s ease-in-out infinite;transform-origin:1335px 286px;} .quiz-moon-float{animation:quiz-bob 8s ease-in-out infinite reverse;transform-origin:245px 680px;} .quiz-background-symbol{transform-box:fill-box;transform-origin:center;animation:quiz-background-drift 6s ease-in-out infinite;} .quiz-background-symbol-1{animation-name:quiz-math-drift;animation-duration:5.2s;} .quiz-background-symbol-2{animation-name:quiz-page-drift;animation-duration:4.8s;} .quiz-background-symbol-3{animation-name:quiz-world-drift;animation-duration:8s;} .quiz-background-symbol-4{animation-name:quiz-letter-drift;animation-duration:4.2s;} .quiz-world-orbit{transform-box:fill-box;transform-origin:center;animation:quiz-orbit-turn 32s linear infinite;} .quiz-world-orbit-slow{animation-duration:46s;animation-direction:reverse;} @keyframes quiz-bob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-12px) rotate(3deg)}} @keyframes quiz-background-drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}} @keyframes quiz-math-drift{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-12px) rotate(8deg)}} @keyframes quiz-page-drift{0%,100%{transform:translateY(0) rotate(3deg)}50%{transform:translateY(-9px) rotate(-5deg)}} @keyframes quiz-world-drift{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-8px) scale(1.06)}} @keyframes quiz-letter-drift{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-14px) rotate(6deg)}} @keyframes quiz-orbit-turn{to{transform:rotate(360deg)}} @media (prefers-reduced-motion:reduce){.quiz-subject-bob,.quiz-orbit,.quiz-orbit-slow,.quiz-planet-float,.quiz-moon-float,.quiz-background-symbol,.quiz-world-orbit{animation:none!important}}'}</style>
     </main>
   );
 }
