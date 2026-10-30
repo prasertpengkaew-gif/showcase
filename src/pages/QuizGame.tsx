@@ -76,6 +76,11 @@ export default function QuizGame() {
   const recognizerRef = useRef<GestureRecognizer | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const rafRef = useRef(0);
+  const musicContextRef = useRef<AudioContext | null>(null);
+  const musicTimerRef = useRef<number | null>(null);
+  const musicStepRef = useRef(0);
+  const musicEnabledRef = useRef(true);
+  const subjectRef = useRef('');
   const soundRef = useRef(true);
   const questionRef = useRef<Question | undefined>(undefined);
   const selectedRef = useRef<number | null>(null);
@@ -89,6 +94,7 @@ export default function QuizGame() {
   const [selected, setSelected] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const [sounds, setSounds] = useState(true);
+  const [musicEnabled, setMusicEnabled] = useState(true);
   const [streak, setStreak] = useState(0);
   const [handVisible, setHandVisible] = useState(false);
   const backgroundSubject = Math.max(0, SUBJECTS.indexOf(subject));
@@ -101,13 +107,77 @@ export default function QuizGame() {
   ];
   const palette = subjectPalettes[backgroundSubject];
   const backgroundSymbols = [['✦', '🪐', '☄', '✧', '🌙'], ['＋', '÷', '△', '○', '123'], ['ก', 'ข', 'ค', '📖', '✎'], ['🌏', '🧭', '🏛', '◎'], ['A', 'B', 'C', 'ABC', '✎']][backgroundSubject];
-  const panelMotifPositions = [[70, 170], [250, 110], [430, 195], [610, 125], [810, 185], [1010, 115], [1200, 190], [1430, 130], [1550, 280], [95, 365], [290, 450], [510, 340], [730, 470], [920, 350], [1130, 450], [1350, 335], [1530, 510], [85, 620], [280, 760], [500, 625], [700, 790], [920, 640], [1120, 775], [1330, 630], [1510, 760]];
+  const panelMotifPositions = [[5, 20], [16, 14], [28, 23], [39, 12], [51, 19], [63, 12], [75, 22], [88, 14], [96, 30], [7, 43], [19, 51], [32, 39], [44, 55], [57, 41], [69, 52], [82, 39], [95, 58], [5, 70], [17, 86], [31, 71], [44, 89], [57, 73], [70, 88], [83, 70], [94, 86]];
 
   const list = useMemo(() => allQuestions.filter((item) => item.grade === grade && subject && item.subject.startsWith(subject)), [grade, subject]);
   const question = list[questionIndex % Math.max(1, list.length)];
   questionRef.current = question;
   selectedRef.current = selected;
   soundRef.current = sounds;
+  musicEnabledRef.current = musicEnabled;
+  subjectRef.current = subject;
+
+  const stopMusic = useCallback(() => {
+    if (musicTimerRef.current !== null) window.clearTimeout(musicTimerRef.current);
+    musicTimerRef.current = null;
+    const context = musicContextRef.current;
+    musicContextRef.current = null;
+    if (context && context.state !== 'closed') void context.close();
+  }, []);
+
+  const startMusic = useCallback(() => {
+    if (!musicEnabledRef.current || musicTimerRef.current !== null) return;
+    const AudioContextClass = window.AudioContext;
+    if (!AudioContextClass) return;
+    const context = musicContextRef.current ?? new AudioContextClass();
+    musicContextRef.current = context;
+    void context.resume();
+    const melodies = [
+      [523.25, 659.25, 783.99, 659.25, 587.33, 698.46, 880, 698.46],
+      [493.88, 587.33, 739.99, 587.33, 440, 554.37, 659.25, 554.37],
+      [587.33, 698.46, 783.99, 698.46, 523.25, 659.25, 783.99, 659.25],
+      [523.25, 659.25, 783.99, 659.25, 587.33, 698.46, 880, 698.46],
+      [659.25, 783.99, 987.77, 783.99, 587.33, 698.46, 880, 698.46],
+    ];
+    const playNextNote = () => {
+      if (!musicEnabledRef.current || context.state === 'closed') return;
+      const subjectIndex = Math.max(0, SUBJECTS.indexOf(subjectRef.current));
+      const melody = melodies[subjectIndex];
+      const step = musicStepRef.current++;
+      const frequency = melody[step % melody.length];
+      const now = context.currentTime;
+      const notes = step % 4 === 0 ? [frequency, frequency * 1.5] : [frequency];
+      notes.forEach((note, index) => {
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(note, now);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(index === 0 ? 0.018 : 0.006, now + 0.12);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.66);
+        oscillator.connect(gain).connect(context.destination);
+        oscillator.start(now);
+        oscillator.stop(now + 0.68);
+      });
+      musicTimerRef.current = window.setTimeout(() => {
+        musicTimerRef.current = null;
+        playNextNote();
+      }, 720);
+    };
+    playNextNote();
+  }, []);
+
+  const toggleMusic = () => {
+    if (musicEnabledRef.current) {
+      musicEnabledRef.current = false;
+      setMusicEnabled(false);
+      stopMusic();
+      return;
+    }
+    musicEnabledRef.current = true;
+    setMusicEnabled(true);
+    if (screen !== 'home') startMusic();
+  };
 
   const readQuestion = useCallback(() => {
     if (!question || !('speechSynthesis' in window)) return;
@@ -151,10 +221,11 @@ export default function QuizGame() {
 
   useEffect(() => () => {
     stopCamera();
+    stopMusic();
     window.speechSynthesis?.cancel();
     recognizerRef.current?.close();
     recognizerRef.current = null;
-  }, [stopCamera]);
+  }, [stopCamera, stopMusic]);
 
   const startCamera = async (): Promise<boolean> => {
     if (status === 'running') return true;
@@ -251,6 +322,7 @@ export default function QuizGame() {
   };
 
   const beginGame = async () => {
+    if (musicEnabledRef.current) startMusic();
     if (status !== 'running') await startCamera();
     setGrade(1);
     setSubject('');
@@ -339,18 +411,13 @@ export default function QuizGame() {
       <div className="absolute left-5 top-3 z-10 text-xs font-black tracking-[.24em] text-white/75 sm:left-10 sm:top-4 sm:text-sm">✦ LITTLE ORBIT · LEARNING GAME</div>
       <section className="absolute inset-x-3 bottom-3 top-12 overflow-hidden rounded-[30px] border border-white/80 shadow-[0_24px_100px_rgba(0,0,0,.45)] backdrop-blur-xl sm:inset-x-7 sm:bottom-6 sm:top-14 md:inset-x-[5.2vw]" style={{ backgroundColor: palette.panel }}>
         <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: `radial-gradient(ellipse at 100% 0%, ${palette.accent}35, transparent 38%), radial-gradient(ellipse at 0% 100%, ${palette.glow}35, transparent 45%)` }} />
-        <div aria-hidden className="pointer-events-none absolute right-[8%] top-[20%] h-24 w-24 rounded-full border sm:h-40 sm:w-40" style={{ borderColor: `${palette.glow}55` }} />
-        <div aria-hidden className="pointer-events-none absolute right-[10%] top-[23%] h-16 w-16 rounded-full border sm:h-32 sm:w-32" style={{ borderColor: `${palette.accent}66` }} />
-        <svg className="pointer-events-none absolute inset-0 z-0 h-full w-full" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden>
+        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden>
           {panelMotifPositions.map(([x, y], index) => {
             const symbol = backgroundSymbols[index % backgroundSymbols.length];
-            const radius = 24 + (index % 4) * 8;
-            return <g key={`panel-motif-${index}`} className={`quiz-background-symbol quiz-background-symbol-${backgroundSubject}`} style={{ animationDelay: `${index * -0.55}s` }} transform={`rotate(${index % 2 ? -10 : 10} ${x} ${y})`} opacity={index % 3 === 0 ? '.2' : '.12'}>
-              <circle cx={x} cy={y} r={radius} fill={palette.glow} opacity=".16" />
-              <text x={x} y={y + 9} textAnchor="middle" fontSize={symbol.length > 2 ? 23 : 36} fontWeight="800" fill={index % 2 ? palette.accent : palette.glow}>{symbol}</text>
-            </g>;
+            const size = 42 + (index % 3) * 8;
+            return <span key={`panel-motif-${index}`} className={`quiz-background-symbol quiz-background-symbol-${backgroundSubject} absolute grid select-none place-items-center rounded-full border font-black shadow-sm`} style={{ left: `${x}%`, top: `${y}%`, width: size, height: size, marginLeft: -size / 2, marginTop: -size / 2, animationDelay: `${index * -0.55}s`, fontSize: `${20 + (index % 3) * 5}px`, color: index % 2 ? palette.accent : palette.glow, backgroundColor: `${palette.glow}1a`, borderColor: `${palette.glow}35`, opacity: 0.76 }}>{symbol}</span>;
           })}
-        </svg>
+        </div>
         <div className="absolute left-[6%] top-[6%] z-10">
           <p className="text-xs font-black tracking-[.18em] text-[#4f6872] sm:text-sm">ห้องเรียนแสนสนุก</p>
           <h1 className="mt-1 text-3xl font-black leading-none sm:text-5xl">{screen === 'home' ? 'เกมตอบคำถาม' : screen === 'grade' ? 'เลือกชั้นเรียน' : screen === 'subject' ? 'เลือกวิชา' : 'พร้อมลุยโจทย์!'}</h1>
@@ -359,6 +426,7 @@ export default function QuizGame() {
 
         <div className="absolute right-[5%] top-[5%] z-20 flex max-w-[55%] flex-wrap items-center justify-end gap-2">
           <button type="button" onClick={() => setSounds(value => !value)} aria-pressed={sounds} className="rounded-full border border-white/80 bg-white/65 px-3 py-2 text-xs font-extrabold shadow-sm backdrop-blur sm:text-sm">{sounds ? '🔊 เสียงเปิด' : '🔇 ปิดเสียง'}</button>
+          <button type="button" onClick={toggleMusic} aria-pressed={musicEnabled} className="rounded-full border border-white/80 bg-white/65 px-3 py-2 text-xs font-extrabold shadow-sm backdrop-blur sm:text-sm">{musicEnabled ? '🎵 เพลงเปิด' : '🎵 เพลงปิด'}</button>
           {status === 'running'
             ? <button type="button" onClick={() => { stopCamera(); setStatus('idle'); setHandVisible(false); }} className="rounded-full border border-white/80 bg-white/65 px-3 py-2 text-xs font-extrabold shadow-sm backdrop-blur sm:text-sm">{handVisible ? '🟢 มือพร้อม · ปิดกล้อง' : '🟡 กำลังหามือ · ปิดกล้อง'}</button>
             : (status === 'idle' || status === 'denied' || status === 'error' || status === 'no-camera')
@@ -366,7 +434,7 @@ export default function QuizGame() {
               : <span className="rounded-full bg-white/65 px-3 py-2 text-xs font-bold shadow-sm">{cameraStatus[status]}</span>}
         </div>
 
-        {screen === 'home' && <div className="absolute inset-0 flex flex-col items-center justify-center px-5 pb-[3%] pt-24 text-center">
+        {screen === 'home' && <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-5 pb-[3%] pt-24 text-center">
           <SubjectAnimation subject="" />
           <p className="-mt-3 max-w-lg text-base font-bold text-[#415b67] sm:text-xl">เลือกวิชา ตอบคำถาม แล้วสะสมดาวให้ครบ!</p>
           <Button size="lg" onClick={() => void beginGame()} className="mt-5 border-2 border-white bg-gradient-to-r from-[#ffb879] to-[#ffd66e] text-xl font-black text-[#392949] shadow-[0_12px_30px_rgba(224,139,82,.3)] hover:brightness-105">
@@ -374,7 +442,7 @@ export default function QuizGame() {
           </Button>
         </div>}
 
-        {screen === 'grade' && <div className="absolute inset-x-[6%] bottom-[12%] top-[24%] flex flex-col items-center justify-center text-center">
+        {screen === 'grade' && <div className="absolute inset-x-[6%] bottom-[12%] top-[24%] z-10 flex flex-col items-center justify-center text-center">
           <p className="mb-8 text-lg font-bold text-[#49636e] sm:text-2xl">วันนี้อยากเล่นโจทย์ระดับไหนเอ่ย?</p>
           <div className="grid w-full max-w-5xl grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-7">
             {[1, 2, 3].map(item => <button key={item} type="button" onClick={() => { changeGrade(item); setScreen('subject'); }} className={'min-h-24 rounded-[2rem] border-2 border-white/90 px-5 py-5 text-2xl font-black shadow-[0_10px_25px_rgba(68,65,120,.14)] transition hover:-translate-y-1 hover:brightness-105 sm:min-h-32 sm:text-4xl ' + (item === 1 ? 'bg-[#dcecff]' : item === 2 ? 'bg-[#ffe5d7]' : 'bg-[#e6e0ff]')}>ป.{item}</button>)}
@@ -382,7 +450,7 @@ export default function QuizGame() {
           <button type="button" onClick={() => setScreen('home')} className="absolute bottom-0 left-0 rounded-full border-2 border-white bg-[#e8e5f5] px-7 py-3 text-lg font-black shadow-md transition hover:bg-white">ย้อนกลับ</button>
         </div>}
 
-        {screen === 'subject' && <div className="absolute inset-x-[5%] bottom-[10%] top-[23%] grid items-center gap-2 overflow-y-auto sm:grid-cols-[1.2fr_.8fr] sm:gap-6">
+        {screen === 'subject' && <div className="absolute inset-x-[5%] bottom-[10%] top-[23%] z-10 grid items-center gap-2 overflow-y-auto sm:grid-cols-[1.2fr_.8fr] sm:gap-6">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-6 sm:gap-4">
             {SUBJECTS.map((item, index) => {
               const art = SUBJECT_ART[item];
@@ -396,7 +464,7 @@ export default function QuizGame() {
           <button type="button" onClick={() => setScreen('grade')} className="absolute bottom-0 left-0 rounded-full border-2 border-white bg-[#e8e5f5] px-7 py-3 text-lg font-black shadow-md transition hover:bg-white">ย้อนกลับ</button>
         </div>}
 
-        {screen === 'question' && question && <div className="absolute inset-x-[5%] bottom-[8%] top-[22%] flex flex-col">
+        {screen === 'question' && question && <div className="absolute inset-x-[5%] bottom-[8%] top-[22%] z-10 flex flex-col">
           <div className="flex min-h-0 flex-1 items-center gap-2 sm:gap-8">
             <div className="min-w-0 flex-1">
               <div className="mb-4 flex flex-wrap items-center gap-3">
