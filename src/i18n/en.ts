@@ -42,9 +42,9 @@ export const en = {
 
   hero: {
     badge: 'WebAR · VR · 3D visualization',
-    line1: 'Real Experiences.',
-    line2: 'Real Impact.',
-    lead: 'We build augmented reality, virtual reality and real-time 3D that people open from a link, place in their own space, and actually use — for products, training, property and brands.',
+    line1: 'WebAR and AR',
+    line2: 'for business and events',
+    lead: 'We build custom WebAR, AR, VR, 3D and web apps for business. Open from a link or QR code with no app install, from event photo booths and 3D maps to browser-based tools.',
     viewWork: 'View Our Work',
     tryAR: 'Try AR Now',
     highlights: [
@@ -82,6 +82,13 @@ export const en = {
     allDemos: 'All demos',
     servicesEyebrow: 'What we do',
     servicesTitle: 'From a single 3D model to a complete AR, VR and web app programme',
+    solutionsTitle: 'Popular services and examples',
+    solutions: [
+      { label: 'AR photo booth rental for events', to: '/event-booth' },
+      { label: 'Custom web app development', to: '/web-apps' },
+      { label: '3D maps for property and business sites', to: '/map-3d' },
+      { label: '360° virtual tours for rooms and venues', to: '/virtual-tour' },
+    ],
     processEyebrow: 'How we work',
     processTitle: 'A clear process, with something real on a device early',
     steps: [
@@ -385,7 +392,7 @@ export const en = {
   tour: {
     metaTitle: 'Virtual Tour 360°',
     eyebrow: 'Virtual tour 360°',
-    title: 'Walk through a show unit before it exists',
+    title: '360° virtual tours for condos and hotels',
     description:
       'A 360° tour of a computer-generated show unit. Drag or turn your phone to look around, tap the doors to move between rooms, and open the info points to see each product.',
     viewerLabel: 'Interactive 360° panorama',
@@ -620,7 +627,7 @@ export const en = {
   webApps: {
     metaTitle: 'Web App Development',
     eyebrow: 'Web apps · custom software',
-    title: 'Web apps that run in the browser, built to be used',
+    title: 'Custom web app development for business teams',
     description:
       'Kiosks, dashboards and tools your team or customers open from a link. The apps below are live on this site, so you can use them before you hire us.',
     ctaContact: 'Discuss your app',
@@ -1395,7 +1402,7 @@ export const en = {
   servicesPage: {
     metaTitle: 'Services',
     eyebrow: 'Services',
-    title: 'Nine ways we help teams ship 3D, AR, VR and web apps',
+    title: 'WebAR, VR, 3D and web app development for business',
     description: 'Engage us for a single model, a full experience, or advice before you commit budget.',
     listTitle: 'Services',
     bestFor: 'Best for:',

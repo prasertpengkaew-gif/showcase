@@ -50,7 +50,6 @@ export function HeroSection() {
           </p>
           <h1
             id="hero-title"
-            data-latin
             className="mt-6 font-display text-[clamp(2.125rem,8.6vw,2.75rem)] leading-[1.04] font-extrabold tracking-[-0.03em] sm:text-6xl lg:text-7xl"
           >
             {t.line1}

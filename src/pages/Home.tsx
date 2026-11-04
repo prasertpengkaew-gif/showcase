@@ -95,6 +95,19 @@ export default function Home() {
               </li>
             ))}
           </ul>
+          <div className="mt-12 border-t border-line pt-8">
+            <h3 className="font-display text-lg font-bold">{h.solutionsTitle}</h3>
+            <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+              {h.solutions.map((item) => (
+                <li key={item.to}>
+                  <Link to={item.to} className="inline-flex rounded-lg py-2 text-sm font-semibold text-electric-700 underline-offset-4 hover:underline">
+                    {item.label}
+                    <ArrowRightIcon className="ml-2 mt-0.5" width={16} height={16} />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
 

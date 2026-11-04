@@ -75,7 +75,7 @@ export const staticPages: SeoPage[] = [
     path: '/event-booth',
     priority: 0.9,
     th: {
-      title: 'AR Photo Booth ตู้ถ่ายรูป AR สำหรับงานอีเวนต์ เช่าได้',
+      title: 'เช่าตู้ถ่ายรูป AR สำหรับงานอีเวนต์ | TheNerdStudio',
       description:
         'ตู้ถ่ายรูป AR ที่ใช้ได้ทั้งแท็บเล็ตและโน้ตบุ๊ก ใส่กรอบและชื่องานของลูกค้า แขกสแกน QR รับรูปได้ทันที ไม่ต้องโหลดแอป เหมาะกับออแกไนซ์และงานแบรนด์',
     },
@@ -88,7 +88,7 @@ export const staticPages: SeoPage[] = [
     path: '/map-3d',
     priority: 0.9,
     th: {
-      title: 'แผนที่ 3D แบบโต้ตอบ ค้นหาสถานที่ เส้นทาง พื้นที่เดินถึง | TheNerdStudio',
+      title: 'ทำแผนที่ 3D สำหรับโครงการอสังหาฯ และพื้นที่ธุรกิจ | TheNerdStudio',
       description:
         'เดโมแผนที่ 3D บนเว็บ ค้นหาสถานที่ บินกล้องไปที่หมาย ดูเส้นทางและพื้นที่ที่เดินถึงใน 5-15 นาที สลับกลางวันกลางคืน เหมาะกับอสังหาฯ ห้างสรรพสินค้า ท่องเที่ยว นิคมอุตสาหกรรม',
     },
@@ -344,12 +344,12 @@ export const staticPages: SeoPage[] = [
     path: '/virtual-tour',
     priority: 0.7,
     th: {
-      title: 'Virtual Tour 360° ทัวร์เสมือนจริง ดูพื้นที่จากที่บ้าน',
-      description: 'ทัวร์ภาพ 360 องศาที่คลิกเดินไปทีละจุด พร้อมจุดข้อมูล เหมาะกับคอนโด โรงแรม โชว์รูม และสถานที่ท่องเที่ยว เปิดได้บนเว็บทุกอุปกรณ์',
+      title: 'รับทำ Virtual Tour 360° สำหรับคอนโด โรงแรม และโชว์รูม | TheNerdStudio',
+      description: 'พัฒนา Virtual Tour 360° ให้ผู้ชมคลิกเดินชมพื้นที่และอ่านข้อมูลแต่ละจุดผ่านเว็บ เหมาะกับคอนโด ห้องตัวอย่าง โรงแรม และโชว์รูม เดโมนี้ใช้ฉากจำลอง งานจริงใช้ภาพสถานที่ของคุณ',
     },
     en: {
-      title: 'Virtual Tour 360° — Explore a Place from Home',
-      description: 'A 360° tour with clickable hotspots and info points, for condos, hotels, showrooms and attractions. Opens on any device.',
+      title: '360° Virtual Tour Development for Condos, Hotels & Showrooms | TheNerdStudio',
+      description: 'Build a 360° virtual tour with clickable navigation and information points for condos, show units, hotels and showrooms. This demo uses rendered rooms; production tours use your location imagery.',
     },
   },
   {

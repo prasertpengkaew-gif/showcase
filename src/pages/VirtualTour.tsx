@@ -268,6 +268,14 @@ export default function VirtualTour() {
               </li>
             ))}
           </ul>
+          <div className="mt-10 flex flex-wrap gap-3">
+            <Link to="/contact" className={buttonClasses('primary', 'md')}>
+              {t.projectsPage.propertyContact}
+            </Link>
+            <Link to="/map-3d" className={buttonClasses('secondary', 'md')}>
+              {t.projectsPage.propertyMap}
+            </Link>
+          </div>
         </div>
       </section>
     </>
