@@ -396,7 +396,7 @@ export const staticPages: SeoPage[] = [
       description: 'พัฒนา Virtual Tour 360° ให้ผู้ชมคลิกเดินชมพื้นที่และอ่านข้อมูลแต่ละจุดผ่านเว็บ เหมาะกับคอนโด ห้องตัวอย่าง โรงแรม และโชว์รูม เดโมนี้ใช้ฉากจำลอง งานจริงใช้ภาพสถานที่ของคุณ',
     },
     en: {
-      title: '360° Virtual Tour Development for Condos, Hotels & Showrooms | TheNerdStudio',
+      title: '360° Virtual Tour for Condos & Hotels | TheNerdStudio',
       description: 'Build a 360° virtual tour with clickable navigation and information points for condos, show units, hotels and showrooms. This demo uses rendered rooms; production tours use your location imagery.',
     },
   },
