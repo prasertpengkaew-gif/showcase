@@ -358,7 +358,7 @@ try {
   // --- Demos hub ---------------------------------------------------------------
   await go(B + enPath('/demos'));
   await page.locator('main article').first().waitFor();
-  ok((await page.locator('main article').count()) === 30, 'demos hub lists 30 demos');
+  ok((await page.locator('main article').count()) === 32, 'demos hub lists all 32 demos');
   ok((await page.getByRole('link', { name: 'Demos' }).first().getAttribute('aria-current')) === 'page', 'Demos nav item is current');
 
   // --- Print AR --------------------------------------------------------------

@@ -53,7 +53,7 @@ export const CSP_DIRECTIVES = [
   //                        calls that loader, so that host is not allowed.
   // No 'unsafe-inline' and no 'unsafe-eval'. JSON-LD blocks are type=application/ld+json,
   // which browsers do not treat as scripts.
-  ['script-src', ["'self'", "'wasm-unsafe-eval'", 'https://cdn.jsdelivr.net']],
+  ['script-src', ["'self'", "'wasm-unsafe-eval'", 'https://cdn.jsdelivr.net', 'https://va.vercel-scripts.com']],
   // Styles:
   //   'unsafe-inline' — React style attributes (progress bars, charts, the map),
   //     the noindex 404.html shell's style attribute, and style attributes set by
