@@ -110,6 +110,8 @@ check('mail: English draft for English sites', () => {
 });
 check('mail: warns when the sender name is missing', () => assert.ok(compose(company, { ...config, sender: { ...config.sender, name: '' } }).warnings.some((w) => /config\.json/.test(w))));
 check('mail: no address, no draft', () => assert.equal(compose({ ...company, emails: [] }, config), null));
+check('email: template placeholders are not company addresses', () => assert.deepEqual(extractEmails('<a href="mailto:info@mydomain.com">x</a> info@company.com'), []));
+check('email: a first.last free mailbox is a person, not a company', () => { assert.equal(classifyEmail('benjamin.conrazier@gmail.com').kind, 'named'); assert.equal(classifyEmail('magmaeventbangkok@gmail.com').kind, 'freemail'); });
 check('mail: a company with no known event types still gets a sensible draft', () => assert.match(compose({ ...company, services: [] }, config).body, /รับจัดงานอีเวนต์/));
 check('review page: company text cannot inject HTML', () => {
   const html = reviewPage([{ company: { ...company, name: '<script>alert(1)</script>' }, draft: compose(company, config) }]);

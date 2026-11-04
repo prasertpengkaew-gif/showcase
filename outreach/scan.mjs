@@ -1,24 +1,26 @@
-// Reads each website in data/sites.txt (home page plus a few contact/about/service pages) and saves what it finds
-// to data/companies.json: name, description, contact details, and what kind of events the company does.
+// Reads each website in the selected profile's sites.txt and saves company facts and profile-specific relevance.
 //
 //   node outreach/scan.mjs                  scan every site not scanned in the last 30 days
 //   node outreach/scan.mjs acme.co.th ...   scan only these
 //   node outreach/scan.mjs --force          rescan everything
+//   node outreach/scan.mjs --profile=real-estate
 //
 // Only pages the site allows in robots.txt are read, one request every few seconds per site.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { domainOf, loadList } from './lib/domains.mjs';
+import { profileDataDir, profileFromArgs } from './lib/profile.mjs';
 import { scanSite } from './lib/site.mjs';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
-const dataDir = path.join(root, 'data');
+const args = process.argv.slice(2);
+const profile = profileFromArgs(args);
+const dataDir = profileDataDir(root, profile);
 mkdirSync(dataDir, { recursive: true });
 const config = JSON.parse(readFileSync(path.join(root, 'config.json'), 'utf8'));
 const companiesFile = path.join(dataDir, 'companies.json');
 
-const args = process.argv.slice(2);
 const force = args.includes('--force');
 const only = args.filter((a) => !a.startsWith('--')).map(domainOf);
 const companies = existsSync(companiesFile) ? JSON.parse(readFileSync(companiesFile, 'utf8')) : {};
@@ -32,7 +34,7 @@ console.log(`${sites.length} sites to look at`);
   for (const domain of sites) {
     const old = companies[domain];
     if (!force && !only.length && old?.scannedAt && Date.now() - Date.parse(old.scannedAt) < 30 * DAY) continue;
-    const result = await scanSite(domain, { maxPages: config.maxPagesPerSite, delayMs: config.delayMs });
+    const result = await scanSite(domain, { maxPages: config.maxPagesPerSite, delayMs: config.delayMs, profile });
     done++;
     if (result.skipped) {
       companies[domain] = { ...old, domain, skipped: result.skipped, scannedAt: new Date().toISOString(), status: old?.status ?? 'skipped' };
@@ -48,5 +50,5 @@ console.log(`${sites.length} sites to look at`);
     }
     writeFileSync(companiesFile, JSON.stringify(companies, null, 2));
   }
-  console.log(`Scanned ${done} sites. ${Object.values(companies).filter((c) => !c.skipped).length} companies saved in ${path.relative(process.cwd(), companiesFile)}. Next: node outreach/draft.mjs`);
+  console.log(`Scanned ${done} sites. ${Object.values(companies).filter((c) => !c.skipped).length} companies saved in ${path.relative(process.cwd(), companiesFile)}. Next: node outreach/enrich.mjs --profile=${profile}`);
 }

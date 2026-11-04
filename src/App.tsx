@@ -1,4 +1,6 @@
 import { lazy, Suspense, type ReactNode } from 'react';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import Home from './pages/Home';
@@ -11,6 +13,7 @@ const ARPlayground = lazy(() => import('./pages/ARPlayground'));
 const VRShowroom = lazy(() => import('./pages/VRShowroom'));
 const FaceAR = lazy(() => import('./pages/FaceAR'));
 const PrintAR = lazy(() => import('./pages/PrintAR'));
+const RestaurantAR = lazy(() => import('./pages/RestaurantAR'));
 const VirtualTour = lazy(() => import('./pages/VirtualTour'));
 const HandGestures = lazy(() => import('./pages/HandGestures'));
 const QuizGame = lazy(() => import('./pages/QuizGame'));
@@ -47,6 +50,9 @@ const About = lazy(() => import('./pages/About'));
 const Contact = lazy(() => import('./pages/Contact'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const Map3D = lazy(() => import('./pages/Map3D'));
+const RoomCapture = lazy(() => import('./pages/RoomCapture'));
+const PropertyTools = lazy(() => import('./pages/PropertyTools'));
+const ColoringAR = lazy(() => import('./pages/ColoringAR'));
 const BoothKiosk = lazy(() => import('./pages/booth/BoothKiosk'));
 const GuestPhoto = lazy(() => import('./pages/booth/GuestPhoto'));
 
@@ -87,6 +93,10 @@ function publicPages() {
       <Route path="quiz-game" element={page(<QuizGame />)} />
       <Route path="motion-game" element={page(<MotionGame />)} />
       <Route path="map-3d" element={page(<Map3D />)} />
+      <Route path="restaurant-ar" element={page(<RestaurantAR />)} />
+      <Route path="room-capture" element={page(<RoomCapture />)} />
+      <Route path="property-tools" element={page(<PropertyTools />)} />
+      <Route path="coloring-ar" element={page(<ColoringAR />)} />
       <Route path="digital-twin" element={page(<DigitalTwin />)} />
       <Route path="services" element={page(<Services />)} />
       <Route path="enterprise-ai" element={page(<EnterpriseAI />)} />
@@ -131,6 +141,8 @@ export default function App() {
           {publicPages()}
         </Route>
       </Routes>
+      <Analytics />
+      <SpeedInsights />
       </LanguageProvider>
     </BrowserRouter>
   );

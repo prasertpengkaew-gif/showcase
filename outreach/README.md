@@ -1,4 +1,4 @@
-# outreach: หาบริษัทรับจัดงาน แล้วร่างเมลนำเสนอ
+# outreach: ค้นหาลูกค้า แล้วร่างเมลนำเสนอ
 
 เครื่องมือในเครื่องของคุณ (ไม่ใช่ส่วนของเว็บ ไม่ถูก deploy) ทำ 4 ขั้น: **ค้นหาเว็บไซต์ → สแกนเก็บข้อมูลติดต่อ → ร่างเมลภาษาไทย → คุณตรวจแล้วส่งเอง** ไม่มีการส่งเมลอัตโนมัติ
 
@@ -15,7 +15,21 @@ node outreach/test.mjs         # ทดสอบตรรกะ (ไม่ใช
 ## ก่อนเริ่ม
 
 1. ใส่ชื่อผู้ส่งใน `outreach/config.json` (`sender.name`, `role`, `phone`) และเลือก `polite` เป็น `ครับ` หรือ `ค่ะ` ถ้าไม่ใส่ชื่อ ร่างเมลจะมีคำเตือนและช่อง `[ชื่อผู้ส่ง]`
-2. เพิ่มคำค้นใน `queries.txt` ได้ตามต้องการ (จังหวัด ประเภทงาน ภาษาอังกฤษ) หรือใส่เว็บไซต์เองใน `data/sites.txt` บรรทัดละเว็บ
+2. เพิ่มคำค้นใน `queries.txt` (อีเวนต์) หรือ `queries-real-estate.txt` (อสังหาฯ) หรือใส่เว็บไซต์เองใน `data/sites.txt` บรรทัดละเว็บ
+
+## หา leads อสังหาริมทรัพย์
+
+ใส่ `--profile=real-estate` ให้ครบทุกขั้น เพื่อค้นหาผู้พัฒนาโครงการ นายหน้า ผู้ดูแลอสังหาฯ และธุรกิจโรงแรม/พื้นที่เชิงพาณิชย์ที่อาจใช้แผนที่ 3D หรือ Virtual Tour:
+
+```bash
+node outreach/discover.mjs --profile=real-estate
+node outreach/scan.mjs --profile=real-estate
+node outreach/enrich.mjs --profile=real-estate
+node outreach/draft.mjs --profile=real-estate
+node outreach/mark.mjs --profile=real-estate sent example.co.th
+```
+
+โปรไฟล์นี้ใช้คำค้นใน `queries-real-estate.txt` และเก็บผลแยกไว้ใน `outreach/data/real-estate/` จึงไม่ปะปนกับฐานข้อมูลบริษัทอีเวนต์เดิม ไฟล์ `sent.txt` และ `suppress.txt` ใช้ร่วมกันทุกโปรไฟล์ เพื่อไม่ติดต่อโดเมนซ้ำหรือฝ่าฝืนคำขอไม่รับอีเมล แม่แบบเสนอแผนที่ 3D และ Virtual Tour 360° พร้อมบอกว่าเดโมใช้ข้อมูลตัวอย่าง และงานจริงใช้ข้อมูลหรือภาพของลูกค้า
 
 ## แต่ละขั้นทำอะไร
 

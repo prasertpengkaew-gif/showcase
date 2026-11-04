@@ -1,12 +1,22 @@
 // Asks the AI server on the local network (an OpenAI-compatible chat API) to read a company's website text.
 // The model is only a helper: everything it returns is checked, and a quote it claims to have copied from the
 // site must really be in the site's text, otherwise it is thrown away.
-import { SERVICE_TAGS } from './extract.mjs';
+import { PROPERTY_TAGS, SERVICE_TAGS } from './extract.mjs';
 
 const TAGS = Object.keys(SERVICE_TAGS);
 const squash = (s) => s.replace(/\s+/g, ' ').trim();
 
-const PROMPT = (text) => `Below is text copied from a company's website (Thai or English). Answer in JSON only, using ONLY this text. Never invent facts. If the text does not say it, leave it out.
+const PROMPT = (text, profile) => profile === 'real-estate' ? `Below is text copied from a company's website (Thai or English). Answer in JSON only, using ONLY this text. Never invent facts. If the text does not say it, leave it out.
+
+"""
+${text}
+"""
+
+Return a JSON object with these keys:
+- "is_property_prospect": "yes" for a real-estate developer, brokerage, property manager, hotel/resort or commercial/industrial property operator that could use project maps or virtual tours; "maybe" for a related business; "no" for a directory, marketplace, news site, job board, unrelated business or a site with no evidence it works in property.
+- "property_types": an array using only these keys: ${Object.keys(PROPERTY_TAGS).join(', ')}. Include only types the text supports.
+- "summary_th": ONE Thai sentence, at most 160 characters, saying what the company does, based on the text.
+- "evidence": ONE exact quote copied character for character from the text, 20 to 140 characters long, that supports its property business. Use "" if there is no such sentence.` : `Below is text copied from a company's website (Thai or English). Answer in JSON only, using ONLY this text. Never invent facts. If the text does not say it, leave it out.
 
 """
 ${text}
@@ -32,7 +42,18 @@ export function parseJsonReply(reply) {
 }
 
 /** Keeps only what we can trust from the model's answer. Returns null when the answer is unusable. */
-export function validateAnalysis(raw, text) {
+export function validateAnalysis(raw, text, profile = 'events') {
+  if (profile === 'real-estate') {
+    if (!raw || !['yes', 'maybe', 'no'].includes(raw.is_property_prospect)) return null;
+    const evidence = typeof raw.evidence === 'string' ? raw.evidence.trim() : '';
+    const grounded = evidence.length >= 20 && evidence.length <= 160 && squash(text).toLowerCase().includes(squash(evidence).toLowerCase());
+    return {
+      isPropertyProspect: raw.is_property_prospect,
+      propertyTypes: [...new Set((Array.isArray(raw.property_types) ? raw.property_types : []).filter((t) => Object.hasOwn(PROPERTY_TAGS, t)))],
+      summaryTh: typeof raw.summary_th === 'string' ? raw.summary_th.trim().slice(0, 200) : '',
+      evidence: grounded ? squash(evidence) : '',
+    };
+  }
   if (!raw || !['yes', 'maybe', 'no'].includes(raw.is_event_company)) return null;
   const evidence = typeof raw.evidence === 'string' ? raw.evidence.trim() : '';
   const grounded = evidence.length >= 20 && evidence.length <= 160 && squash(text).toLowerCase().includes(squash(evidence).toLowerCase());
@@ -49,7 +70,7 @@ export function validateAnalysis(raw, text) {
  * Reads one company's text with the model. `fetchImpl` is only there so tests can run without a server.
  * Returns the checked analysis, or { error } when the server is down or the answer cannot be used.
  */
-export async function analyzeCompany(text, { baseUrl, model, timeoutMs = 120000, maxChars = 5000, fetchImpl = fetch } = {}) {
+export async function analyzeCompany(text, { baseUrl, model, timeoutMs = 120000, maxChars = 5000, fetchImpl = fetch, profile = 'events' } = {}) {
   const clip = text.slice(0, maxChars);
   try {
     const res = await fetchImpl(`${baseUrl.replace(/\/$/, '')}/chat/completions`, {
@@ -62,14 +83,14 @@ export async function analyzeCompany(text, { baseUrl, model, timeoutMs = 120000,
         response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: 'You extract facts from website text and reply with a single JSON object. You never invent facts.' },
-          { role: 'user', content: PROMPT(clip) },
+          { role: 'user', content: PROMPT(clip, profile) },
         ],
       }),
       signal: AbortSignal.timeout(timeoutMs),
     });
     if (!res.ok) return { error: `AI server answered HTTP ${res.status}` };
     const reply = (await res.json()).choices?.[0]?.message?.content ?? '';
-    const analysis = validateAnalysis(parseJsonReply(reply), clip);
+    const analysis = validateAnalysis(parseJsonReply(reply), clip, profile);
     return analysis ?? { error: 'AI answer could not be used' };
   } catch (e) {
     return { error: e.name === 'TimeoutError' ? 'AI server timed out' : `AI server unreachable (${e.message})` };

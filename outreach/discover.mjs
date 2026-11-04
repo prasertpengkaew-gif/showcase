@@ -2,6 +2,7 @@
 //
 //   node outreach/discover.mjs                       uses queries.txt
 //   node outreach/discover.mjs "รับจัดงานอีเวนต์ ภูเก็ต"   one extra query
+//   node outreach/discover.mjs --profile=real-estate   uses queries-real-estate.txt and its own data folder
 //   node outreach/discover.mjs --source=ddg|brave --pages=2
 //
 // Sources
@@ -12,26 +13,27 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { domainOf, isBlocked, loadList } from './lib/domains.mjs';
+import { profileDataDir, profileFromArgs, profileQueriesFile } from './lib/profile.mjs';
 import { searchBrave, searchDuckDuckGo } from './lib/search.mjs';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
-const dataDir = path.join(root, 'data');
-mkdirSync(dataDir, { recursive: true });
-
 const args = process.argv.slice(2);
 const opt = (name, fallback) => args.find((a) => a.startsWith(`--${name}=`))?.split('=')[1] ?? fallback;
+const profile = profileFromArgs(args);
+const dataDir = profileDataDir(root, profile);
+mkdirSync(dataDir, { recursive: true });
 const extraQueries = args.filter((a) => !a.startsWith('--'));
 const source = opt('source', process.env.BRAVE_API_KEY ? 'brave' : 'ddg');
 const pages = Number(opt('pages', 1));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-const queries = extraQueries.length ? extraQueries : readFileSync(path.join(root, 'queries.txt'), 'utf8').split(/\r?\n/).map((l) => l.replace(/#.*$/, '').trim()).filter(Boolean);
-const blocklist = loadList(path.join(dataDir, 'blocklist.txt'));
+const queries = extraQueries.length ? extraQueries : readFileSync(profileQueriesFile(root, profile), 'utf8').split(/\r?\n/).map((l) => l.replace(/#.*$/, '').trim()).filter(Boolean);
+const blocklist = loadList(path.join(root, 'data', 'blocklist.txt'));
 const sitesFile = path.join(dataDir, 'sites.txt');
 const known = new Set(loadList(sitesFile).map(domainOf));
 
 let added = 0;
-console.log(`Source: ${source}. ${queries.length} queries, ${pages} page(s) each.`);
+console.log(`Profile: ${profile}. Source: ${source}. ${queries.length} queries, ${pages} page(s) each.`);
 for (const query of queries) {
   let fresh = 0;
   try {

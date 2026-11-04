@@ -32,6 +32,18 @@ export const SITE_NAME = 'TheNerdStudio';
 
 export const staticPages: SeoPage[] = [
   {
+    path: '/restaurant-ar',
+    priority: 0.7,
+    th: {
+      title: 'AR เมนูอาหารบนที่รองแก้ว | TheNerdStudio',
+      description: 'ลองส่องที่รองแก้วด้วยกล้องมือถือ เพื่อดูเมนูพิเศษและโปรโมชัน AR ของร้านอาหาร โดยไม่ต้องติดตั้งแอป',
+    },
+    en: {
+      title: 'Restaurant Coaster AR Menu | TheNerdStudio',
+      description: 'Scan a restaurant coaster to reveal a featured dish and offer in augmented reality, right in the browser.',
+    },
+  },
+  {
     path: '/',
     priority: 1,
     th: {
@@ -51,11 +63,11 @@ export const staticPages: SeoPage[] = [
     th: {
       title: 'ผลงาน AR VR 3D — ตัวอย่างโปรเจกต์ | TheNerdStudio',
       description:
-        'ตัวอย่างผลงาน AR, VR และ 3D ใน 6 อุตสาหกรรม ทั้งสินค้า อสังหาริมทรัพย์ โรงงาน การศึกษา และการตลาด เปิดดูและลอง AR ได้เอง',
+        'ตัวอย่าง AR, VR และ 3D สำหรับอสังหาฯ แผนที่ 3D, Virtual Tour 360° และจัดวางเฟอร์นิเจอร์ AR พร้อมผลงานตัวอย่างจากอีก 5 อุตสาหกรรม',
     },
     en: {
       title: 'Portfolio — AR, VR and 3D Projects | TheNerdStudio',
-      description: 'Sample AR, VR and 3D projects across six industries: product, real estate, industrial, education and marketing. Open them and try AR yourself.',
+      description: 'Studio concepts for real estate: interactive 3D maps, 360° virtual tours and true-scale AR furnishing, alongside examples from five other industries.',
     },
   },
   {
@@ -95,6 +107,42 @@ export const staticPages: SeoPage[] = [
     en: {
       title: 'Interactive 3D Map — Search, Routes, Walking Areas | TheNerdStudio',
       description: 'A 3D map demo on the web: search places, fly the camera to them, see routes and what you can walk to in 5-15 minutes. For real estate, malls, tourism and industrial estates.',
+    },
+  },
+  {
+    path: '/property-tools',
+    priority: 0.7,
+    th: {
+      title: 'เครื่องมือวางแผนเข้าชมห้องและคำนวณค่างวด | TheNerdStudio',
+      description: 'เปรียบเทียบอสังหาริมทรัพย์ได้ 3 แห่ง ใช้เช็กลิสต์ตรวจห้อง และประเมินเงินดาวน์กับค่างวดเบื้องต้นผ่านเว็บ',
+    },
+    en: {
+      title: 'Property Visit Planner & Mortgage Estimate | TheNerdStudio',
+      description: 'Compare up to three properties, use a room viewing checklist, and estimate a down payment and monthly mortgage cost in your browser.',
+    },
+  },
+  {
+    path: '/room-capture',
+    priority: 0.6,
+    th: {
+      title: 'ทดลองถ่ายวิดีโอห้องผ่านมือถือ | TheNerdStudio',
+      description: 'ต้นแบบถ่ายและดูตัวอย่างวิดีโอห้องผ่านเบราว์เซอร์บนมือถือ ยังไม่มีระบบอัปโหลดหรือแปลงวิดีโอเป็น 3D',
+    },
+    en: {
+      title: 'Browser Room Video Capture Prototype | TheNerdStudio',
+      description: 'Capture and preview a room walkthrough video in your mobile browser. This prototype does not upload video or convert it to 3D.',
+    },
+  },
+  {
+    path: '/coloring-ar',
+    priority: 0.8,
+    th: {
+      title: 'Cozy Thailand: สมุดภาพระบายสี AR | TheNerdStudio',
+      description: 'ดาวน์โหลดสมุดภาพระบายสี Cozy Thailand ครบ 10 หน้า เลือกฉาก พิมพ์ ระบายสี และสแกน AR ด้วยมือถือได้',
+    },
+    en: {
+      title: 'Cozy Thailand: An AR Coloring Book | TheNerdStudio',
+      description: 'Download all ten Cozy Thailand coloring pages. Choose a scene, print, color and scan it with your phone to see a 3D character in AR.',
     },
   },
   {

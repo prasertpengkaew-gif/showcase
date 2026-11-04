@@ -1,5 +1,5 @@
 // Turns a scanned company into a draft email, and a set of drafts into a review page.
-import { SERVICE_TAGS } from './extract.mjs';
+import { PROPERTY_TAGS, SERVICE_TAGS } from './extract.mjs';
 
 const PREFERRED = ['info', 'contact', 'hello', 'sales', 'marketing', 'event', 'events', 'booking', 'inquiry', 'enquiry', 'service', 'admin', 'office'];
 const rank = (e) => {
@@ -19,36 +19,67 @@ export function pickEmail(company, { includeNamed = false } = {}) {
 // What we offer, by the kind of events the company does. Every item is something with a live demo on our site.
 const PITCH = {
   exhibition: {
-    th: ['AR บนโปสเตอร์หรือแบนเนอร์หน้าบูธ: แขกสแกนแล้วสินค้าลุกขึ้นมาเป็น 3 มิติ', 'เกมหน้าบูธที่เล่นด้วยการยกมือ ไม่ต้องสัมผัสจอ มีตารางคะแนนดึงคนเข้าบูธ'],
-    en: ['AR on posters and banners at the booth: guests scan and the product stands up in 3D', 'A hands-free booth game with a leaderboard that draws a crowd'],
+    th: ['สแตมป์แรลลี่ทุกบูธ: ผู้เข้างานสะสมแสตมป์ และฝากข้อมูลเฉพาะบูธที่สนใจ ทำให้ได้รายชื่อคนที่ขอให้ติดต่อกลับ', 'AR บนโปสเตอร์หรือแบนเนอร์หน้าบูธ: แขกสแกนแล้วสินค้าลุกขึ้นมาเป็น 3 มิติ', 'เกมหน้าบูธที่เล่นด้วยการยกมือ ไม่ต้องสัมผัสจอ มีตารางคะแนนดึงคนเข้าบูธ'],
+    en: ['A stamp rally across the booths: visitors collect stamps and share their details only with the booths they like, so exhibitors get leads who asked to be contacted', 'AR on posters and banners at the booth: guests scan and the product stands up in 3D', 'A hands-free booth game with a leaderboard that draws a crowd'],
   },
   launch: {
-    th: ['วางสินค้าใหม่ขนาดจริงด้วย AR บนมือถือของแขก', 'ตู้ถ่ายรูป AR พร้อมกรอบภาพของงาน แขกสแกน QR code เพื่อโหลดรูป'],
-    en: ['Place the new product at real size with AR on guests’ own phones', 'An AR photo booth with the event’s frame; guests scan a QR code to download the photo'],
+    th: ['วงล้อลุ้นรางวัลพร้อมเช็กอินหน้างาน แขกสแกน QR code แล้วลุ้นรางวัลทันที', 'วางสินค้าใหม่ขนาดจริงด้วย AR บนมือถือของแขก', 'ตู้ถ่ายรูป AR พร้อมกรอบภาพของงาน แขกสแกน QR code เพื่อโหลดรูป'],
+    en: ['A check-in and prize wheel: guests scan a QR code at the door and are in the draw straight away', 'Place the new product at real size with AR on guests’ own phones', 'An AR photo booth with the event’s frame; guests scan a QR code to download the photo'],
   },
   activation: {
-    th: ['ล่าสมบัติ AR ทั่วสถานที่: สแกนโปสเตอร์ สะสมแสตมป์ แลกรางวัล', 'เกมขยับตัวสำหรับจอใหญ่หน้าบูธหรือเวที'],
-    en: ['An AR treasure hunt around the venue: scan posters, collect stamps, win a reward', 'A body-controlled game for big screens at the booth or stage'],
+    th: ['เกมแตะเร็วบนมือถือ ทุกคนเล่นพร้อมกัน คะแนนสดขึ้นจอบนเวที', 'ล่าสมบัติ AR ทั่วสถานที่: สแกนโปสเตอร์ สะสมแสตมป์ แลกรางวัล', 'เกมขยับตัวสำหรับจอใหญ่หน้าบูธหรือเวที'],
+    en: ['A tap race on every phone, with a live scoreboard on the stage screen', 'An AR treasure hunt around the venue: scan posters, collect stamps, win a reward', 'A body-controlled game for big screens at the booth or stage'],
   },
   conference: {
-    th: ['ตู้ถ่ายรูป AR ที่เปลี่ยนกรอบภาพตามสปอนเซอร์หรือเซสชัน', 'โปสเตอร์ AR ของวิทยากรหรือสปอนเซอร์ สแกนแล้วเห็นสไลด์หรือโมเดล 3 มิติ'],
-    en: ['An AR photo booth with a different frame for each sponsor or session', 'AR posters for speakers and sponsors that show slides or a 3D model when scanned'],
+    th: ['ถามตอบสดบนจอ: ผู้ฟังถามและโหวตจากมือถือ ผู้ดำเนินรายการเลือกคำถามขึ้นจอ พร้อมเวิร์ดคลาวด์', 'ตู้ถ่ายรูป AR ที่เปลี่ยนกรอบภาพตามสปอนเซอร์หรือเซสชัน', 'โปสเตอร์ AR ของวิทยากรหรือสปอนเซอร์ สแกนแล้วเห็นสไลด์หรือโมเดล 3 มิติ'],
+    en: ['Live Q&A on the screen: the audience asks and votes from their phones and the host picks questions, with a word cloud', 'An AR photo booth with a different frame for each sponsor or session', 'AR posters for speakers and sponsors that show slides or a 3D model when scanned'],
   },
   concert: {
-    th: ['ล่าสมบัติ AR ทั่วงานเพื่อให้คนเดินทั่วพื้นที่', 'ฟิลเตอร์และพร็อพบนใบหน้าสำหรับเซลฟี่ของแฟนคลับ'],
-    en: ['An AR treasure hunt across the grounds to keep the crowd moving', 'Face filters and props for fan selfies'],
+    th: ['ผนังรูปและข้อความสด ส่งจากมือถือขึ้นจอใหญ่ทันที', 'ล่าสมบัติ AR ทั่วงานเพื่อให้คนเดินทั่วพื้นที่', 'ฟิลเตอร์และพร็อพบนใบหน้าสำหรับเซลฟี่ของแฟนคลับ'],
+    en: ['A live wall of messages and photos from the crowd on the big screen', 'An AR treasure hunt across the grounds to keep the crowd moving', 'Face filters and props for fan selfies'],
   },
   wedding: {
-    th: ['ตู้ถ่ายรูป AR ตามธีมงาน แขกสแกน QR code เพื่อโหลดรูปกลับบ้าน'],
-    en: ['An AR photo booth in the event’s theme; guests scan a QR code to take their photo home'],
+    th: ['สมุดอวยพรบนจอใหญ่ แขกส่งข้อความและรูปจากมือถือ', 'ตู้ถ่ายรูป AR ตามธีมงาน แขกสแกน QR code เพื่อโหลดรูปกลับบ้าน'],
+    en: ['A live guestbook wall: guests send messages and photos to the big screen', 'An AR photo booth in the event’s theme; guests scan a QR code to take their photo home'],
   },
   corporate: {
-    th: ['ล่าสมบัติ AR สำหรับกิจกรรมทีมหรืองานเลี้ยงบริษัท', 'ตู้ถ่ายรูป AR พร้อมกรอบภาพของบริษัท'],
-    en: ['An AR treasure hunt for team activities and company parties', 'An AR photo booth with the company’s frame'],
+    th: ['วงล้อลุ้นรางวัลและเช็กอินสำหรับงานเลี้ยงบริษัท', 'ล่าสมบัติ AR สำหรับกิจกรรมทีมหรืองานเลี้ยงบริษัท', 'ตู้ถ่ายรูป AR พร้อมกรอบภาพของบริษัท'],
+    en: ['A check-in and prize wheel for the company party', 'An AR treasure hunt for team activities and company parties', 'An AR photo booth with the company’s frame'],
   },
   _default: {
-    th: ['ตู้ถ่ายรูป AR พร้อมกรอบภาพของงาน แขกสแกน QR code เพื่อโหลดรูป', 'ล่าสมบัติ AR ทั่วสถานที่ และเกมขยับตัวสำหรับจอใหญ่'],
-    en: ['An AR photo booth with the event’s frame; guests scan a QR code to download the photo', 'An AR treasure hunt around the venue and a body-controlled game for big screens'],
+    th: ['สแตมป์แรลลี่และเก็บรายชื่อผู้สนใจที่บูธ', 'ตู้ถ่ายรูป AR พร้อมกรอบภาพของงาน แขกสแกน QR code เพื่อโหลดรูป', 'ล่าสมบัติ AR ทั่วสถานที่ และเกมขยับตัวสำหรับจอใหญ่'],
+    en: ['A stamp rally that collects the contacts of interested visitors', 'An AR photo booth with the event’s frame; guests scan a QR code to download the photo', 'An AR treasure hunt around the venue and a body-controlled game for big screens'],
+  },
+};
+
+const PROPERTY_PITCH = {
+  developer: {
+    th: ['แผนที่ 3D ช่วยนำเสนอโครงการพร้อมบริบททำเลและจุดสำคัญรอบโครงการ โดยงานจริงใช้ข้อมูลอาคารและพื้นที่ของลูกค้า', 'Virtual Tour 360° ให้ผู้สนใจสำรวจห้องตัวอย่างหรือพื้นที่ส่วนกลางจากมือถือ'],
+    en: ['An interactive 3D map can present a development with nearby landmarks, using the client’s project data for production', 'A 360° virtual tour lets buyers explore sample units or shared spaces on their phones'],
+  },
+  brokerage: {
+    th: ['Virtual Tour 360° ช่วยให้ผู้สนใจเดินชมประกาศจากมือถือก่อนนัดดูสถานที่จริง', 'แผนที่ 3D ช่วยให้เห็นทำเลและจุดสำคัญรอบทรัพย์ในบริบทเดียวกัน'],
+    en: ['A 360° virtual tour helps buyers preview a listing on their phones before arranging a visit', 'A 3D map can show the property location and nearby points of interest in context'],
+  },
+  propertyManagement: {
+    th: ['แผนที่ 3D ช่วยแสดงอาคาร ทางเข้า และจุดบริการในพื้นที่โครงการ', 'Virtual Tour 360° ช่วยแนะนำพื้นที่ส่วนกลางและสิ่งอำนวยความสะดวก'],
+    en: ['A 3D map can show buildings, entrances and service points across a property', 'A 360° virtual tour can introduce shared spaces and amenities'],
+  },
+  hospitality: {
+    th: ['Virtual Tour 360° ช่วยให้แขกสำรวจห้องพักและพื้นที่ส่วนกลางก่อนจอง', 'แผนที่ 3D ช่วยแนะนำอาคารและจุดน่าสนใจภายในพื้นที่'],
+    en: ['A 360° virtual tour lets guests explore rooms and shared spaces before booking', 'A 3D map can guide visitors around buildings and points of interest'],
+  },
+  commercial: {
+    th: ['แผนที่ 3D ช่วยนำเสนออาคาร ทางเข้า และจุดสำคัญของพื้นที่เชิงพาณิชย์', 'Virtual Tour 360° ช่วยให้ผู้เช่าหรือผู้ซื้อสำรวจพื้นที่จากระยะไกล'],
+    en: ['A 3D map can present buildings, entrances and key locations across a commercial site', 'A 360° virtual tour lets prospective tenants or buyers explore spaces remotely'],
+  },
+  industrial: {
+    th: ['แผนที่ 3D ช่วยแสดงแปลงที่ดิน ทางเข้า และเส้นทางภายในพื้นที่อุตสาหกรรม', 'Virtual Tour 360° ช่วยแนะนำพื้นที่และสถานที่จริงจากระยะไกล'],
+    en: ['A 3D map can show plots, gates and routes across an industrial site', 'A 360° virtual tour can introduce facilities and real locations remotely'],
+  },
+  _default: {
+    th: ['แผนที่ 3D แบบโต้ตอบสำหรับนำเสนอโครงการและจุดสำคัญรอบทำเล', 'Virtual Tour 360° ให้ผู้สนใจสำรวจพื้นที่จากมือถือ'],
+    en: ['An interactive 3D map for presenting a property project and nearby points of interest', 'A 360° virtual tour lets prospects explore a space on their phones'],
   },
 };
 
@@ -64,10 +95,66 @@ const shortName = (name) => {
 };
 const join = (items, and) => (items.length < 2 ? items[0] ?? '' : items.slice(0, -1).join(', ') + ` ${and} ` + items.at(-1));
 
+function composeProperty(company, config, email) {
+  const lang = company.lang === 'en' ? 'en' : 'th';
+  const th = lang === 'th';
+  const name = shortName(company.name || company.domain);
+  const tags = (company.ai?.propertyTypes?.length ? company.ai.propertyTypes : company.services ?? []).slice(0, 2);
+  const labels = tags.map((tag) => PROPERTY_TAGS[tag]?.[lang] ?? PROPERTY_TAGS[tag]?.th ?? tag);
+  const bullets = [...new Set(tags.flatMap((tag) => PROPERTY_PITCH[tag]?.[lang] ?? []).concat(PROPERTY_PITCH._default[lang]))].slice(0, 3);
+  const s = config.sender;
+  const p = config.polite || 'ครับ';
+  const signature = [[s.name || (th ? '[ชื่อผู้ส่ง]' : '[Your name]'), s.role].filter(Boolean).join(' · '), s.company, [s.email, s.phone].filter(Boolean).join(' · '), s.website].join('\n');
+  const demo = th
+    ? `ดูเดโมได้ที่ ${s.website}/map-3d และ ${s.website}/virtual-tour (เป็นข้อมูลตัวอย่าง; งานจริงใช้ข้อมูลโครงการหรือภาพสถานที่ของลูกค้า)`
+    : `See the demos at ${s.website}/map-3d and ${s.website}/virtual-tour (sample data; production uses the client's project data or location imagery).`;
+  const body = th
+    ? [
+        `เรียน ทีมงาน ${name}`,
+        '',
+        `เราคือ ${s.company} สตูดิโอที่ทำแผนที่ 3D และ Virtual Tour บนเว็บ เห็นว่า ${name} ทำงานด้านอสังหาริมทรัพย์${labels.length ? ` (${labels.join(', ')})` : ''} จึงขอแนะนำตัวสั้นๆ ${p}`,
+        '',
+        ...bullets.map((b) => `• ${b}`),
+        '',
+        demo,
+        '',
+        `หากมีโครงการหรือประกาศที่กำลังเตรียมนำเสนอ ส่งรายละเอียดมาได้ครับ เรายินดีช่วยคุยว่าแบบไหนเหมาะกับข้อมูลและเป้าหมายของคุณ${p}`,
+        '',
+        `ขอบคุณ${p}`,
+        signature,
+        '',
+        `— อีเมลนี้ส่งถึงที่อยู่ติดต่อที่เปิดเผยบนเว็บไซต์ ${company.domain} หากไม่ต้องการรับอีเมลจากเราอีก ตอบกลับว่า "ไม่รับ" เราจะไม่ส่งอีเมลหาท่านอีก`,
+      ].join('\n')
+    : [
+        `Dear ${name} team,`,
+        '',
+        `We are ${s.company}, a studio building web-based 3D maps and virtual tours. We saw that ${name} works in real estate${labels.length ? ` (${labels.join(', ')})` : ''}, so I wanted to introduce our work.`,
+        '',
+        ...bullets.map((b) => `• ${b}`),
+        '',
+        demo,
+        '',
+        `If you have a project or listing coming up, send us a few details and we can discuss which format fits your data and goals.`,
+        '',
+        'Thank you,',
+        signature,
+        '',
+        `— This email was sent to the contact address published on ${company.domain}. If you do not want to hear from us again, reply "unsubscribe" and we will not write again.`,
+      ].join('\n');
+  const warnings = [];
+  if (!s.name) warnings.push(th ? 'ยังไม่ได้ตั้งชื่อผู้ส่งใน config.json' : 'sender name not set in config.json');
+  if (email.kind === 'named') warnings.push('อีเมลเป็นชื่อบุคคล (ข้อมูลส่วนบุคคล) ตรวจให้แน่ใจก่อนส่ง');
+  if (email.kind === 'freemail') warnings.push('อีเมลฟรี (gmail ฯลฯ) ตรวจว่าเป็นอีเมลธุรกิจของบริษัท');
+  if (!tags.length) warnings.push('ไม่พบประเภทธุรกิจอสังหาริมทรัพย์ที่ชัดเจนบนเว็บไซต์ ใช้ข้อความทั่วไป');
+  const subject = th ? `แผนที่ 3D และ Virtual Tour สำหรับ ${name}` : `3D maps and virtual tours for ${name}`;
+  return { to: email.address, subject, body, lang, warnings };
+}
+
 /** Builds { to, subject, body, lang, warnings } for one company, or null when there is no usable address. */
-export function compose(company, config, { includeNamed = false } = {}) {
+export function compose(company, config, { includeNamed = false, profile = 'events' } = {}) {
   const email = pickEmail(company, { includeNamed });
   if (!email) return null;
+  if (profile === 'real-estate') return composeProperty(company, config, email);
   const lang = company.lang === 'en' ? 'en' : 'th';
   const th = lang === 'th';
   const name = shortName(company.name || company.domain);
@@ -127,12 +214,13 @@ export function compose(company, config, { includeNamed = false } = {}) {
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
 /** One self-contained page: edit each draft, then copy it or open it in Gmail / your mail app. */
-export function reviewPage(items) {
+export function reviewPage(items, profile = 'events') {
+  const serviceNames = (company) => (company.services ?? []).map((tag) => profile === 'real-estate' ? PROPERTY_TAGS[tag]?.th ?? tag : SERVICE_TAGS[tag]?.th ?? tag).join(', ') || (profile === 'real-estate' ? 'ไม่พบประเภทธุรกิจชัดเจน' : 'ไม่พบประเภทงาน');
   const cards = items
     .map(
       ({ company, draft }, i) => `<article data-i="${i}">
   <header><h2>${esc(company.name)} <small>${esc(company.domain)}</small></h2>
-    <p>ความเกี่ยวข้อง ${company.score}/100 · ${esc((company.services ?? []).join(', ') || 'ไม่พบประเภทงาน')} · ภาษา ${draft.lang}
+    <p>ความเกี่ยวข้อง ${company.score}/100 · ${esc(serviceNames(company))} · ภาษา ${draft.lang}
     · <a href="${esc(company.url)}" target="_blank" rel="noopener noreferrer">เว็บไซต์</a>${company.phones?.[0] ? ' · ' + esc(company.phones[0]) : ''}${company.line?.[0] ? ' · LINE ' + esc(company.line[0]) : ''}</p>
     ${draft.warnings.map((w) => `<p class="warn">⚠ ${esc(w)}</p>`).join('')}
   </header>
@@ -140,7 +228,7 @@ export function reviewPage(items) {
   <label>หัวข้อ <input class="subject" value="${esc(draft.subject)}"></label>
   <textarea class="body" rows="16">${esc(draft.body)}</textarea>
   <div class="actions"><button data-act="copy">คัดลอกเมล</button><button data-act="gmail">เปิดใน Gmail</button><button data-act="mailto">เปิดในแอปอีเมล</button>
-    <code>node outreach/mark.mjs sent ${esc(company.domain)}</code></div>
+    <code>node outreach/mark.mjs ${profile === 'events' ? '' : `--profile=${esc(profile)} `}sent ${esc(company.domain)}</code></div>
 </article>`,
     )
     .join('\n');

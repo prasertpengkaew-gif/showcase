@@ -18,7 +18,7 @@ const BLOCKED = [
   'yellowpages.co.th', 'thaiyellowpages.com', 'trueyellow.com', 'globallinker.com', 'kompass.com', 'alibaba.com', 'made-in-china.com',
   'shopee.co.th', 'lazada.co.th', 'amazon.com', 'ebay.com', 'canva.com', 'freepik.com', 'shutterstock.com',
   'bangkokpost.com', 'nationthailand.com', 'thairath.co.th', 'sanook.com', 'kapook.com', 'marketingoops.com', 'brandage.com', 'positioningmag.com',
-  'marketeeronline.co', 'infoquest.co.th', 'tripadvisor.com', 'booking.com', 'agoda.com', 'themuse.com', 'ttgmice.com', 'eventbrite.com', 'fastwork.co', 'top10thai.com', 'lnwshop.com', 'tophitthailand.com', 'fiverr.com', 'upwork.com',
+  'marketeeronline.co', 'infoquest.co.th', 'tripadvisor.com', 'booking.com', 'agoda.com', 'themuse.com', 'ttgmice.com', 'eventbrite.com', 'fastwork.co', 'duckduckgo.com', 'lemon8-app.com', 'trueid.net', 'thairanked.com', 'profindle.com', 'top10thai.com', 'lnwshop.com', 'tophitthailand.com', 'fiverr.com', 'upwork.com',
 ];
 const BLOCKED_SUFFIX = ['.go.th', '.ac.th', '.edu', '.gov', '.mi.th'];
 

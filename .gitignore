@@ -14,6 +14,7 @@ events/*
 export-*/
 .vercel
 .env*.local
+review.html
 
 # Companies, emails and drafts collected by outreach/ (personal data: never commit)
 outreach/data/

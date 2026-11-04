@@ -1,7 +1,7 @@
 import type { ComponentType, SVGProps } from 'react';
 import { CameraIcon, CompassIcon, FlagIcon, FlaskIcon, GamepadIcon, LayersIcon, MapIcon, MapPinIcon, SearchIcon, TagIcon, CubeIcon, FaceIcon, FactoryIcon, HandIcon, HeadsetIcon, ScanIcon, ShirtIcon } from '../components/Icons';
 
-export type DemoId = 'ar' | 'print' | 'face' | 'halloweenFace' | 'tryon' | 'hands' | 'vr' | 'tour' | 'twin' | 'event' | 'hunt' | 'game' | 'chem' | 'cube' | 'tags' | 'map' | 'tms' | 'cold' | 'rag' | 'vote' | 'rally' | 'qa' | 'draw' | 'wall' | 'team' | 'assist' | 'motion' | 'stats' | 'newyear' | 'halloween';
+export type DemoId = 'ar' | 'print' | 'restaurant' | 'coloring' | 'face' | 'halloweenFace' | 'tryon' | 'hands' | 'vr' | 'tour' | 'twin' | 'event' | 'hunt' | 'game' | 'chem' | 'cube' | 'tags' | 'map' | 'tms' | 'cold' | 'rag' | 'vote' | 'rally' | 'qa' | 'draw' | 'wall' | 'team' | 'assist' | 'motion' | 'stats' | 'newyear' | 'halloween';
 
 export type DemoGroup = 'phone' | 'marker' | 'camera' | 'event' | 'space' | 'apps';
 export const demoGroups: DemoGroup[] = ['phone', 'marker', 'camera', 'event', 'space', 'apps'];
@@ -20,6 +20,8 @@ export interface Demo {
 export const demos: Demo[] = [
   { id: 'ar', group: 'phone', featured: true, to: '/ar-playground', icon: CubeIcon, image: '/images/posters/chair.webp' },
   { id: 'print', group: 'phone', featured: true, to: '/print-ar', icon: ScanIcon, image: '/ar-card/card.png' },
+  { id: 'restaurant', group: 'marker', featured: true, to: '/restaurant-ar', icon: ScanIcon, image: '/restaurant-ar/coaster.png' },
+  { id: 'coloring', group: 'phone', featured: true, to: '/coloring-ar', icon: LayersIcon, image: '/coloring-ar/page.png' },
   { id: 'tour', group: 'phone', to: '/virtual-tour', icon: CompassIcon, image: '/tour/living-thumb.webp' },
   { id: 'chem', group: 'marker', to: '/marker-chem', icon: FlaskIcon, image: '/images/marker-chem.webp' },
   { id: 'cube', group: 'marker', to: '/ar-cube', icon: CubeIcon, image: '/images/ar-cube.webp' },

@@ -45,14 +45,16 @@ export function companyName(html, domain) {
 
 // ---- contact details ------------------------------------------------------------------------
 const EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/g;
-const BAD_EMAIL = /\.(png|jpe?g|gif|webp|svg|css|js)$|^(example|test|user|name|email|your|yourname|you|someone)@|@(example|domain|email|sentry|wixpress|sentry-next|yourdomain|your-domain|mysite)\./i;
+const BAD_EMAIL = /\.(png|jpe?g|gif|webp|svg|css|js)$|^(example|test|user|name|email|your|yourname|you|someone)@|@(example|domain|mydomain|email|sentry|wixpress|sentry-next|yourdomain|your-domain|mysite|company|yourcompany)\./i;
 const FREEMAIL = /@(gmail|hotmail|outlook|yahoo|live|icloud|msn|me|protonmail)\./i;
 const ROLE = /^(info|contact|contacts|hello|hi|sales|marketing|market|mkt|event|events|booking|bookings|inquiry|inquiries|enquiry|enquiries|service|services|support|admin|office|biz|business|project|projects|pr|media|team|mail|cs|customer|customerservice|reservation|quotation|quote)(?:[._-]?[a-z]{0,12})?@/i;
 
 export function classifyEmail(address) {
   const free = FREEMAIL.test(address);
   const role = ROLE.test(address);
-  return { kind: role ? 'role' : free ? 'freemail' : 'named', freemail: free };
+  // A free mailbox with a dot or underscore in its name (first.last) is a person, not the company, so it is treated as named.
+  const person = free && !role && /^[^@]+[._][^@]+@/.test(address);
+  return { kind: role ? 'role' : person ? 'named' : free ? 'freemail' : 'named', freemail: free };
 }
 
 export function extractEmails(html) {
@@ -146,6 +148,31 @@ export const SERVICE_TAGS = {
   wedding: { th: 'งานแต่งงานและงานเลี้ยง', re: /งานแต่ง|wedding|งานเลี้ยง|ปาร์ตี้|birthday|งานวันเกิด/gi },
   corporate: { th: 'งานองค์กร', re: /งานองค์กร|corporate event|team ?building|ทีมบิลดิ้ง|annual (?:dinner|party)|company trip|กิจกรรมองค์กร|งานกีฬาสี/gi },
 };
+
+const PROPERTY_CORE = /อสังหาริมทรัพย์|อสังหาฯ|พัฒนาโครงการ|โครงการอสังหา|โครงการคอนโด|โครงการบ้าน|บ้านจัดสรร|นายหน้าอสังหา|รับฝากขาย|โรงแรม|รีสอร์ต|อาคารสำนักงาน|ศูนย์การค้า|ห้างสรรพสินค้า|คลังสินค้า|นิคมอุตสาหกรรม|\breal estate\b|\bproperty developer\b|\bproperty development\b|\bcondo developer\b|\bproperty agency\b|\breal estate agency\b|\bproperty management\b|\bindustrial estate\b|\bindustrial park\b|\bcommercial property\b|\boffice building\b|\bshopping mall\b|\bwarehouse\b|\bhotel\b|\bresort\b|\bhospitality\b|\bcondo\b|\bresidential project\b/gi;
+
+export const PROPERTY_TAGS = {
+  developer: { th: 'ผู้พัฒนาโครงการ', en: 'property development', re: /พัฒนาอสังหา|พัฒนาโครงการ|ผู้พัฒนาโครงการ|developer|development|residential project|โครงการคอนโด|โครงการบ้าน|บ้านจัดสรร/gi },
+  brokerage: { th: 'นายหน้าและบริษัทอสังหาฯ', en: 'brokerage', re: /นายหน้าอสังหา|นายหน้า|รับฝากขาย|ตัวแทนอสังหา|real estate agent|real estate agency|property agency|brokerage|property broker/gi },
+  propertyManagement: { th: 'บริหารจัดการอสังหาริมทรัพย์', en: 'property management', re: /บริหารอสังหา|บริหารทรัพย์สิน|นิติบุคคลอาคารชุด|property management|property manager/gi },
+  hospitality: { th: 'โรงแรมและรีสอร์ต', en: 'hospitality', re: /โรงแรม|รีสอร์ต|รีสอร์ท|hotel|resort|serviced apartment|hospitality/gi },
+  commercial: { th: 'อสังหาฯ เชิงพาณิชย์', en: 'commercial property', re: /อสังหา.*เชิงพาณิชย์|อาคารสำนักงาน|ศูนย์การค้า|ห้างสรรพสินค้า|สำนักงานให้เช่า|commercial property|office building|shopping mall|mixed[- ]use/gi },
+  industrial: { th: 'นิคมและพื้นที่อุตสาหกรรม', en: 'industrial property', re: /นิคมอุตสาหกรรม|คลังสินค้า|โรงงานให้เช่า|industrial estate|industrial park|warehouse|logistics park/gi },
+};
+
+/** Finds real-estate businesses suited to 3D project maps and virtual tours. */
+export function classifyPropertyCompany(text, headline = '') {
+  const tags = Object.entries(PROPERTY_TAGS)
+    .map(([tag, { re }]) => ({ tag, count: (text.match(re) ?? []).length }))
+    .filter((t) => t.count > 0)
+    .sort((a, b) => b.count - a.count);
+  const core = (text.match(PROPERTY_CORE) ?? []).length;
+  const perThousand = core / Math.max(1, text.length / 1000);
+  const inHeadline = PROPERTY_CORE.test(headline);
+  PROPERTY_CORE.lastIndex = 0;
+  const score = Math.min(100, Math.round(perThousand * 9 + (inHeadline ? 30 : 0) + Math.min(core, 5) * 2));
+  return { services: tags.map((t) => t.tag), score };
+}
 
 /** Which kinds of events appear in the text, with how often, and a 0-100 "is this an event company" score. */
 export function classifyCompany(text, headline = '') {

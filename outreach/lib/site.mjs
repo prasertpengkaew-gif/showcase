@@ -1,9 +1,9 @@
 // Reads one company website: the home page plus a few contact/about/service pages.
-import { classifyCompany, companyName, extractEmails, extractLine, extractPhones, extractSocials, metaContent, pageLanguage, pageLinks, pickPages, visibleText } from './extract.mjs';
+import { classifyCompany, classifyPropertyCompany, companyName, extractEmails, extractLine, extractPhones, extractSocials, metaContent, pageLanguage, pageLinks, pickPages, visibleText } from './extract.mjs';
 import { fetchPage } from './http.mjs';
 
 /** Reads one site and returns its record, or { skipped } with the reason. */
-export async function scanSite(domain, { maxPages = 4, delayMs = 2500 } = {}) {
+export async function scanSite(domain, { maxPages = 4, delayMs = 2500, profile = 'events' } = {}) {
   let home = await fetchPage('https://' + domain + '/', { delayMs });
   if (home.skipped && !/robots/.test(home.skipped)) home = await fetchPage('https://www.' + domain + '/', { delayMs });
   if (home.skipped) return { skipped: home.skipped };
@@ -25,7 +25,7 @@ export async function scanSite(domain, { maxPages = 4, delayMs = 2500 } = {}) {
     url: home.url,
     description: metaContent(home.html, 'og:description') || metaContent(home.html, 'description'),
     lang: pageLanguage(text),
-    ...classifyCompany(text, headline),
+    ...(profile === 'real-estate' ? classifyPropertyCompany(text, headline) : classifyCompany(text, headline)),
     emails: [...emails.values()],
     phones: extractPhones(text).slice(0, 3),
     line: extractLine(allHtml).slice(0, 2),
