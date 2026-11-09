@@ -363,6 +363,7 @@ export default function QuizGame() {
 
   return (
     <main className="fixed inset-0 z-[60] overflow-hidden text-[#16213c]" style={{ backgroundColor: palette.outer }}>
+      <video ref={videoRef} className="pointer-events-none fixed left-0 top-0 h-px w-px opacity-0" playsInline muted aria-hidden="true" />
       <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden>
         <defs>
           <radialGradient id="quiz-nebula">
