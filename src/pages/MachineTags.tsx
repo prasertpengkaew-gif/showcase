@@ -165,7 +165,8 @@ export default function MachineTags() {
 
   const visible = cam.ids.map((id) => MACHINE_OF.get(id)).filter((x): x is string => !!x);
   const live = source.state.kind === 'live';
-  const trouble = visible.filter((id) => ['warning', 'fault'].includes(readings[id]?.status ?? ''));
+  // Keep active service guidance visible even when the camera briefly loses its marker.
+  const trouble = Object.values(readings).filter((reading) => ['warning', 'fault'].includes(reading.status)).map((reading) => reading.id);
 
   const downloadSheet = () =>
     downloadCanvas(
