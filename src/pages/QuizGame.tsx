@@ -361,7 +361,7 @@ export default function QuizGame() {
           <linearGradient id="quiz-planet-ring"><stop offset="0%" stopColor="#b5dfff" /><stop offset="50%" stopColor="#e5c1ff" /><stop offset="100%" stopColor="#83d6e4" /></linearGradient>
           <linearGradient id="quiz-space-sky" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#603875" /><stop offset="42%" stopColor="#18245a" /><stop offset="100%" stopColor="#15506c" /></linearGradient>
         </defs>
-        <rect width="1600" height="900" fill={backgroundSubject === 0 ? 'url(#quiz-space-sky)' : palette.outer} />
+        <rect width="1600" height="900" fill="url(#quiz-space-sky)" />
         {backgroundSubject === 0 ? <>
         <ellipse cx="370" cy="240" rx="540" ry="410" fill="url(#quiz-nebula)" />
         <ellipse cx="1420" cy="690" rx="470" ry="390" fill="url(#quiz-nebula)" opacity=".62" />
@@ -398,7 +398,7 @@ export default function QuizGame() {
       </svg>
 
       <div className="quiz-game-brand absolute left-5 top-3 z-10 text-xs font-black tracking-[.24em] text-white/75 sm:left-10 sm:top-4 sm:text-sm">✦ LITTLE ORBIT · LEARNING GAME</div>
-      <section className="quiz-game-panel absolute inset-x-3 bottom-3 top-12 overflow-hidden rounded-[30px] border border-white/80 shadow-[0_24px_100px_rgba(0,0,0,.45)] backdrop-blur-xl sm:inset-x-7 sm:bottom-6 sm:top-14 md:inset-x-[5.2vw]" data-screen={screen} style={{ backgroundColor: screen === 'home' ? 'rgba(7, 22, 66, .92)' : palette.panel }}>
+      <section className="quiz-game-panel absolute inset-x-3 bottom-3 top-12 overflow-hidden rounded-[30px] border border-white/80 shadow-[0_24px_100px_rgba(0,0,0,.45)] backdrop-blur-xl sm:inset-x-7 sm:bottom-6 sm:top-14 md:inset-x-[5.2vw]" data-screen={screen} style={{ backgroundColor: 'rgba(7, 22, 66, .94)' }}>
         <div aria-hidden className="quiz-panel-atmosphere pointer-events-none absolute inset-0 animate-pulse" data-screen={screen} style={{ animationDuration: '9s', backgroundImage: `radial-gradient(ellipse at 100% 0%, ${palette.accent}66, transparent 44%), radial-gradient(ellipse at 0% 100%, ${palette.glow}55, transparent 50%), linear-gradient(135deg, ${palette.glow}12, transparent 48%, ${palette.accent}18)` }} />
         <div className="quiz-panel-motifs pointer-events-none absolute inset-0 z-0 overflow-hidden" data-screen={screen} aria-hidden>
           {panelMotifPositions.map(([x, y], index) => {
@@ -445,39 +445,39 @@ export default function QuizGame() {
           <button type="button" onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign('/')} className="quiz-subject-back">ย้อนกลับ</button>
         </div>}
 
-        {screen === 'grade' && <div className="absolute inset-x-[6%] bottom-[12%] top-[24%] z-10 flex flex-col items-center justify-center text-center">
-          <p className="mb-8 text-lg font-bold text-[#49636e] sm:text-2xl">วันนี้อยากเล่นโจทย์ระดับไหนเอ่ย?</p>
+        {screen === 'grade' && <div className="quiz-grade-screen absolute inset-x-[6%] bottom-[12%] top-[24%] z-10 flex flex-col items-center justify-center text-center">
+          <p className="quiz-grade-intro mb-8 text-lg font-bold sm:text-2xl">วันนี้อยากเล่นโจทย์ระดับไหนเอ่ย?</p>
           <div className="grid w-full max-w-5xl grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-7">
-            {[1, 2, 3].map(item => <button key={item} type="button" onClick={() => { changeGrade(item); setScreen('home'); }} className={'min-h-24 rounded-[2rem] border-2 border-white/90 px-5 py-5 text-2xl font-black shadow-[0_10px_25px_rgba(68,65,120,.14)] transition hover:-translate-y-1 hover:brightness-105 sm:min-h-32 sm:text-4xl ' + (item === 1 ? 'bg-[#dcecff]' : item === 2 ? 'bg-[#ffe5d7]' : 'bg-[#e6e0ff]')}>ป.{item}</button>)}
+            {[1, 2, 3].map(item => <button key={item} type="button" onClick={() => { changeGrade(item); setScreen('home'); }} className={`quiz-grade-card quiz-grade-card-${item} min-h-24 rounded-[2rem] border-2 border-white/90 px-5 py-5 text-2xl font-black transition hover:-translate-y-1 hover:brightness-105 sm:min-h-32 sm:text-4xl`}>ป.{item}</button>)}
           </div>
-          <button type="button" onClick={() => setScreen('home')} className="absolute bottom-0 left-0 rounded-full border-2 border-white bg-[#e8e5f5] px-7 py-3 text-lg font-black shadow-md transition hover:bg-white">ย้อนกลับ</button>
+          <button type="button" onClick={() => setScreen('home')} className="quiz-game-back absolute bottom-0 left-0 rounded-full px-7 py-3 text-lg font-black transition">ย้อนกลับ</button>
         </div>}
 
         {screen === 'question' && question && <div className="absolute inset-x-[5%] bottom-[8%] top-[22%] z-10 flex flex-col">
           <div className="flex min-h-0 flex-1 items-center gap-2 sm:gap-8">
             <div className="min-w-0 flex-1">
-              <div className="mb-4 flex flex-wrap items-center gap-3">
-                <span className="rounded-full border border-white bg-white/65 px-4 py-1.5 text-sm font-extrabold text-[#42606b]">{question.subject.replace(/ \(ป\.\d\)/, '')} · ข้อ {(questionIndex % list.length) + 1}/{list.length}</span>
-                <span className="rounded-full border border-white bg-white/65 px-4 py-1.5 text-sm font-extrabold text-[#7c5e12]">⭐ {score} คะแนน</span>
-                <button type="button" onClick={readQuestion} className="rounded-full border border-white bg-white/70 px-4 py-2 font-bold shadow-sm hover:bg-white">🔊 ฟังโจทย์และตัวเลือก</button>
+              <div className="quiz-question-meta mb-4 flex flex-wrap items-center gap-3">
+                <span className="quiz-meta-chip">{question.subject.replace(/ \(ป\.\d\)/, '')} · ข้อ {(questionIndex % list.length) + 1}/{list.length}</span>
+                <span className="quiz-meta-chip quiz-score-chip">⭐ {score} คะแนน</span>
+                <button type="button" onClick={readQuestion} className="quiz-listen-button">🔊 ฟังโจทย์และตัวเลือก</button>
               </div>
-              <h2 className="max-w-4xl text-balance text-2xl font-black leading-snug sm:text-4xl lg:text-5xl">{formatMath(question.question)}</h2>
-              {selected !== null && <p className={'mt-4 text-lg font-black sm:text-2xl ' + (selected === question.answer ? 'text-[#176c4b]' : 'text-[#a83d39]')}>{selected === question.answer ? 'เก่งมาก! ตอบถูกแล้ว 🎉' : 'ยังไม่ใช่นะ · คำตอบคือ ' + LETTERS[question.answer] + ' ' + formatMath(question.choices[question.answer])}</p>}
+              <h2 className="quiz-question-title max-w-4xl text-balance text-2xl font-black leading-snug sm:text-4xl lg:text-5xl">{formatMath(question.question)}</h2>
+              {selected !== null && <p className={'quiz-answer-feedback mt-4 text-lg font-black sm:text-2xl ' + (selected === question.answer ? 'is-correct' : 'is-wrong')}>{selected === question.answer ? 'เก่งมาก! ตอบถูกแล้ว 🎉' : 'ยังไม่ใช่นะ · คำตอบคือ ' + LETTERS[question.answer] + ' ' + formatMath(question.choices[question.answer])}</p>}
             </div>
             <div className="hidden shrink-0 sm:flex"><SubjectAnimation subject={subject} /></div>
           </div>
           <div className="grid grid-cols-1 gap-3 pb-16 sm:grid-cols-3 sm:gap-5">
-            {question.choices.map((choice, index) => <button key={String(questionIndex) + '-' + String(index)} type="button" onClick={() => answer(index)} disabled={selected !== null} className={'min-h-16 rounded-[2rem] border-2 border-white/90 px-4 py-4 text-left text-lg font-black shadow-md transition hover:-translate-y-1 sm:min-h-20 sm:px-6 sm:text-2xl disabled:cursor-default ' + (selected === index ? (index === question.answer ? 'bg-[#c5f0d8] text-[#176c4b]' : 'bg-[#ffe0dc] text-[#a83d39]') : selected !== null && index === question.answer ? 'bg-[#c5f0d8]' : index === 0 ? 'bg-[#dcecff] hover:bg-white' : index === 1 ? 'bg-[#ffedc9] hover:bg-white' : 'bg-[#eee4ff] hover:bg-white')}>
-              <span className="mr-3 inline-grid h-10 w-10 place-items-center rounded-full bg-white/80 text-base">{LETTERS[index]}</span>{formatMath(choice)}
+            {question.choices.map((choice, index) => <button key={String(questionIndex) + '-' + String(index)} type="button" onClick={() => answer(index)} disabled={selected !== null} className={`quiz-answer-card quiz-answer-card-${index}${selected === index ? (index === question.answer ? ' is-correct' : ' is-wrong') : selected !== null && index === question.answer ? ' is-reveal' : ''} min-h-16 rounded-[2rem] border-2 px-4 py-4 text-left text-lg font-black transition hover:-translate-y-1 sm:min-h-20 sm:px-6 sm:text-2xl disabled:cursor-default`}>
+              <span className="quiz-answer-letter mr-3 inline-grid h-10 w-10 place-items-center rounded-full text-base">{LETTERS[index]}</span>{formatMath(choice)}
             </button>)}
           </div>
           <div className="absolute bottom-0 left-0 right-0 flex justify-between">
-            <button type="button" onClick={chooseAnotherSubject} className="rounded-full border-2 border-white bg-[#e8e5f5] px-7 py-3 text-lg font-black shadow-md transition hover:bg-white">ย้อนกลับ</button>
-            <button type="button" onClick={nextQuestion} className="rounded-full border-2 border-white bg-gradient-to-r from-[#ffc47c] to-[#ffe18b] px-8 py-3 text-lg font-black shadow-md transition hover:brightness-105">{questionIndex % list.length === list.length - 1 ? 'เล่นข้อแรกอีกครั้ง' : 'ไปต่อ →'}</button>
+            <button type="button" onClick={chooseAnotherSubject} className="quiz-game-back rounded-full px-7 py-3 text-lg font-black transition">ย้อนกลับ</button>
+            <button type="button" onClick={nextQuestion} className="quiz-game-next rounded-full px-8 py-3 text-lg font-black transition">{questionIndex % list.length === list.length - 1 ? 'เล่นข้อแรกอีกครั้ง' : 'ไปต่อ →'}</button>
           </div>
         </div>}
 
-        <div className="absolute bottom-[3%] left-[6%] z-10 flex items-center gap-2 text-xs font-extrabold text-[#49636e] sm:text-sm">
+        <div className="quiz-hand-status absolute bottom-[3%] left-[6%] z-10 flex items-center gap-2 text-xs font-extrabold sm:text-sm">
           <span className={'h-2.5 w-2.5 rounded-full ' + (status === 'running' && handVisible ? 'bg-emerald-500' : 'bg-white shadow')} />
           {status === 'running' ? handVisible ? 'ชี้นิ้วค้างบนปุ่มเพื่อเลือก' : 'กล้องซ่อนภาพไว้ · กำลังตรวจจับมือ' : 'ใช้เมาส์หรือแตะหน้าจอได้ด้วย'}
         </div>
