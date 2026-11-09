@@ -1,25 +1,25 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { GestureRecognizer } from '@mediapipe/tasks-vision';
 import questions from '../data/quizQuestions.json';
-import { Button } from '../components/Button';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { cameraProblem, type CameraProblem } from '../lib/camera';
+import './QuizGame.css';
 
 const MODEL_URL = '/models/hand/gesture_recognizer.task';
 const WASM_BASE = '/mediapipe';
 const LETTERS = ['ก', 'ข', 'ค'];
 const SUBJECTS = ['วิชาวิทยาศาสตร์', 'วิชาคณิตศาสตร์', 'วิชาภาษาไทย', 'วิชาสังคมศึกษา', 'วิชาภาษาอังกฤษ'];
 const SUBJECT_ART: Record<string, { icon: string; color: string; hint: string }> = {
-  'วิชาวิทยาศาสตร์': { icon: '🔬', color: 'border-emerald-200 bg-emerald-50', hint: 'สำรวจธรรมชาติและสิ่งรอบตัว' },
+  'วิชาวิทยาศาสตร์': { icon: '🧪', color: 'border-emerald-200 bg-emerald-50', hint: 'สำรวจธรรมชาติและสิ่งรอบตัว' },
   'วิชาคณิตศาสตร์': { icon: '🔢', color: 'border-sky-200 bg-sky-50', hint: 'ฝึกคิดเลขและแก้โจทย์' },
-  'วิชาภาษาไทย': { icon: '📖', color: 'border-rose-200 bg-rose-50', hint: 'สนุกกับคำและภาษาไทย' },
-  'วิชาสังคมศึกษา': { icon: '🌏', color: 'border-amber-200 bg-amber-50', hint: 'เรียนรู้สังคมและวัฒนธรรม' },
-  'วิชาภาษาอังกฤษ': { icon: '🇬🇧', color: 'border-violet-200 bg-violet-50', hint: 'ฝึกคำศัพท์ภาษาอังกฤษ' },
+  'วิชาภาษาไทย': { icon: '📚', color: 'border-rose-200 bg-rose-50', hint: 'สนุกกับคำและภาษาไทย' },
+  'วิชาสังคมศึกษา': { icon: '👨‍👩‍👧‍👦', color: 'border-amber-200 bg-amber-50', hint: 'เรียนรู้สังคมและวัฒนธรรม' },
+  'วิชาภาษาอังกฤษ': { icon: '🚌', color: 'border-violet-200 bg-violet-50', hint: 'ฝึกคำศัพท์ภาษาอังกฤษ' },
 };
 type Question = { grade: number; subject: string; question: string; choices: string[]; answer: number };
 type Status = 'idle' | 'loading' | 'starting-camera' | 'running' | CameraProblem;
 type HandPointer = { x: number; y: number; progress: number; target: string };
-type Screen = 'home' | 'grade' | 'subject' | 'question';
+type Screen = 'home' | 'grade' | 'question';
 const allQuestions = questions as Question[];
 const SUBJECT_MOTIFS: Record<string, string[]> = {
   'วิชาวิทยาศาสตร์': ['🌱', '🪐', '⚡'],
@@ -99,7 +99,7 @@ export default function QuizGame() {
   const [handVisible, setHandVisible] = useState(false);
   const backgroundSubject = Math.max(0, SUBJECTS.indexOf(subject));
   const subjectPalettes = [
-    { outer: '#111735', panel: '#fffaf0', glow: '#6654ba', accent: '#ffd79a' },
+    { outer: '#38225f', panel: '#fffaf0', glow: '#7c4cba', accent: '#ffd86b' },
     { outer: '#18344b', panel: '#f2fbff', glow: '#62c7d8', accent: '#ffd36e' },
     { outer: '#46304d', panel: '#fff8eb', glow: '#f3a85e', accent: '#e97e83' },
     { outer: '#183d4a', panel: '#f1fbf4', glow: '#55b9a2', accent: '#f6ce72' },
@@ -321,19 +321,6 @@ export default function QuizGame() {
     }
   };
 
-  const beginGame = async () => {
-    if (musicEnabledRef.current) startMusic();
-    if (status !== 'running') await startCamera();
-    setGrade(1);
-    setSubject('');
-    setQuestionIndex(0);
-    setSelected(null);
-    selectedRef.current = null;
-    setScore(0);
-    setStreak(0);
-    setScreen('grade');
-  };
-
   const nextQuestion = useCallback(() => {
     questionVersionRef.current += 1;
     setQuestionIndex((value) => value + 1);
@@ -350,7 +337,7 @@ export default function QuizGame() {
   }, [screen, selected, questionIndex, nextQuestion]);
   const changeGrade = (value: number) => { questionVersionRef.current += 1; setGrade(value); setQuestionIndex(0); setSelected(null); selectedRef.current = null; setScore(0); setStreak(0); };
   const changeSubject = (value: string) => { questionVersionRef.current += 1; setSubject(value); setQuestionIndex(0); setSelected(null); selectedRef.current = null; setScore(0); setStreak(0); };
-  const chooseAnotherSubject = () => { questionVersionRef.current += 1; setScreen('subject'); };
+  const chooseAnotherSubject = () => { questionVersionRef.current += 1; setScreen('home'); };
   const cameraStatus: Partial<Record<Status, string>> = {
     idle: 'กดเปิดการควบคุมด้วยมือ แล้วชี้นิ้วไปที่ปุ่มบนหน้าจอ',
     loading: 'กำลังเตรียมระบบตรวจจับมือ…',
@@ -362,7 +349,7 @@ export default function QuizGame() {
   };
 
   return (
-    <main className="fixed inset-0 z-[60] overflow-hidden text-[#16213c]" style={{ backgroundColor: palette.outer }}>
+      <main className="quiz-game-shell fixed inset-0 z-[60] overflow-hidden text-[#16213c]" style={{ backgroundColor: palette.outer }}>
       <video ref={videoRef} className="pointer-events-none fixed left-0 top-0 h-px w-px opacity-0" playsInline muted aria-hidden="true" />
       <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden>
         <defs>
@@ -372,8 +359,9 @@ export default function QuizGame() {
           </radialGradient>
           <radialGradient id="quiz-planet"><stop offset="0%" stopColor="#ffd79a" /><stop offset="100%" stopColor="#f58c75" /></radialGradient>
           <linearGradient id="quiz-planet-ring"><stop offset="0%" stopColor="#b5dfff" /><stop offset="50%" stopColor="#e5c1ff" /><stop offset="100%" stopColor="#83d6e4" /></linearGradient>
+          <linearGradient id="quiz-space-sky" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#603875" /><stop offset="42%" stopColor="#18245a" /><stop offset="100%" stopColor="#15506c" /></linearGradient>
         </defs>
-        <rect width="1600" height="900" fill={palette.outer} />
+        <rect width="1600" height="900" fill={backgroundSubject === 0 ? 'url(#quiz-space-sky)' : palette.outer} />
         {backgroundSubject === 0 ? <>
         <ellipse cx="370" cy="240" rx="540" ry="410" fill="url(#quiz-nebula)" />
         <ellipse cx="1420" cy="690" rx="470" ry="390" fill="url(#quiz-nebula)" opacity=".62" />
@@ -409,60 +397,60 @@ export default function QuizGame() {
         </g>}
       </svg>
 
-      <div className="absolute left-5 top-3 z-10 text-xs font-black tracking-[.24em] text-white/75 sm:left-10 sm:top-4 sm:text-sm">✦ LITTLE ORBIT · LEARNING GAME</div>
-      <section className="absolute inset-x-3 bottom-3 top-12 overflow-hidden rounded-[30px] border border-white/80 shadow-[0_24px_100px_rgba(0,0,0,.45)] backdrop-blur-xl sm:inset-x-7 sm:bottom-6 sm:top-14 md:inset-x-[5.2vw]" style={{ backgroundColor: palette.panel }}>
-        <div aria-hidden className="quiz-panel-atmosphere pointer-events-none absolute inset-0 animate-pulse" style={{ animationDuration: '9s', backgroundImage: `radial-gradient(ellipse at 100% 0%, ${palette.accent}66, transparent 44%), radial-gradient(ellipse at 0% 100%, ${palette.glow}55, transparent 50%), linear-gradient(135deg, ${palette.glow}12, transparent 48%, ${palette.accent}18)` }} />
-        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden>
+      <div className="quiz-game-brand absolute left-5 top-3 z-10 text-xs font-black tracking-[.24em] text-white/75 sm:left-10 sm:top-4 sm:text-sm">✦ LITTLE ORBIT · LEARNING GAME</div>
+      <section className="quiz-game-panel absolute inset-x-3 bottom-3 top-12 overflow-hidden rounded-[30px] border border-white/80 shadow-[0_24px_100px_rgba(0,0,0,.45)] backdrop-blur-xl sm:inset-x-7 sm:bottom-6 sm:top-14 md:inset-x-[5.2vw]" data-screen={screen} style={{ backgroundColor: screen === 'home' ? 'rgba(7, 22, 66, .92)' : palette.panel }}>
+        <div aria-hidden className="quiz-panel-atmosphere pointer-events-none absolute inset-0 animate-pulse" data-screen={screen} style={{ animationDuration: '9s', backgroundImage: `radial-gradient(ellipse at 100% 0%, ${palette.accent}66, transparent 44%), radial-gradient(ellipse at 0% 100%, ${palette.glow}55, transparent 50%), linear-gradient(135deg, ${palette.glow}12, transparent 48%, ${palette.accent}18)` }} />
+        <div className="quiz-panel-motifs pointer-events-none absolute inset-0 z-0 overflow-hidden" data-screen={screen} aria-hidden>
           {panelMotifPositions.map(([x, y], index) => {
             const symbol = backgroundSymbols[index % backgroundSymbols.length];
             const size = 64 + (index % 3) * 12;
             return <span key={`panel-motif-${index}`} className={`quiz-background-symbol quiz-background-symbol-${backgroundSubject} absolute grid select-none place-items-center rounded-full border-2 font-black`} style={{ left: `${x}%`, top: `${y}%`, width: size, height: size, marginLeft: -size / 2, marginTop: -size / 2, animationDelay: `${index * -0.55}s`, animationDuration: `${4.2 + (index % 6) * 0.45}s`, fontSize: `${22 + (index % 3) * 5}px`, color: index % 2 ? palette.accent : palette.glow, backgroundColor: `${palette.glow}30`, borderColor: `${palette.glow}70`, opacity: 0.92, boxShadow: `0 8px 26px ${palette.glow}30, inset 0 0 16px ${palette.glow}20` }}>{symbol}</span>;
           })}
         </div>
-        <div className="absolute left-[6%] top-[6%] z-10">
-          <p className="text-xs font-black tracking-[.18em] text-[#4f6872] sm:text-sm">ห้องเรียนแสนสนุก</p>
-          <h1 className="mt-1 text-3xl font-black leading-none sm:text-5xl">{screen === 'home' ? 'เกมตอบคำถาม' : screen === 'grade' ? 'เลือกชั้นเรียน' : screen === 'subject' ? 'เลือกวิชา' : 'พร้อมลุยโจทย์!'}</h1>
-          {screen !== 'home' && <p className="mt-2 text-sm font-bold text-[#4f6872] sm:text-base">{screen === 'grade' ? 'เลือกชั้นที่กำลังเรียนอยู่' : screen === 'subject' ? 'เลือกวิชาที่อยากผจญภัย' : subject.replace('วิชา', '') + ' · ป.' + grade}</p>}
+        <div className="quiz-game-heading absolute left-[6%] top-[6%] z-10">
+          <p className="quiz-game-eyebrow text-xs font-black tracking-[.18em] sm:text-sm">{screen === 'home' ? 'ห้องเรียนแสนสนุก' : 'LITTLE ORBIT · ห้องเรียนแสนสนุก'}</p>
+          <h1 className="mt-1 text-3xl font-black leading-none sm:text-5xl">{screen === 'home' ? 'เลือกวิชา' : screen === 'grade' ? 'เลือกชั้นเรียน' : 'พร้อมลุยโจทย์!'}</h1>
+          <p className="quiz-game-subtitle mt-2 text-sm font-bold sm:text-base">{screen === 'home' ? 'เลือกวิชาที่อยากผจญภัย' : screen === 'grade' ? 'เลือกชั้นที่กำลังเรียนอยู่' : subject.replace('วิชา', '') + ' · ป.' + grade}</p>
+          {screen === 'home' && <button type="button" onClick={() => setScreen('grade')} className="quiz-grade-chip mt-3">ระดับชั้น <strong>ป.{grade}</strong><span aria-hidden="true">⌄</span></button>}
         </div>
 
-        <div className="absolute right-[5%] top-[5%] z-20 flex max-w-[55%] flex-wrap items-center justify-end gap-2">
-          <button type="button" onClick={() => setSounds(value => !value)} aria-pressed={sounds} className="rounded-full border border-white/80 bg-white/65 px-3 py-2 text-xs font-extrabold shadow-sm backdrop-blur sm:text-sm">{sounds ? '🔊 เสียงเปิด' : '🔇 ปิดเสียง'}</button>
-          <button type="button" onClick={toggleMusic} aria-pressed={musicEnabled} className="rounded-full border border-white/80 bg-white/65 px-3 py-2 text-xs font-extrabold shadow-sm backdrop-blur sm:text-sm">{musicEnabled ? '🎵 เพลงเปิด' : '🎵 เพลงปิด'}</button>
+        <div className="quiz-game-toggles absolute right-[5%] top-[5%] z-20 flex max-w-[55%] flex-wrap items-center justify-end gap-2">
+          <button type="button" onClick={() => setSounds(value => !value)} aria-pressed={sounds} className="quiz-game-toggle rounded-full border border-white/80 bg-white/65 px-3 py-2 text-xs font-extrabold shadow-sm backdrop-blur sm:text-sm">{sounds ? '🔊 เสียงเปิด' : '🔇 ปิดเสียง'}</button>
+          <button type="button" onClick={toggleMusic} aria-pressed={musicEnabled} className="quiz-game-toggle rounded-full border border-white/80 bg-white/65 px-3 py-2 text-xs font-extrabold shadow-sm backdrop-blur sm:text-sm">{musicEnabled ? '🎵 เพลงเปิด' : '🎵 เพลงปิด'}</button>
           {status === 'running'
-            ? <button type="button" onClick={() => { stopCamera(); setStatus('idle'); setHandVisible(false); }} className="rounded-full border border-white/80 bg-white/65 px-3 py-2 text-xs font-extrabold shadow-sm backdrop-blur sm:text-sm">{handVisible ? '🟢 มือพร้อม · ปิดกล้อง' : '🟡 กำลังหามือ · ปิดกล้อง'}</button>
+            ? <button type="button" onClick={() => { stopCamera(); setStatus('idle'); setHandVisible(false); }} className="quiz-game-toggle rounded-full border border-white/80 bg-white/65 px-3 py-2 text-xs font-extrabold shadow-sm backdrop-blur sm:text-sm">{handVisible ? '🟢 มือพร้อม · ปิดกล้อง' : '🟡 กำลังหามือ · ปิดกล้อง'}</button>
             : (status === 'idle' || status === 'denied' || status === 'error' || status === 'no-camera')
-              ? <button type="button" onClick={() => void startCamera()} className="rounded-full border border-white/80 bg-white/65 px-3 py-2 text-xs font-extrabold shadow-sm backdrop-blur sm:text-sm">📷 เปิดควบคุมด้วยมือ</button>
+              ? <button type="button" onClick={() => void startCamera()} className="quiz-game-toggle rounded-full border border-white/80 bg-white/65 px-3 py-2 text-xs font-extrabold shadow-sm backdrop-blur sm:text-sm">📷 เปิดควบคุมด้วยมือ</button>
               : <span className="rounded-full bg-white/65 px-3 py-2 text-xs font-bold shadow-sm">{cameraStatus[status]}</span>}
         </div>
 
-        {screen === 'home' && <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-5 pb-[3%] pt-24 text-center">
-          <SubjectAnimation subject="" />
-          <p className="-mt-3 max-w-lg text-base font-bold text-[#415b67] sm:text-xl">เลือกวิชา ตอบคำถาม แล้วสะสมดาวให้ครบ!</p>
-          <Button size="lg" onClick={() => void beginGame()} className="mt-5 border-2 border-white bg-gradient-to-r from-[#ffb879] to-[#ffd66e] text-xl font-black text-[#392949] shadow-[0_12px_30px_rgba(224,139,82,.3)] hover:brightness-105">
-            เริ่มเกม
-          </Button>
+        {screen === 'home' && <div className="quiz-subject-menu absolute inset-x-[5%] bottom-[9%] top-[25%] z-10 grid items-center gap-5">
+          <div className="quiz-subject-grid grid grid-cols-2 gap-3 sm:grid-cols-6 sm:gap-4">
+            {SUBJECTS.map((item, index) => {
+              const art = SUBJECT_ART[item];
+              const subjectClass = ['science', 'math', 'thai', 'social', 'english'][index];
+              const placement = index < 3 ? 'sm:col-span-2' : 'sm:col-span-3';
+              return <button key={item} type="button" onClick={() => { subjectRef.current = item; changeSubject(item); if (musicEnabledRef.current) startMusic(); setScreen('question'); }} className={`quiz-subject-card quiz-subject-card-${subjectClass} ${placement}`}>
+                <span className="quiz-subject-icon" aria-hidden="true">{art.icon}</span>
+                <span className="quiz-subject-name">{index === 4 ? <><small>GB</small> ภาษาอังกฤษ</> : item.replace('วิชา', '')}</span>
+                <span className="quiz-subject-star" aria-hidden="true">✦</span>
+              </button>;
+            })}
+          </div>
+          <aside className="quiz-astro-console" aria-label="ยานสำรวจอวกาศ Little Orbit">
+            <img src="/images/quiz/astronaut-console-v1.png" alt="นักบินอวกาศตัวน้อยกำลังสำรวจดาวจากแผงควบคุมยาน" />
+            <p className="quiz-astro-caption">สำรวจจักรวาล<br />แห่งความรู้กัน!</p>
+          </aside>
+          <p className="quiz-menu-hint">เลือกวิชาเพื่อเริ่มภารกิจ · ตอบคำถามแล้วสะสมดาวให้ครบ</p>
+          <button type="button" onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign('/')} className="quiz-subject-back">ย้อนกลับ</button>
         </div>}
 
         {screen === 'grade' && <div className="absolute inset-x-[6%] bottom-[12%] top-[24%] z-10 flex flex-col items-center justify-center text-center">
           <p className="mb-8 text-lg font-bold text-[#49636e] sm:text-2xl">วันนี้อยากเล่นโจทย์ระดับไหนเอ่ย?</p>
           <div className="grid w-full max-w-5xl grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-7">
-            {[1, 2, 3].map(item => <button key={item} type="button" onClick={() => { changeGrade(item); setScreen('subject'); }} className={'min-h-24 rounded-[2rem] border-2 border-white/90 px-5 py-5 text-2xl font-black shadow-[0_10px_25px_rgba(68,65,120,.14)] transition hover:-translate-y-1 hover:brightness-105 sm:min-h-32 sm:text-4xl ' + (item === 1 ? 'bg-[#dcecff]' : item === 2 ? 'bg-[#ffe5d7]' : 'bg-[#e6e0ff]')}>ป.{item}</button>)}
+            {[1, 2, 3].map(item => <button key={item} type="button" onClick={() => { changeGrade(item); setScreen('home'); }} className={'min-h-24 rounded-[2rem] border-2 border-white/90 px-5 py-5 text-2xl font-black shadow-[0_10px_25px_rgba(68,65,120,.14)] transition hover:-translate-y-1 hover:brightness-105 sm:min-h-32 sm:text-4xl ' + (item === 1 ? 'bg-[#dcecff]' : item === 2 ? 'bg-[#ffe5d7]' : 'bg-[#e6e0ff]')}>ป.{item}</button>)}
           </div>
           <button type="button" onClick={() => setScreen('home')} className="absolute bottom-0 left-0 rounded-full border-2 border-white bg-[#e8e5f5] px-7 py-3 text-lg font-black shadow-md transition hover:bg-white">ย้อนกลับ</button>
-        </div>}
-
-        {screen === 'subject' && <div className="absolute inset-x-[5%] bottom-[10%] top-[23%] z-10 grid items-center gap-2 overflow-y-auto sm:grid-cols-[1.2fr_.8fr] sm:gap-6">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-6 sm:gap-4">
-            {SUBJECTS.map((item, index) => {
-              const art = SUBJECT_ART[item];
-              const placement = index < 3 ? 'sm:col-span-2' : 'sm:col-span-3';
-              return <button key={item} type="button" onClick={() => { changeSubject(item); setScreen('question'); }} className={'flex min-h-20 items-center justify-center gap-3 rounded-[2rem] border-2 border-white/90 px-3 py-4 text-center text-lg font-black shadow-[0_8px_20px_rgba(68,65,120,.12)] transition hover:-translate-y-1 hover:brightness-105 sm:min-h-24 sm:text-xl ' + art.color + ' ' + placement}>
-                <span className="text-3xl" aria-hidden>{art.icon}</span><span>{item.replace('วิชา', '')}</span>
-              </button>;
-            })}
-          </div>
-          <div className="hidden justify-self-center sm:flex"><SubjectAnimation subject={subject || SUBJECTS[0]} /></div>
-          <button type="button" onClick={() => setScreen('grade')} className="absolute bottom-0 left-0 rounded-full border-2 border-white bg-[#e8e5f5] px-7 py-3 text-lg font-black shadow-md transition hover:bg-white">ย้อนกลับ</button>
         </div>}
 
         {screen === 'question' && question && <div className="absolute inset-x-[5%] bottom-[8%] top-[22%] z-10 flex flex-col">
@@ -494,6 +482,14 @@ export default function QuizGame() {
           {status === 'running' ? handVisible ? 'ชี้นิ้วค้างบนปุ่มเพื่อเลือก' : 'กล้องซ่อนภาพไว้ · กำลังตรวจจับมือ' : 'ใช้เมาส์หรือแตะหน้าจอได้ด้วย'}
         </div>
       </section>
+
+      <div className="quiz-edge-orbits" aria-hidden="true">
+        <span className="quiz-edge-star quiz-edge-star-one">★</span>
+        <span className="quiz-edge-planet quiz-edge-planet-one">🪐</span>
+        <span className="quiz-edge-star quiz-edge-star-two">★</span>
+        <span className="quiz-edge-planet quiz-edge-planet-two">🛸</span>
+        <span className="quiz-edge-star quiz-edge-star-three">✦</span>
+      </div>
 
       {status === 'running' && pointer && <div className="pointer-events-none fixed z-[100] -translate-x-1/2 -translate-y-1/2" style={{ left: pointer.x, top: pointer.y }} aria-hidden>
         <div className="grid h-12 w-12 place-items-center rounded-full p-[4px] shadow-xl" style={{ background: 'conic-gradient(#ffb938 ' + String(pointer.progress * 360) + 'deg, rgba(255,255,255,.88) 0deg)' }}>
