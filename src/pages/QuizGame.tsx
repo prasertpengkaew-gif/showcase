@@ -57,7 +57,30 @@ function playSound(kind: 'correct' | 'wrong' | 'next' | 'win') {
   const AudioContextClass = window.AudioContext;
   if (!AudioContextClass) return;
   const ctx = new AudioContextClass();
-  const notes = kind === 'correct' ? [660, 880] : kind === 'wrong' ? [210] : kind === 'win' ? [523, 659, 784, 1046] : [440];
+  void ctx.resume();
+  const notes = kind === 'correct' ? [659, 784] : kind === 'wrong' ? [260, 196] : kind === 'win' ? [523, 659, 784, 1046] : [440];
+  if (kind === 'correct' || kind === 'win') {
+    const clapBuffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.12), ctx.sampleRate);
+    const clapSamples = clapBuffer.getChannelData(0);
+    for (let index = 0; index < clapSamples.length; index++) clapSamples[index] = (Math.random() * 2 - 1) * (1 - index / clapSamples.length);
+    const clapCount = kind === 'win' ? 22 : 14;
+    for (let index = 0; index < clapCount; index++) {
+      const start = ctx.currentTime + index * 0.055 + Math.random() * 0.025;
+      const noise = ctx.createBufferSource();
+      const filter = ctx.createBiquadFilter();
+      const gain = ctx.createGain();
+      noise.buffer = clapBuffer;
+      filter.type = 'bandpass';
+      filter.frequency.value = 1100 + Math.random() * 1700;
+      filter.Q.value = 0.8;
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.2, start + 0.006);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.1);
+      noise.connect(filter).connect(gain).connect(ctx.destination);
+      noise.start(start);
+      noise.stop(start + 0.12);
+    }
+  }
   notes.forEach((frequency, index) => {
     const oscillator = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -70,7 +93,20 @@ function playSound(kind: 'correct' | 'wrong' | 'next' | 'win') {
     oscillator.start(ctx.currentTime + index * 0.12);
     oscillator.stop(ctx.currentTime + index * 0.12 + 0.2);
   });
-  window.setTimeout(() => void ctx.close(), 900);
+  window.setTimeout(() => void ctx.close(), kind === 'win' ? 1600 : 950);
+}
+
+function speakThai(text: string, rate = 0.92) {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'th-TH';
+  utterance.rate = rate;
+  utterance.pitch = 1.05;
+  const thaiVoices = window.speechSynthesis.getVoices().filter((voice) => voice.lang.toLowerCase().startsWith('th'));
+  const localThaiVoices = thaiVoices.filter((voice) => voice.localService);
+  utterance.voice = localThaiVoices.find((voice) => /microsoft|natural/i.test(voice.name)) ?? localThaiVoices[0] ?? null;
+  window.speechSynthesis.speak(utterance);
 }
 
 function SubjectAnimation({ subject, compact = false }: { subject: string; compact?: boolean }) {
@@ -105,7 +141,8 @@ export default function QuizGame() {
   const questionVersionRef = useRef(0);
   const [grade, setGrade] = useState(1);
   const [subject, setSubject] = useState('');
-  const [screen, setScreen] = useState<Screen>('home');
+  const [screen, setScreen] = useState<Screen>('grade');
+  const [gradeReturn, setGradeReturn] = useState<'home' | 'site'>('site');
   const [pointer, setPointer] = useState<HandPointer | null>(null);
   const [status, setStatus] = useState<Status>(() => typeof window !== 'undefined' && !window.isSecureContext ? 'insecure' : 'idle');
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -198,15 +235,11 @@ export default function QuizGame() {
   };
 
   const readQuestion = useCallback(() => {
-    if (!question || !('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel();
+    if (!question) return;
     const spokenChoices = question.choices
       .map((choice, index) => `ตัวเลือก ${LETTERS[index]} ${formatMath(choice)}`)
       .join(' ... ');
-    const utterance = new SpeechSynthesisUtterance(`โจทย์ ${formatMath(question.question)} ... ${spokenChoices}`);
-    utterance.lang = 'th-TH';
-    utterance.rate = 0.88;
-    window.speechSynthesis.speak(utterance);
+    speakThai(`โจทย์ ${formatMath(question.question)} ... ${spokenChoices}`);
   }, [question]);
 
   useEffect(() => {
@@ -225,7 +258,10 @@ export default function QuizGame() {
       setScore((value) => value + 1);
       setStreak((value) => value + 1);
     } else setStreak(0);
-    if (soundRef.current) playSound(correct ? (streak > 0 && (streak + 1) % 5 === 0 ? 'win' : 'correct') : 'wrong');
+    if (soundRef.current) {
+      playSound(correct ? (streak > 0 && (streak + 1) % 5 === 0 ? 'win' : 'correct') : 'wrong');
+      window.setTimeout(() => speakThai(correct ? 'เก่งมาก ตอบถูกแล้ว' : 'ยังไม่ใช่นะ ลองอีกครั้ง', 0.9), correct ? 750 : 180);
+    }
   }, [streak]);
 
   const stopCamera = useCallback(() => {
@@ -350,7 +386,7 @@ export default function QuizGame() {
 
   useEffect(() => {
     if (screen !== 'question' || selected === null) return;
-    const timer = window.setTimeout(nextQuestion, 1400);
+    const timer = window.setTimeout(nextQuestion, 2200);
     return () => window.clearTimeout(timer);
   }, [screen, selected, questionIndex, nextQuestion]);
   const changeGrade = (value: number) => { questionVersionRef.current += 1; setGrade(value); setQuestionIndex(0); setSelected(null); selectedRef.current = null; setScore(0); setStreak(0); };
@@ -429,7 +465,7 @@ export default function QuizGame() {
           <p className="quiz-game-eyebrow text-xs font-black tracking-[.18em] sm:text-sm">{screen === 'home' ? 'ห้องเรียนแสนสนุก' : 'LITTLE ORBIT · ห้องเรียนแสนสนุก'}</p>
           <h1 className="mt-1 text-3xl font-black leading-none sm:text-5xl">{screen === 'home' ? 'เลือกวิชา' : screen === 'grade' ? 'เลือกชั้นเรียน' : 'พร้อมลุยโจทย์!'}</h1>
           <p className="quiz-game-subtitle mt-2 text-sm font-bold sm:text-base">{screen === 'home' ? 'เลือกวิชาที่อยากผจญภัย' : screen === 'grade' ? 'เลือกชั้นที่กำลังเรียนอยู่' : subject.replace('วิชา', '') + ' · ป.' + grade}</p>
-          {screen === 'home' && <button type="button" onClick={() => setScreen('grade')} className="quiz-grade-chip mt-3"><span className="quiz-chip-icon" aria-hidden="true">🎓</span><span>ระดับชั้น</span><strong>ป.{grade}</strong><span aria-hidden="true">⌄</span></button>}
+          {screen === 'home' && <button type="button" onClick={() => { setGradeReturn('home'); setScreen('grade'); }} className="quiz-grade-chip mt-3"><span className="quiz-chip-icon" aria-hidden="true">🎓</span><span>ระดับชั้น</span><strong>ป.{grade}</strong><span aria-hidden="true">⌄</span></button>}
         </div>
 
         <div className="quiz-game-toggles absolute right-[5%] top-[5%] z-20 flex max-w-[55%] flex-wrap items-center justify-end gap-2">
@@ -468,7 +504,7 @@ export default function QuizGame() {
           <div className="grid w-full max-w-5xl grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-7">
             {[1, 2, 3].map((item, index) => <button key={item} type="button" onClick={() => { changeGrade(item); setScreen('home'); }} className={`quiz-grade-card quiz-grade-card-${item} min-h-24 rounded-[2rem] border-2 border-white/90 px-5 py-5 text-2xl font-black transition hover:-translate-y-1 hover:brightness-105 sm:min-h-32 sm:text-4xl`}><span className="quiz-grade-icon" aria-hidden="true">{['🌱', '🚀', '⭐'][index]}</span><span>ป.{item}</span></button>)}
           </div>
-          <button type="button" onClick={() => setScreen('home')} className="quiz-game-back absolute bottom-0 left-0 rounded-full px-7 py-3 text-lg font-black transition"><span className="quiz-navigation-icon" aria-hidden="true">←</span>ย้อนกลับ</button>
+          <button type="button" onClick={() => gradeReturn === 'home' ? setScreen('home') : window.history.length > 1 ? window.history.back() : window.location.assign('/')} className="quiz-game-back absolute bottom-0 left-0 rounded-full px-7 py-3 text-lg font-black transition"><span className="quiz-navigation-icon" aria-hidden="true">←</span>ย้อนกลับ</button>
         </div>}
 
         {screen === 'question' && question && <div className="absolute inset-x-[5%] bottom-[8%] top-[22%] z-10 flex flex-col">
@@ -480,7 +516,7 @@ export default function QuizGame() {
                 <button type="button" onClick={readQuestion} className="quiz-listen-button"><span className="quiz-action-icon" aria-hidden="true">🔊</span>ฟังโจทย์และตัวเลือก</button>
               </div>
               <h2 className="quiz-question-title max-w-4xl text-balance text-2xl font-black leading-snug sm:text-4xl lg:text-5xl">{formatMath(question.question)}</h2>
-              {selected !== null && <p className={'quiz-answer-feedback mt-4 text-lg font-black sm:text-2xl ' + (selected === question.answer ? 'is-correct' : 'is-wrong')}>{selected === question.answer ? 'เก่งมาก! ตอบถูกแล้ว 🎉' : 'ยังไม่ใช่นะ · คำตอบคือ ' + LETTERS[question.answer] + ' ' + formatMath(question.choices[question.answer])}</p>}
+              {selected !== null && <p role="status" aria-live="polite" className={'quiz-answer-feedback mt-4 text-lg font-black sm:text-2xl ' + (selected === question.answer ? 'is-correct' : 'is-wrong')}>{selected === question.answer ? 'เก่งมาก! ตอบถูกแล้ว 🎉' : 'ยังไม่ใช่นะ · คำตอบคือ ' + LETTERS[question.answer] + ' ' + formatMath(question.choices[question.answer])}</p>}
             </div>
             <div className="hidden shrink-0 sm:flex"><SubjectAnimation subject={subject} /></div>
           </div>
